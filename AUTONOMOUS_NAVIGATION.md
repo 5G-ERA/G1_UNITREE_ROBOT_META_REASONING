@@ -142,25 +142,73 @@ of root causes, each fixed in turn:
   of orbiting (trail/area ratio 7.5 → 1.7).
 - **Observability.** Every run exports `map_latest.png` + `.json` (explored / obstacles / odometry
   trail) for offline inspection, and `frontier … viz` shows a live **map + robot-camera** window.
+- **"The LiDAR has the final say" (sensor authority).** On a **reflective blue floor** (very different
+  from the gray carpet the vision was tuned for) the camera *again* cried "obstacle close" in every
+  direction on clearly-open floor (floor-fraction flickering + MiDaS confused by the uniform reflective
+  surface). The fix: **the camera cannot veto a path the LiDAR confirms clear** (`c0 ≥ CAM_TRUST_C0`).
+  The camera still catches what the LiDAR misses, but only via a **strong, reliable** signal (a big
+  YOLO box = object right there, or a very-high MiDaS ratio = real wall) — the *weak* floor-segmentation
+  signal is LiDAR-gated. A self-monitoring **"camera degraded"** detector (blocks while spinning ⇒
+  unreliable ⇒ ignore 6 s) is the backstop, and it **dumps an annotated frame** to `vision_debug/`
+  (original | floor-mask overlay + numbers) so failures are diagnosable — that dump is what pinpointed
+  the reflective-floor cause.
+- **No blind reversing.** The LiDAR can't confirm the *rear* near-field (same 0.6 m blind zone, no rear
+  camera), so backing up risks tipping over backwards. All recovery/escape now **pivots in place**
+  instead of reversing — it rotates without translating, which can't fall backwards.
+- **Generic obstacles.** YOLO now flags **any** object class in the path (not just a furniture
+  whitelist) as an obstacle.
 
 The throughline: most of the "fear" was **false positives in the near field**, not real obstacles —
-the fix was giving each sensor authority only in the range where it's reliable.
+the fix was giving each sensor authority only in the range/context where it's reliable. This is the
+project's meta-reasoning thesis in miniature: *a robot that knows which of its senses to trust, when.*
 
 ---
 
 ## 6. Improvement roadmap
 
-### Near-term (close the current gaps)
-- **Make vision act in time.** Right now MiDaS+YOLO can run but the verdict arrives too late to
-  avoid (it only confirms the bump). Fixes: run vision on MPS at low res; **react proportionally at
-  medium distance** (slow + steer) instead of a binary block-when-close; widen the freshness window
-  for a slow robot; and **lower forward speed when the vision pipeline is degraded** (self-monitoring,
-  see meta-reasoning). The `VHEALTH` log line already measures per-frame time and staleness.
-- **Unified costmap.** Fuse LiDAR-grid + camera-projected obstacles + depth into **one** world-frame
-  costmap with confidence and decay; the controller/planner reads only that. Class-agnostic by
-  design ("there is something at distance d in direction θ").
-- **Metric depth.** MiDaS is relative; use the known floor plane (it must lie below the horizon and
-  recede) to fit scale → metric obstacle distance, so thresholds are physical, not tuned per scene.
+> Ordered by impact-per-effort, June 2026, after the perception/control hardening above. The robot now
+> *moves* (covers ~3.4×5.5 m, stretches not orbits); the next gains are in **where** it chooses to go,
+> **not hitting** the things the LiDAR can't see, and **fusing** the senses with confidence.
+
+### A. Explore *more and better* — smarter frontier choice (biggest coverage win)
+Today it picks the **nearest** reachable frontier (+ a forward bias). That nibbles the edge of the
+explored blob and produces the "cross" shape we saw. Better:
+- **Information-gain frontiers.** Cluster adjacent frontier cells and estimate the **unknown area
+  behind** each cluster (ray-cast a few metres into unknown space). Choose `gain / travel_cost`, not
+  nearest. A doorway is a *big* frontier opening onto a whole room; a nook is a tiny one — this sends
+  the robot **through doors into new rooms** instead of grooming a corner.
+- **Commit to a far goal.** Pick an exploration goal several metres out and drive it decisively
+  (already half-done via target commitment); combine with gain so the commitment is to *high-value*
+  goals.
+- **Boustrophedon finish.** When frontiers run low, switch to a lawnmower sweep of the largest known-
+  free region for *complete* coverage, then return to start.
+
+### B. Don't hit what the LiDAR can't see — faster, learned collision avoidance
+The 0.6 m LiDAR blind zone + table-tops mean the camera and contact are the only defence up close.
+- **IMU contact detection.** The G1 streams IMU; a sudden deceleration/jerk is a contact in ~0.1–0.2 s
+  vs the current ~1.5 s odom-stall. Stop *as* it touches, not after pushing into furniture.
+- **Learning from collisions + analogy (the PhD core).** We already save a labelled crash dataset.
+  Embed each crash frame (a small CNN / color-texture descriptor); on every frame, match the current
+  view against past crashes — if it's *similar* to something we hit before (the same chair elsewhere),
+  pre-emptively avoid it **even when the LiDAR is clear**. This is direct **analogical transfer**: "this
+  looks like the thing I bumped last time."
+- **Proactive caution zone.** Slow down when entering *unknown* cells or when sensors disagree — less
+  speed = less collision energy and more reaction time.
+
+### C. Fuse the senses into one confidence costmap (robustness)
+Replace the ad-hoc override stack (LiDAR-gate, cobs, ESC, VAV) with **one** world-frame costmap where
+each cell has an **occupancy probability + source + decay**. LiDAR writes >0.6 m, camera-projected
+obstacles write with lower confidence, depth and collisions write high confidence; the planner reads
+only the fused map. Then:
+- **Confidence-aware speed** (metacognition): fast where confidently clear, slow where uncertain.
+- **Metric MiDaS.** Anchor MiDaS's relative depth to the calibrated floor plane → *metric* distance to
+  **any** surface (not just floor-contact), class-agnostic, robust to reflective floors.
+- This subsumes the floor-segmentation fragility that keeps biting us on new floor types.
+
+### D. Use the robot's own SLAM map
+The app already builds a real SLAM occupancy map (with loop closure) that's far better than our 0.4 m
+voxel grid. If we can read/export it (`slam_g1_mapping`), use it as the **global** costmap and keep our
+grid only for fast local reaction — fixes odometry drift and gives a true room map.
 
 ### Mid-term (from reactive to deliberative)
 - **Frontier exploration + planning.** ✅ *Implemented* as `frontier` mode. Free space = visited 0.4 m
