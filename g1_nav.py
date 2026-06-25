@@ -26,7 +26,7 @@ USO:
   python g1_nav.py explore 60            # WANDER 60s para autonomous mapping (Ctrl+C = stop)
   python g1_nav.py probe                 # micro-pulsos por eje + delta de odom -> descubre signos
 """
-import json, sys, time, math, threading, os, random
+import json, sys, time, math, threading, os, random, heapq
 import requests
 import websocket  # websocket-client
 
@@ -46,7 +46,7 @@ CAM_JS = (
 
 
 FLOOR_MIN = 0.10      # fraccion minima de suelo en el centro; muy bajo -> camara solo bloquea si esta casi todo tapado
-EDGE_RUN = 5          # columnas seguidas con el suelo interrumpido cerca = pata/objeto fino delante
+EDGE_RUN = 7          # columnas seguidas con el suelo interrumpido cerca = pata/objeto fino (subido: menos nervioso)
 DEPTH_TH = 0.63       # umbral de profundidad MiDaS (suelo limpio ~0.5; obstaculos reales 0.66+; 0.55 bloqueaba de mas)
 # muebles/obstaculos que YOLO conoce -> tratarlos como obstaculo aunque la caja sea menor
 YOLO_FURNITURE = {"diningtable", "table", "chair", "couch", "bed", "bench", "refrigerator", "oven",
@@ -222,11 +222,13 @@ def yolo_worker():
                     furn = name.replace(" ", "") in YOLO_FURNITURE
                     if (furn and 0.18 < cx < 0.82 and area > 0.05) or \
                        (0.25 < cx < 0.75 and (area > 0.12 or (bh > 0.45 and bottom > 0.6))):
-                        blk = True; lbl = name
                         # distancia por la caja: base baja en el frame / area grande -> mas cerca
-                        dist = "cerca" if (bottom > 0.82 or area > 0.22) else \
-                               ("medio" if (bottom > 0.62 or area > 0.10) else "lejos")
-                        if dist == "cerca":
+                        d = "cerca" if (bottom > 0.82 or area > 0.22) else \
+                            ("medio" if (bottom > 0.62 or area > 0.10) else "lejos")
+                        if d == "lejos":
+                            continue                       # objeto LEJOS -> no bloquea, sigue (no asustarse)
+                        blk = True; lbl = name; dist = d
+                        if d == "cerca":
                             close = True
                         break
             # 3) MiDaS profundidad: ¿hay superficie VERTICAL cerca delante? (pilla pizarra/cristal/mismo color)
@@ -1083,15 +1085,17 @@ def cmd_explore(secs):
                 if not vfresh and now - t0 > 6 and now - vstale_t > 5:   # aviso: la camara NO actualiza (feed caido/worker atascado)
                     print("  [!] vision caducada >3s: ¿camara activa en la app? ¿worker lento? (navego solo con laser)")
                     lg.write("VISION-STALE\n"); vstale_t = now
-            if cmd is None and vb:                           # la camara ve un obstaculo
-                if vclose or c0 < 0.35:                       # SOLO si esta de verdad pegado -> retrocede
+            if cmd is None and vb:                           # la camara ve un obstaculo -> PREFIERE GIRAR
+                cl = clear_ahead(cdp, +55); cr = clear_ahead(cdp, -55)
+                if max(cl, cr) > 0.5:                         # HAY hueco a un lado -> gira hacia el mas abierto
+                    gside = 1 if cl >= cr else -1
+                    cmd = (0, 0, -AV_TURN if gside > 0 else AV_TURN, 0); ph = "VAV-" + vlbl[:6]
+                else:                                        # SIN espacio a los lados (encajonado) -> retrocede si hay sitio
                     rear = clear_ahead(cdp, 180)
                     if rear > REAR_SAFE:
                         cmd = (0, -BACK_SPEED, 0, 0); ph = "VAV-BK"
-                    else:
-                        cmd = (0, 0, -AV_TURN if vside > 0 else AV_TURN, 0); ph = "VAV-" + vlbl[:6]
-                else:                                        # hay hueco -> GIRA hacia el lado mas despejado (no retrocede)
-                    cmd = (0, 0, -AV_TURN if vside > 0 else AV_TURN, 0); ph = "VAV-" + vlbl[:6]
+                    else:                                    # ni lados ni atras -> pivota (ultimo recurso)
+                        cmd = (0, 0, -AV_TURN if cl >= cr else AV_TURN, 0); ph = "VAV-PV"
             elif not vb:
                 v_active = False
 
@@ -1177,6 +1181,606 @@ def cmd_explore(secs):
         lg.write("FIN\n"); lg.close()
 
 
+# ============================ EXPLORACION POR FRONTERAS ============================
+F_CELL = 0.4          # celda de COBERTURA/frontera ('visited') — gruesa a proposito (menos fronteras)
+OCELL = 0.2           # celda de OBSTACULOS/costmap/A* — FINA: preserva huecos que el robot si puede cruzar
+F_ALIGN = 25.0        # tolerancia de rumbo (deg) antes de avanzar hacia la frontera
+F_REACH = 0.45        # se considera alcanzada la frontera a esta distancia
+F_REPLAN = 6.0        # recalcula la frontera objetivo cada X s aunque no la alcance
+PERSIST_MIN = 4       # valor min en la rejilla (decay, cap 8) para FIJAR una celda en el mapa persistente
+                      # (>MINHITS=2: descarta el smear transitorio; las paredes reales suben a 8 y se quedan)
+STUCK_SEC = 9.0       # si no avanza STUCK_DISP en este tiempo -> maniobra de DESATASCO
+STUCK_DISP = 0.30     # m: desplazamiento minimo para NO considerarse atascado
+BRK_TURN_SEC = 2.4    # duracion del giro de desatasco (~150 deg al ritmo de giro del robot)
+INJECT_DS = (0.45, 0.65, 0.85)   # distancias (m) por delante a las que se marca obstaculo visto por camara/colision
+
+
+def pull_grid_raw(cdp):
+    """Devuelve window.__grid crudo (dict 'ix,iz'->valor). Sin filtrar."""
+    try:
+        s = cdp.eval("JSON.stringify(window.__grid||{})")
+        return json.loads(s) if s else {}
+    except Exception:
+        return {}
+
+
+def grid_to_cells(g, minv):
+    """Pasa la rejilla cruda (frame nube 0.1m) a celdas OBSTACULO (OCELL=0.2m) con valor >= minv.
+    cloud->odom: odom_x=cloud_x, odom_y=-cloud_z."""
+    out = set()
+    for k, v in g.items():
+        if v < minv:
+            continue
+        try:
+            ix, iz = k.split(","); cx = int(ix) / 10.0; cz = int(iz) / 10.0
+        except Exception:
+            continue
+        out.add((round(cx / OCELL), round((-cz) / OCELL)))
+    return out
+
+
+def ahead_cells(x, y, yaw_deg, dists=INJECT_DS):
+    """Celdas OBSTACULO (OCELL) a 'dists' metros por delante del robot (camara/colision)."""
+    h = math.radians(yaw_deg); c = math.cos(h); s = math.sin(h)
+    return {(round((x + d * c) / OCELL), round((y + d * s) / OCELL)) for d in dists}
+
+
+def omap_to_coarse(omap):
+    """Convierte el mapa de obstaculos fino (OCELL) a celdas de cobertura (F_CELL) para la frontera."""
+    return {(round(cx * OCELL / F_CELL), round(cy * OCELL / F_CELL)) for (cx, cy) in omap}
+
+
+def pull_obstacles(cdp):
+    """Lee window.__grid (rejilla de obstaculos del navegador, frame nube 0.1m) y la pasa a
+    celdas ocupadas en frame ODOM 0.4m. cloud->odom: odom_x=cloud_x, odom_y=-cloud_z."""
+    try:
+        s = cdp.eval("JSON.stringify(window.__grid||{})")
+        g = json.loads(s) if s else {}
+    except Exception:
+        return set()
+    obs = set()
+    for k, v in g.items():
+        if v < MINHITS:
+            continue
+        try:
+            ix, iz = k.split(","); cx = int(ix) / 10.0; cz = int(iz) / 10.0
+        except Exception:
+            continue
+        obs.add((round(cx / F_CELL), round((-cz) / F_CELL)))   # cloud_z -> -odom_y
+    return obs
+
+
+def _line_blocked(a, b, obs):
+    """¿Cruza la recta a->b (celdas enteras) alguna celda ocupada? (linea de vista aproximada)"""
+    ax, ay = a; bx, by = b
+    n = max(abs(bx - ax), abs(by - ay))
+    if n == 0:
+        return False
+    for i in range(1, n + 1):
+        c = (round(ax + (bx - ax) * i / n), round(ay + (by - ay) * i / n))
+        if c in obs:
+            return True
+    return False
+
+
+def pick_frontier(visited, obs, x, y, relax=False):
+    """Frontera = celda DESCONOCIDA (ni visitada ni obstaculo) adyacente a lo explorado.
+    Devuelve el centro (tx,ty) en ODOM de la frontera mas cercana y alcanzable, o None.
+    relax=True ignora linea de vista y amplia el radio (cuando la version estricta no halla nada)."""
+    if not visited:
+        return None
+    nb = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
+    cands = {}
+    for (vx, vy) in visited:
+        for dx, dy in nb:
+            c = (vx + dx, vy + dy)
+            if c in visited or c in obs:
+                continue
+            cands[c] = cands.get(c, 0) + 1          # cuantas celdas exploradas tocan esta frontera (apertura)
+    if not cands:
+        return None
+    rc = (round(x / F_CELL), round(y / F_CELL))
+    dmax = 9.0 if relax else 4.0
+    best = None; bestcost = 1e9
+    for c, cnt in cands.items():
+        cx_, cy_ = c[0] * F_CELL, c[1] * F_CELL
+        dist = math.hypot(cx_ - x, cy_ - y)
+        if dist < 0.6 or dist > dmax:
+            continue
+        if not relax and _line_blocked(rc, c, obs):
+            continue
+        cost = dist - 0.25 * cnt                     # cerca + frontera ancha (apertura) = mejor
+        if cost < bestcost:
+            bestcost = cost; best = (cx_, cy_)
+    return best
+
+
+# ---------------- A* sobre costmap (planificacion deliberativa) ----------------
+INFL_HARD = 1          # celdas OCELL bloqueadas alrededor del obstaculo (1*0.2m=0.2m ~= radio del robot)
+INFL_SOFT = 2          # celdas OCELL con coste extra (hasta 0.4m: prefiere alejarse, pero pasa si hace falta)
+PLAN_SEC = 1.5         # recalcula el A* cada X s (el costmap cambia al descubrir obstaculos)
+LOOKAHEAD = 0.8        # m: distancia del 'carrot' (punto del path al que apunta el robot, pure-pursuit)
+
+
+def build_costmap(obs):
+    """Infla los obstaculos: <=INFL_HARD celdas alrededor = bloqueado (inf); hasta INFL_SOFT = coste
+    extra decreciente. Devuelve dict celda->coste (inf = intransitable)."""
+    cost = {}
+    for (ox, oy) in obs:
+        for dx in range(-INFL_SOFT, INFL_SOFT + 1):
+            for dy in range(-INFL_SOFT, INFL_SOFT + 1):
+                c = (ox + dx, oy + dy); cheb = max(abs(dx), abs(dy))
+                if cheb <= INFL_HARD:
+                    cost[c] = math.inf
+                elif cost.get(c) != math.inf:
+                    cost[c] = max(cost.get(c, 0.0), float(INFL_SOFT - cheb + 1) * 3.0)
+    return cost
+
+
+def astar(start, goal, cost, margin=8):
+    """A* 8-conexo en rejilla de celdas. Evita celdas 'inf' (salvo la meta, que puede estar pegada a un
+    obstaculo por ser frontera). Acotado a la caja [start,goal]+margin para ir rapido. Lista o None."""
+    if start == goal:
+        return [start]
+    minx = min(start[0], goal[0]) - margin; maxx = max(start[0], goal[0]) + margin
+    miny = min(start[1], goal[1]) - margin; maxy = max(start[1], goal[1]) + margin
+    nbs = ((1, 0, 1.0), (-1, 0, 1.0), (0, 1, 1.0), (0, -1, 1.0),
+           (1, 1, 1.414), (1, -1, 1.414), (-1, 1, 1.414), (-1, -1, 1.414))
+
+    def h(a):
+        return math.hypot(a[0] - goal[0], a[1] - goal[1])
+    openh = [(h(start), 0.0, start)]; came = {}; g = {start: 0.0}; closed = set(); it = 0
+    while openh and it < 9000:
+        it += 1
+        _, gc, cur = heapq.heappop(openh)
+        if cur == goal:
+            path = [cur]
+            while cur in came:
+                cur = came[cur]; path.append(cur)
+            return path[::-1]
+        if cur in closed:
+            continue
+        closed.add(cur)
+        for dx, dy, sw in nbs:
+            nc = (cur[0] + dx, cur[1] + dy)
+            if nc[0] < minx or nc[0] > maxx or nc[1] < miny or nc[1] > maxy:
+                continue
+            cv = cost.get(nc, 0.0)
+            if cv == math.inf and nc != goal:
+                continue
+            ng = gc + sw * (1.0 + (0.0 if cv == math.inf else cv))
+            if ng < g.get(nc, 1e18):
+                g[nc] = ng; came[nc] = cur; heapq.heappush(openh, (ng + h(nc), ng, nc))
+    return None
+
+
+def path_carrot(pts, x, y, look=LOOKAHEAD):
+    """Punto del path ~'look' m por delante del robot (pure-pursuit simple). None si no hay path."""
+    if not pts:
+        return None
+    di = min(range(len(pts)), key=lambda i: (pts[i][0] - x) ** 2 + (pts[i][1] - y) ** 2)
+    acc = 0.0
+    for i in range(di, len(pts) - 1):
+        acc += math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1])
+        if acc >= look:
+            return pts[i + 1]
+    return pts[-1]
+
+
+def cmd_frontier(secs, vshare=None, lock=None, stop_event=None):
+    """Exploracion DELIBERATIVA por fronteras: en vez de vagar reactivamente, construye el mapa
+    libre/desconocido y va a la frontera (borde de lo explorado) mas cercana alcanzable, con toda
+    la esquiva (colision + camara VAV + laser ESC) como prioridad. Cobertura sistematica: busca
+    activamente la salida en vez de orbitar. Ctrl+C = STOP."""
+    secs = max(5, min(300, secs))
+    cdp = get_cdp()
+    if not wait_for_odom(cdp):
+        print("!! Sin odometria. ¿SLAM activo de pie?"); return
+    print(f">>> FRONTIER {secs:.0f}s: cobertura sistematica (va a la frontera de lo explorado).")
+    print(f"    ESPACIO LIBRE alrededor. Mando en la mano (L2+B). log -> {LOGPATH}")
+    lg = open(LOGPATH, "a")
+    lg.write(f"\n=== FRONTIER {time.strftime('%H:%M:%S')} {secs:.0f}s ===\n")
+    vision_on = "novision" not in sys.argv
+    if vision_on:
+        threading.Thread(target=yolo_worker, daemon=True).start()
+    try:
+        cdp.eval("window.__grid={}")            # rejilla fresca (el reguero de runs viejos crea anillos)
+        print("Rejilla reiniciada. Esperando ~2s a que se llene del entorno actual...")
+        time.sleep(2.0)
+    except Exception:
+        pass
+    t0 = time.time(); tprint = 0
+    state = "GO"; esc_t0 = 0; scan_t = 0; best_off = 0; best_clr = 0; esc_dir = 0
+    visited = {}                                 # cobertura: celdas 0.4m pisadas (= mapa LIBRE conocido)
+    omap = set()                                 # MAPA PERSISTENTE de obstaculos (no decae) -> costmap/A*/frontera/viz
+    try:                                         # carga cobertura y mapa previos (continua donde lo dejo)
+        s = cdp.eval("JSON.stringify(window.__visited||{})")
+        if s:
+            for k, v in json.loads(s).items():
+                a, b = k.split(","); visited[(int(a), int(b))] = v
+        s2 = cdp.eval("JSON.stringify(window.__omap||[])")
+        if s2:
+            for k in json.loads(s2):
+                a, b = k.split(","); omap.add((int(a), int(b)))
+        print(f"Cobertura previa: {len(visited)} celdas, mapa: {len(omap)} obstaculos (continuo desde ahi).")
+    except Exception:
+        pass
+
+    def save_state():
+        try:
+            cdp.eval("window.__visited=" + json.dumps({f"{a},{b}": v for (a, b), v in visited.items()}))
+            cdp.eval("window.__omap=" + json.dumps([f"{a},{b}" for (a, b) in omap]))
+        except Exception:
+            pass
+    fhist = []; prev_fwd = False; recov = None; ncol = 0; rside = 1
+    vcam_t = 0; vside = 1; last_od = None; od_change_t = time.time()
+    vhealth_t = 0; vstale_t = 0
+    tgt = None; tgt_t = 0; ndone = 0              # frontera objetivo actual
+    plan_pts = []; plan_t = 0; tgt_planned = None; infl_cells = []; carrot = None   # A* path
+    last_obs = set(); viz_t = 0; viz_obs_t = 0; omap_t = 0    # estado ventana + acumulacion del mapa
+    dhist = []; brk = None; brk_cool = 0; nbrk = 0           # historial de pos + maniobra de desatasco
+    def sc(v):
+        return f"{v:.2f}" if (v is not None and v < 900) else ("—" if v is not None else "·")
+    try:
+        while time.time() - t0 < secs and not (stop_event is not None and stop_event.is_set()):
+            now = time.time()
+            od = read_poll(cdp).get("odom")
+            x = y = yaw = 0.0
+            if od:
+                x, y, yaw = od[0], od[1], math.degrees(yaw_of(od))
+                vk = (round(x / F_CELL), round(y / F_CELL))
+                visited[vk] = visited.get(vk, 0) + 1
+            if int(now - t0) % 5 == 0:
+                save_state()
+            # --- MAPA PERSISTENTE: acumula celdas firmes de la rejilla (no las olvida al girarse) ---
+            if now - omap_t > 0.5:
+                omap |= grid_to_cells(pull_grid_raw(cdp), PERSIST_MIN)
+                omap_t = now
+            # --- HISTORIAL DE POSICION (para detectar atasco) ---
+            if od:
+                dhist.append((now, x, y))
+            dhist = [h for h in dhist if now - h[0] <= STUCK_SEC]
+            c0 = clear_ahead(cdp, 0); rear = None; cmd = None; ph = ""
+            cf_cam = 1.0; vfresh = False
+
+            # --- ODOM CONGELADA (feed muerto != colision) ---
+            if od is not None:
+                if last_od is None or od[0] != last_od[0] or od[1] != last_od[1] or od[6] != last_od[6]:
+                    od_change_t = now
+                last_od = od
+            odom_live = (now - od_change_t) < 1.5
+            if now - od_change_t > 3.0:
+                print("\n  ODOMETRIA CONGELADA (3s). STOP. Reactiva el SLAM en la app y reintenta.")
+                lg.write("ODOM-FROZEN\n"); break
+
+            # --- COLISION por odom (choque que el laser no ve) ---
+            if prev_fwd and od and odom_live:
+                fhist.append((now, x, y))
+            fhist = [h for h in fhist if now - h[0] <= 1.8]
+            if recov is None and len(fhist) >= 2 and now - fhist[0][0] >= 1.5:
+                disp = math.hypot(x - fhist[0][1], y - fhist[0][2])
+                if disp < 0.05:
+                    ncol += 1
+                    inject_obstacle(cdp, x, y, yaw)
+                    omap |= ahead_cells(x, y, yaw)        # tambien al mapa persistente (frontera/A* lo evitan)
+                    cl = clear_ahead(cdp, +55); cr = clear_ahead(cdp, -55)
+                    rside = 1 if cl >= cr else -1
+                    recov = {"ph": "BACK", "t0": now}; fhist = []; tgt = None    # replanifica tras chocar
+                    print(f"\n  COLISION #{ncol} (disp={disp:.2f}). Marco obstaculo y recupero.")
+                    lg.write(f"COLISION #{ncol} disp={disp:.2f} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+.0f} c0={sc(c0)}\n")
+                    save_crash_image(cdp, ncol, x, y, yaw, c0)
+
+            # --- RECUPERACION (prioridad) ---
+            if recov is not None:
+                el = now - recov["t0"]
+                if recov["ph"] == "BACK":
+                    rear = clear_ahead(cdp, 180)
+                    if rear > REAR_SAFE and el < 0.9:
+                        cmd = (0, -BACK_SPEED, 0, 0); ph = "R-BACK"
+                    else:
+                        recov = {"ph": "TURN", "t0": now}; el = 0
+                if recov is not None and recov["ph"] == "TURN":
+                    if el < 1.3:
+                        cmd = (0, 0, -AV_TURN if rside > 0 else AV_TURN, 0); ph = "R-TURN"
+                    else:
+                        recov = {"ph": "GO", "t0": now}; el = 0
+                if recov is not None and recov["ph"] == "GO":
+                    if el < 1.0 and c0 > EXP_FWD_MIN:
+                        cmd = (0, FWD_SPEED, 0, 0); ph = "R-GO "
+                    else:
+                        recov = None; state = "GO"
+
+            # --- DESATASCO: si no avanza en STUCK_SEC, retro + giro grande IGNORANDO la camara ---
+            if (recov is None and brk is None and now > brk_cool and len(dhist) >= 2
+                    and now - dhist[0][0] >= STUCK_SEC * 0.9
+                    and math.hypot(x - dhist[0][1], y - dhist[0][2]) < STUCK_DISP):
+                omap |= ahead_cells(x, y, yaw)           # marca lo que le bloquea -> frontera/A* no le devuelven aqui
+
+                def nov90(o):
+                    h = math.radians(yaw + o)
+                    kx = round((x + 1.2 * math.cos(h)) / F_CELL); ky = round((y + 1.2 * math.sin(h)) / F_CELL)
+                    return sum(visited.get((kx + dx, ky + dy), 0) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+                bdir = -AV_TURN if nov90(+90) <= nov90(-90) else AV_TURN     # gira hacia el lado MENOS pisado
+                nbrk += 1; brk = {"ph": "BACK", "t0": now, "dir": bdir}; tgt = None; plan_pts = []
+                print(f"\n  DESATASCO #{nbrk}: {STUCK_SEC:.0f}s sin avanzar en ({x:+.2f},{y:+.2f}); retro + giro grande.")
+                lg.write(f"DESATASCO #{nbrk} pos=({x:+.2f},{y:+.2f}) dir={'IZQ' if bdir < 0 else 'DCHA'} omap={len(omap)}\n")
+            if brk is not None:
+                el = now - brk["t0"]
+                if brk["ph"] == "BACK":
+                    rear = clear_ahead(cdp, 180)
+                    if rear > REAR_SAFE and el < 0.7:
+                        cmd = (0, -BACK_SPEED, 0, 0); ph = "BRK-BK"
+                    else:
+                        brk = {"ph": "TURN", "t0": now, "dir": brk["dir"]}; el = 0
+                if brk is not None and brk["ph"] == "TURN":
+                    if el < BRK_TURN_SEC:
+                        cmd = (0, 0, brk["dir"], 0); ph = "BRK-TR"
+                    else:
+                        brk = None; brk_cool = now + 6.0; dhist = []; tgt = None; plan_pts = []; state = "GO"
+
+            # --- VISION (camara ve lo que el laser no) ---
+            vb = False; vlbl = ""; dr = 0; vdist = ""; vclose = False
+            if vision_on:
+                if now - vcam_t > 0.5:
+                    try:
+                        j = cdp.eval(CAM_JS)
+                        if j and j.startswith("data:image"):
+                            with vlock:
+                                vision["jpg"] = j; vision["n"] += 1
+                    except Exception:
+                        pass
+                    vcam_t = now
+                with vlock:
+                    dr = vision.get("dratio", 0); cf_cam = vision.get("cf", 1.0); vts = vision.get("ts", 0)
+                    vfresh = (now - vts < 3.0)
+                    if vision["block"] and vfresh:
+                        vb = True; vlbl = vision["label"]; vside = vision["side"]
+                        vdist = vision.get("dist", ""); vclose = vision.get("close", False)
+                if not vfresh and now - t0 > 6 and now - vstale_t > 5:
+                    print("  [!] vision caducada >3s (navego solo con laser)")
+                    lg.write("VISION-STALE\n"); vstale_t = now
+            # SOLO esquiva si el obstaculo esta CERCA (vclose). Lo 'medio'/'lejos' no le frena
+            # -> mas maniobrabilidad en espacio libre (lo lejano lo gestiona el laser/colision).
+            if cmd is None and vb and vclose:            # camara ve obstaculo CERCA -> PREFIERE GIRAR
+                omap |= ahead_cells(x, y, yaw, (0.4, 0.55))   # marca en el mapa lo cercano que ve la camara
+                cl = clear_ahead(cdp, +55); cr = clear_ahead(cdp, -55)
+                if max(cl, cr) > 0.5:
+                    gside = 1 if cl >= cr else -1
+                    cmd = (0, 0, -AV_TURN if gside > 0 else AV_TURN, 0); ph = "VAV-" + vlbl[:6]
+                    tgt = None                           # tras esquivar, replanifica frontera
+                else:
+                    rear = clear_ahead(cdp, 180)
+                    if rear > REAR_SAFE:
+                        cmd = (0, -BACK_SPEED, 0, 0); ph = "VAV-BK"
+                    else:
+                        cmd = (0, 0, -AV_TURN if cl >= cr else AV_TURN, 0); ph = "VAV-PV"
+
+            # --- IR A LA FRONTERA (sustituye al wander reactivo) ---
+            if cmd is not None:
+                pass
+            elif state == "GO":
+                if c0 <= EXP_FWD_MIN:
+                    state = "ESC"; esc_t0 = now; scan_t = 0; esc_dir = 0
+                else:
+                    reached = tgt is not None and math.hypot(tgt[0] - x, tgt[1] - y) < F_REACH
+                    if tgt is None or reached or now - tgt_t > F_REPLAN:
+                        omap_coarse = omap_to_coarse(omap)       # mapa fino -> celdas de cobertura para la frontera
+                        nt = pick_frontier(visited, omap_coarse, x, y, relax=False)
+                        if nt is None:
+                            nt = pick_frontier(visited, omap_coarse, x, y, relax=True)
+                        tgt_t = now
+                        if nt is None:
+                            ndone += 1
+                            if ndone >= 3:               # 3 intentos sin frontera -> explorado
+                                print("\n  EXPLORACION COMPLETA: no quedan fronteras alcanzables.")
+                                lg.write("FRONTIER-DONE\n"); break
+                            tgt = None
+                        else:
+                            ndone = 0
+                            if nt != tgt:
+                                lg.write(f"FRONTIER-> ({nt[0]:+.2f},{nt[1]:+.2f}) d={math.hypot(nt[0]-x,nt[1]-y):.2f} "
+                                         f"explored={len(visited)}\n")
+                            tgt = nt
+                    if tgt is not None:
+                        # --- PLANIFICA A* hacia la frontera sobre el costmap inflado ---
+                        if (not plan_pts) or (tgt != tgt_planned) or (now - plan_t > PLAN_SEC):
+                            cm = build_costmap(omap)                 # costmap fino (OCELL)
+                            scell = (round(x / OCELL), round(y / OCELL))
+                            gcell = (round(tgt[0] / OCELL), round(tgt[1] / OCELL))
+                            cells = astar(scell, gcell, cm)
+                            plan_pts = [(c[0] * OCELL, c[1] * OCELL) for c in cells] if cells else []
+                            infl_m = [(c[0] * OCELL, c[1] * OCELL) for c, v in cm.items()
+                                      if v == math.inf and c not in omap]   # halo de inflado en METROS (viz)
+                            infl_cells = infl_m
+                            plan_t = now; tgt_planned = tgt
+                            if not plan_pts:
+                                lg.write(f"A*-FAIL goal=({tgt[0]:+.1f},{tgt[1]:+.1f}) -> rumbo recto\n")
+                        # --- SIGUE EL PATH (carrot) o, si A* fallo, rumbo recto a la frontera ---
+                        if plan_pts:
+                            carrot = path_carrot(plan_pts, x, y)
+                            bx, by = carrot; phn = "F-A* "
+                        else:
+                            carrot = tgt; bx, by = tgt; phn = "F-RCT"
+                        bearing = math.degrees(math.atan2(by - y, bx - x))
+                        e = (bearing - yaw + 180) % 360 - 180        # wrap a [-180,180] EN GRADOS
+                        if abs(e) > F_ALIGN:                         # gira hacia el carrot
+                            cmd = (0, 0, -AV_TURN if e > 0 else AV_TURN, 0); ph = "F-TRN"
+                        else:                                        # alineado -> avanza (frena si camara ve suelo tapado)
+                            spd = 0.30 if (vision_on and vfresh and cf_cam < 0.45) else FWD_SPEED
+                            cmd = (0, spd, 0, 0); ph = "F-GOsl" if spd < FWD_SPEED else phn; esc_t0 = 0
+                    else:                                # sin objetivo momentaneo -> avanza recto
+                        cmd = (0, FWD_SPEED, 0, 0); ph = "F-GO "; plan_pts = []; carrot = None
+
+            # --- ESC: esquiva reactiva de laser (igual que explore) ---
+            if cmd is None and state == "ESC":
+                resume = EXP_FWD_GOOD if (now - esc_t0 < 4.0) else EXP_FWD_MIN
+                if c0 > resume:
+                    state = "GO"; cmd = (0, FWD_SPEED, 0, 0); ph = "F-GO "; esc_t0 = 0; tgt = None
+                elif time.time() - esc_t0 > EXP_ESCAPE_MAX:
+                    print(f"\n  ATASCADO {EXP_ESCAPE_MAX:.0f}s. STOP. Muévelo a mano y reanuda.")
+                    lg.write("ATASCADO\n"); break
+                else:
+                    if esc_dir == 0 or time.time() - scan_t > 2.5:
+                        ws = {o: clear_ahead(cdp, o) for o in WIDE_OFFS}
+
+                        def novelty(o):
+                            h = math.radians(yaw + o)
+                            nx = x + 1.3 * math.cos(h); ny = y + 1.3 * math.sin(h)
+                            kx = round(nx / F_CELL); ky = round(ny / F_CELL)
+                            return sum(visited.get((kx + dx, ky + dy), 0)
+                                       for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+                        passable = [o for o in WIDE_OFFS if ws[o] > EXP_FWD_MIN]
+                        if passable:
+                            best_off = min(passable, key=novelty)
+                        else:
+                            best_off = max(WIDE_OFFS, key=lambda o: ws[o])
+                        best_clr = ws[best_off]
+                        esc_dir = -AV_TURN if best_off >= 0 else AV_TURN
+                        scan_t = time.time()
+                        lg.write("  SCAN " + " ".join(f"{o:+d}:{sc(ws[o])}" for o in WIDE_OFFS) +
+                                 f"  best={best_off:+d}({sc(best_clr)})\n")
+                    if c0 < 0.25:
+                        rear = clear_ahead(cdp, 180)
+                        if rear > REAR_SAFE:
+                            cmd = (0, -BACK_SPEED, 0, 0); ph = "BACK "
+                        else:
+                            cmd = (0, 0, esc_dir, 0); ph = "PIVOT"
+                    else:
+                        cmd = (0, 0, esc_dir, 0); ph = f"TURN{'L' if esc_dir < 0 else 'R'}"
+
+            line = (f"t={time.time()-t0:5.1f}/{secs:.0f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} "
+                    f"c0={sc(c0)} rear={sc(rear)} tgt={('(%+.1f,%+.1f)' % tgt) if tgt else '-'} "
+                    f"vis={(vlbl+':'+vdist) if vb else '-'} expl={len(visited)} "
+                    f"cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+            lg.write(line + "\n"); lg.flush()
+            if vision_on and now - vhealth_t > 3:
+                with vlock:
+                    vage = now - vision.get("ts", 0); vdtf = vision.get("dtf", -1)
+                    vblk = vision.get("block"); vd = vision.get("dratio")
+                lg.write(f"  VHEALTH dtf={vdtf}s age={vage:.1f}s block={vblk} dr={vd}\n")
+                vhealth_t = now
+            if time.time() - tprint > 0.4:
+                print("  " + line); tprint = time.time()
+            # --- publica estado para la ventana de mapa (modo viz) ---
+            if vshare is not None:
+                upd_vis = (now - viz_t > 0.5)
+                if upd_vis:
+                    vsnap = list(visited.keys()); viz_t = now
+                with lock:
+                    vshare["x"] = x; vshare["y"] = y; vshare["yaw"] = yaw; vshare["ph"] = ph
+                    vshare["tgt"] = tgt; vshare["expl"] = len(visited); vshare["t"] = now - t0
+                    vshare["col"] = ncol; vshare["carrot"] = carrot
+                    vshare["path"].append((x, y))
+                    if len(vshare["path"]) > 4000:
+                        del vshare["path"][:len(vshare["path"]) - 4000]
+                    if upd_vis:
+                        vshare["visited"] = vsnap                              # celdas F_CELL (cobertura)
+                        vshare["obs"] = [(cx * OCELL, cy * OCELL) for (cx, cy) in omap]   # METROS (mapa persistente fino)
+                        vshare["plan"] = list(plan_pts); vshare["infl"] = list(infl_cells)   # ya en METROS
+            prev_fwd = (cmd[1] > 0.1)
+            cdp.eval(set_cmd_js(*cmd))
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\n [STOP por Ctrl+C]")
+    finally:
+        if stop_event is not None:
+            stop_event.set()
+        cdp.eval(STOP_JS); time.sleep(0.3); cdp.eval(STOP_JS)
+        save_state()
+        print(f"STOP. Fin frontera. Cobertura: {len(visited)} celdas, mapa: {len(omap)} obstaculos (guardados).")
+        lg.write("FIN\n"); lg.close()
+
+
+def _map_window(vshare, lock, stop_event, secs):
+    """Ventana en vivo (hilo principal) del mapa que construye 'frontier': celdas exploradas,
+    obstaculos, traza de odometria, robot+rumbo y frontera objetivo."""
+    try:
+        import matplotlib
+        import matplotlib.pyplot as plt
+    except Exception as e:
+        print("!! matplotlib no disponible para la ventana:", repr(e))
+        print("   instala con: pip install matplotlib  (el control sigue corriendo sin ventana)")
+        # sin ventana: espera a que termine el hilo de control
+        while not stop_event.is_set():
+            time.sleep(0.3)
+        return
+    plt.ion()
+    fig, ax = plt.subplots(figsize=(7.5, 7.5))
+    try:
+        fig.canvas.manager.set_window_title("G1 frontier — mapa + odometria")
+    except Exception:
+        pass
+    fig.canvas.mpl_connect("close_event", lambda e: stop_event.set())
+    print("Ventana de mapa abierta. Cierrala o Ctrl+C en la terminal para parar.")
+    try:
+        while not stop_event.is_set():
+            with lock:
+                x = vshare["x"]; y = vshare["y"]; yaw = vshare["yaw"]; ph = vshare["ph"]
+                tgt = vshare["tgt"]; expl = vshare["expl"]; t = vshare["t"]; col = vshare.get("col", 0)
+                vis = list(vshare["visited"]); obs = list(vshare["obs"]); path = list(vshare["path"])
+                plan = list(vshare.get("plan", [])); infl = list(vshare.get("infl", []))
+                carrot = vshare.get("carrot")
+            ax.clear()
+            if vis:
+                ax.scatter([c[0] * F_CELL for c in vis], [c[1] * F_CELL for c in vis],
+                           s=70, c="#bfe3bf", marker="s", linewidths=0, label="explorado")
+            if infl:                                     # halo de inflado (costmap, en metros)
+                ax.scatter([p[0] for p in infl], [p[1] for p in infl],
+                           s=22, c="#f5b041", marker="s", linewidths=0, alpha=0.45, label="margen (costmap)")
+            if obs:                                      # mapa de obstaculos FINO (metros, OCELL=0.2)
+                ax.scatter([p[0] for p in obs], [p[1] for p in obs],
+                           s=22, c="#c0392b", marker="s", linewidths=0, label="obstaculo")
+            if path:
+                ax.plot([p[0] for p in path], [p[1] for p in path], "-", c="#34495e", lw=1.0, alpha=0.55)
+            if plan and len(plan) > 1:                   # ruta A*
+                ax.plot([p[0] for p in plan], [p[1] for p in plan], "-", c="#1565c0", lw=2.2, label="ruta A*")
+            if carrot:
+                ax.plot([carrot[0]], [carrot[1]], "o", c="#00bcd4", ms=8)
+            if tgt:
+                ax.plot([tgt[0]], [tgt[1]], "*", c="#f39c12", ms=20, label="frontera")
+            ax.plot([x], [y], "o", c="#2980b9", ms=11)
+            ax.arrow(x, y, 0.32 * math.cos(math.radians(yaw)), 0.32 * math.sin(math.radians(yaw)),
+                     head_width=0.13, head_length=0.13, fc="#2980b9", ec="#2980b9", length_includes_head=True)
+            ax.set_aspect("equal", adjustable="datalim"); ax.grid(True, alpha=0.2)
+            ax.set_xlabel("x odom (m)"); ax.set_ylabel("y odom (m)")
+            ax.set_title(f"t={t:.0f}/{secs:.0f}s  fase={ph.strip()}  celdas={expl}  obst={len(obs)}  colis={col}")
+            try:
+                ax.legend(loc="upper right", fontsize=8)
+            except Exception:
+                pass
+            plt.pause(0.3)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        stop_event.set()
+        plt.ioff()
+        try:
+            plt.close(fig)
+        except Exception:
+            pass
+
+
+def cmd_frontier_viz(secs):
+    """Lanza 'frontier' con ventana de mapa en vivo: control en hilo de fondo, ventana en el principal."""
+    secs = max(5, min(300, secs))
+    vshare = {"x": 0.0, "y": 0.0, "yaw": 0.0, "ph": "", "tgt": None, "expl": 0, "t": 0.0,
+              "col": 0, "path": [], "visited": [], "obs": set(),
+              "plan": [], "infl": [], "carrot": None}
+    lk = threading.Lock(); stop_event = threading.Event()
+    th = threading.Thread(target=cmd_frontier,
+                          kwargs=dict(secs=secs, vshare=vshare, lock=lk, stop_event=stop_event),
+                          daemon=True)
+    th.start()
+    try:
+        _map_window(vshare, lk, stop_event, secs)
+    except KeyboardInterrupt:
+        stop_event.set()
+    finally:
+        stop_event.set()
+        th.join(timeout=6)
+    print("Ventana cerrada. Fin.")
+
+
 def cmd_nav(tx, ty):
     cdp = get_cdp()
     od = wait_for_odom(cdp)
@@ -1228,6 +1832,17 @@ def main():
         cmd_navrel(float(sys.argv[2]), float(sys.argv[3]) if len(sys.argv) > 3 else 0.0)
     elif cmd == "explore":
         cmd_explore(float(sys.argv[2]) if len(sys.argv) > 2 else 60)
+    elif cmd == "frontier":
+        secs_f = 90.0
+        for a in sys.argv[2:]:
+            try:
+                secs_f = float(a); break
+            except ValueError:
+                pass
+        if "viz" in sys.argv or "map" in sys.argv:
+            cmd_frontier_viz(secs_f)
+        else:
+            cmd_frontier(secs_f)
     elif cmd == "scan":
         cmd_scan()
     elif cmd == "vsee":

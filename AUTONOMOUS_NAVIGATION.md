@@ -122,9 +122,15 @@ Reactive wander with two coverage mechanisms:
   recede) to fit scale → metric obstacle distance, so thresholds are physical, not tuned per scene.
 
 ### Mid-term (from reactive to deliberative)
-- **Frontier exploration + planning.** Maintain free/occupied/unknown; detect frontiers (free↔unknown
-  boundary); plan a path (A*/D*-lite on the costmap) to the nearest frontier. Guarantees coverage and
-  **avoids dead-ends/narrow gaps** the reactive wander walks into.
+- **Frontier exploration + planning.** ✅ *Implemented* as `frontier` mode. Free space = visited 0.4 m
+  cells; occupied = the LiDAR clean grid (projected cloud→odom); unknown = the rest. A **frontier** is
+  an unknown cell adjacent to explored space; the controller picks the **nearest reachable** one
+  (line-of-sight against the obstacle grid, with a relaxed fallback) and heads to it — turn-to-bearing
+  then forward — while collision recovery, camera VAV and LiDAR ESC stay as priority overrides, and it
+  **replans** on reach / every 6 s / after any avoidance. This gives systematic coverage and gets the
+  robot **out of cluttered corners** instead of orbiting them. *Next:* swap the straight-line heading
+  for an A*/D*-lite path on a fused costmap so it routes *around* obstacles rather than relying on the
+  reactive layer to peel off them.
 - **Recovery behaviours library** with explicit pre/post-conditions instead of fixed timers.
 
 ### Long-term — meta-reasoning (the project's namesake)

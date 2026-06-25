@@ -75,7 +75,9 @@ Coordinate note: the cloud is in **Three.js Y-up** frame (the app's renderer), t
   - `vsee` — read-only camera vision readout (floor fractions, YOLO label, MiDaS depth_ratio)
   - `forward N` / `turn DEG` / `gorel F L` / `goto X Y` — closed-loop primitives (odom feedback)
   - `nav X Y` / `navrel F L` — go to a point **with reactive obstacle avoidance**
-  - `explore [secs]` — **autonomous mapping/exploration** (the headline feature)
+  - `explore [secs]` — **reactive** autonomous mapping/exploration (wander + coverage novelty)
+  - `frontier [secs]` — **deliberative** exploration: goes to the nearest reachable **frontier**
+    (edge of the explored map) for systematic coverage, with the full avoidance stack as override
 - `g1_inject_teleop.py` — option-C teleop injection (sniff/capture/drive) — proof that we can move the robot via the app's datachannel
 - `g1_teleop.py` — direct walking via `rt/wirelesscontroller` (app closed)
 
