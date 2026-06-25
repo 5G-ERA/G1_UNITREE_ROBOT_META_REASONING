@@ -1507,7 +1507,7 @@ def cmd_frontier(secs, vshare=None, lock=None, stop_event=None):
     libre/desconocido y va a la frontera (borde de lo explorado) mas cercana alcanzable, con toda
     la esquiva (colision + camara VAV + laser ESC) como prioridad. Cobertura sistematica: busca
     activamente la salida en vez de orbitar. Ctrl+C = STOP."""
-    secs = max(5, min(600, secs))
+    secs = max(5, min(300, secs))
     cdp = get_cdp()
     if not wait_for_odom(cdp):
         print("!! Sin odometria. ¿SLAM activo de pie?"); return
@@ -1840,15 +1840,10 @@ def cmd_frontier(secs, vshare=None, lock=None, stop_event=None):
                 upd_vis = (now - viz_t > 0.5)
                 if upd_vis:
                     vsnap = list(visited.keys()); viz_t = now
-                with vlock:
-                    cam_jpg = vision.get("jpg"); cam_dmet = vision.get("dmet", 999)
-                vtxt = (f"{vlbl} {('%.2fm' % cam_dmet) if cam_dmet < 9 else ''}".strip()
-                        + (" CERCA" if vclose else "")) if vb else "libre"
                 with lock:
                     vshare["x"] = x; vshare["y"] = y; vshare["yaw"] = yaw; vshare["ph"] = ph
                     vshare["tgt"] = tgt; vshare["expl"] = len(visited); vshare["t"] = now - t0
                     vshare["col"] = ncol; vshare["carrot"] = carrot
-                    vshare["cam"] = cam_jpg; vshare["vtxt"] = vtxt        # camara + veredicto para el panel
                     vshare["path"].append((x, y))
                     if len(vshare["path"]) > 4000:
                         del vshare["path"][:len(vshare["path"]) - 4000]
@@ -1925,22 +1920,14 @@ def _map_window(vshare, lock, stop_event, secs):
         while not stop_event.is_set():
             time.sleep(0.3)
         return
-    try:
-        import numpy as _np
-        from PIL import Image as _Image
-        import base64 as _b64, io as _io
-        _have_cam = True
-    except Exception:
-        _have_cam = False
     plt.ion()
-    fig, (ax, axc) = plt.subplots(1, 2, figsize=(15, 7.6),
-                                  gridspec_kw={"width_ratios": [1.05, 1]})
+    fig, ax = plt.subplots(figsize=(7.5, 7.5))
     try:
-        fig.canvas.manager.set_window_title("G1 frontier — mapa + camara del robot")
+        fig.canvas.manager.set_window_title("G1 frontier — mapa + odometria")
     except Exception:
         pass
     fig.canvas.mpl_connect("close_event", lambda e: stop_event.set())
-    print("Ventana (mapa + camara) abierta. Cierrala o Ctrl+C en la terminal para parar.")
+    print("Ventana de mapa abierta. Cierrala o Ctrl+C en la terminal para parar.")
     try:
         while not stop_event.is_set():
             with lock:
@@ -1949,7 +1936,6 @@ def _map_window(vshare, lock, stop_event, secs):
                 vis = list(vshare["visited"]); obs = list(vshare["obs"]); path = list(vshare["path"])
                 plan = list(vshare.get("plan", [])); infl = list(vshare.get("infl", []))
                 cobs = list(vshare.get("cobs", [])); carrot = vshare.get("carrot")
-                cam = vshare.get("cam"); vtxt = vshare.get("vtxt", "")
             ax.clear()
             if vis:
                 ax.scatter([c[0] * F_CELL for c in vis], [c[1] * F_CELL for c in vis],
@@ -1981,18 +1967,6 @@ def _map_window(vshare, lock, stop_event, secs):
                 ax.legend(loc="upper right", fontsize=8)
             except Exception:
                 pass
-            # --- panel CAMARA (lo que ve el robot) ---
-            axc.clear(); axc.axis("off")
-            if _have_cam and cam and cam.startswith("data:image"):
-                try:
-                    img = _Image.open(_io.BytesIO(_b64.b64decode(cam.split(",", 1)[1])))
-                    axc.imshow(_np.asarray(img))
-                    col_t = "#c0392b" if "CERCA" in vtxt else "#2c3e50"
-                    axc.set_title(f"Camara del robot  —  {vtxt}", color=col_t, fontsize=11)
-                except Exception:
-                    axc.set_title("Camara del robot (sin frame)", fontsize=11)
-            else:
-                axc.set_title("Camara del robot (esperando frame...)", fontsize=11)
             plt.pause(0.3)
     except KeyboardInterrupt:
         pass
@@ -2006,12 +1980,11 @@ def _map_window(vshare, lock, stop_event, secs):
 
 
 def cmd_frontier_viz(secs):
-    """Lanza 'frontier' con ventana en vivo (mapa + camara del robot): control en hilo de fondo,
-    ventana en el principal. Ideal para grabar pantalla."""
-    secs = max(5, min(600, secs))
+    """Lanza 'frontier' con ventana de mapa en vivo: control en hilo de fondo, ventana en el principal."""
+    secs = max(5, min(300, secs))
     vshare = {"x": 0.0, "y": 0.0, "yaw": 0.0, "ph": "", "tgt": None, "expl": 0, "t": 0.0,
               "col": 0, "path": [], "visited": [], "obs": [], "cobs": [],
-              "plan": [], "infl": [], "carrot": None, "cam": None, "vtxt": ""}
+              "plan": [], "infl": [], "carrot": None}
     lk = threading.Lock(); stop_event = threading.Event()
     th = threading.Thread(target=cmd_frontier,
                           kwargs=dict(secs=secs, vshare=vshare, lock=lk, stop_event=stop_event),

@@ -75,9 +75,12 @@ Coordinate note: the cloud is in **Three.js Y-up** frame (the app's renderer), t
   - `vsee` — read-only camera vision readout (floor fractions, YOLO label, MiDaS depth_ratio)
   - `forward N` / `turn DEG` / `gorel F L` / `goto X Y` — closed-loop primitives (odom feedback)
   - `nav X Y` / `navrel F L` — go to a point **with reactive obstacle avoidance**
+  - `vsee` / `clr` — read-only camera & LiDAR readouts (now show **metric distance** in meters)
+  - `floorcal auto` — **calibrate** the camera's metric depth against the LiDAR (no tape measure; see below)
   - `explore [secs]` — **reactive** autonomous mapping/exploration (wander + coverage novelty)
-  - `frontier [secs]` — **deliberative** exploration: goes to the nearest reachable **frontier**
-    (edge of the explored map) for systematic coverage, with the full avoidance stack as override
+  - `frontier [secs] [viz]` — **deliberative** exploration: arcs to the nearest reachable **frontier**
+    with A* path planning. `viz` opens a live window (**map + robot camera**, great for screen-recording).
+    Saves `map_latest.png` + `map_latest.json` every 30 s for later inspection.
 - `g1_inject_teleop.py` — option-C teleop injection (sniff/capture/drive) — proof that we can move the robot via the app's datachannel
 - `g1_teleop.py` — direct walking via `rt/wirelesscontroller` (app closed)
 

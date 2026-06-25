@@ -107,6 +107,47 @@ Reactive wander with two coverage mechanisms:
 
 ---
 
+## 5b. Perception & control hardening (the debugging that actually mattered)
+
+Frontier mode worked on paper but the robot was *ultra-conservative* — it spun in place in a ~1.5 m
+patch and never reached a frontier. Reading the exported map + JSON against the logs uncovered a chain
+of root causes, each fixed in turn:
+
+- **Phantom near-field ring (the big one).** In an empty room the LiDAR clean-grid reported a *stable*
+  obstacle at 0.26–0.40 m that the persistent map didn't believe — the body/pitch-floor return, baked
+  in at high confidence because the build-time near-field exclusion (~0.45 m, measured from the odom
+  origin which is **offset** from the sensor) didn't cover it. This made the robot think it was boxed
+  in everywhere. Fix: **trust the LiDAR only beyond `NEAR_BLIND`=0.6 m**; below that the **camera**
+  (calibrated metric depth) and the collision detector own perception. Applied in both the corridor
+  query (`clear_ahead`) and the obstacle map accumulation, so the phantom no longer poisons ESC or A*.
+- **Metric depth from the floor plane (inverse-perspective).** The camera now estimates *meters* to an
+  obstacle's base via `d = K/(contact_frac − horizon)` (the row where the floor segmentation is
+  interrupted), **calibrated against the LiDAR** by `floorcal auto` (linear regression of contact-row
+  vs 1/d — no tape measure). Per-frame noise is high, so `contact_frac` is **median-smoothed** over 8
+  frames. This drives the `close` decision in real meters and stopped the robot fearing furniture
+  detected far away (YOLO box size is no longer trusted for distance).
+- **Forgetting (dynamic obstacles).** The obstacle map is now a **decaying** map (cells expire after
+  `OMAP_TTL`=20 s unless re-seen), so a person who walks past — or a false collision — is **removed**
+  once it's gone, while walls you keep seeing stay refreshed.
+- **Camera as a *transient* costmap layer.** Camera detections feed a short-lived (`COBS_TTL`=4 s)
+  layer A* plans around (so it *routes around* a chair instead of fighting its own path), but never
+  the permanent map — earlier over-injection walled the robot in.
+- **Target commitment (no flip-flop).** Re-picking the nearest frontier every few seconds made the
+  robot oscillate between two equidistant frontiers ("Buridan's ass"). Now it **commits** to a
+  frontier until it's reached / A* fails / 12 s without progress.
+- **Arc steering.** Bang-bang "turn-in-place then go" flickered at the alignment threshold with the
+  gait's yaw wobble (looked drunk). Now it **arcs** — forward *and* turn simultaneously — so it keeps
+  moving while correcting heading; plus a **forward bias** in frontier selection to stop side-to-side
+  ping-pong. Result: coverage area went from ~1.5×1.5 m to ~3.9×3.4 m and the path *stretches* instead
+  of orbiting (trail/area ratio 7.5 → 1.7).
+- **Observability.** Every run exports `map_latest.png` + `.json` (explored / obstacles / odometry
+  trail) for offline inspection, and `frontier … viz` shows a live **map + robot-camera** window.
+
+The throughline: most of the "fear" was **false positives in the near field**, not real obstacles —
+the fix was giving each sensor authority only in the range where it's reliable.
+
+---
+
 ## 6. Improvement roadmap
 
 ### Near-term (close the current gaps)
