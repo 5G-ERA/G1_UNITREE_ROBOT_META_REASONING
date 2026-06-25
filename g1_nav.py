@@ -47,7 +47,7 @@ CAM_JS = (
 
 FLOOR_MIN = 0.10      # fraccion minima de suelo en el centro; muy bajo -> camara solo bloquea si esta casi todo tapado
 EDGE_RUN = 5          # columnas seguidas con el suelo interrumpido cerca = pata/objeto fino delante
-DEPTH_TH = 0.55       # umbral de profundidad MiDaS (ratio medio/pies); por encima = superficie vertical cerca
+DEPTH_TH = 0.63       # umbral de profundidad MiDaS (suelo limpio ~0.5; obstaculos reales 0.66+; 0.55 bloqueaba de mas)
 # muebles/obstaculos que YOLO conoce -> tratarlos como obstaculo aunque la caja sea menor
 YOLO_FURNITURE = {"diningtable", "table", "chair", "couch", "bed", "bench", "refrigerator", "oven",
                   "sink", "suitcase", "tvmonitor", "tv", "microwave", "toilet", "pottedplant",
@@ -260,7 +260,7 @@ def yolo_worker():
                 vision["block"] = blk; vision["label"] = lbl; vision["side"] = side; vision["close"] = close
                 vision["dist"] = dist
                 vision["lf"] = lf; vision["cf"] = cf; vision["rf"] = rf
-                vision["refH"] = refH; vision["refS"] = refS; vision["ts"] = time.time()
+                vision["refS"] = refS; vision["ts"] = time.time()   # (bug arreglado: 'refH' ya no existe y abortaba el ts)
             dtf = time.time() - _tf0                          # tiempo por frame de vision
             with vlock:
                 vision["dtf"] = round(dtf, 2)
@@ -989,7 +989,7 @@ def cmd_explore(secs):
     fhist = []; prev_fwd = False; recov = None; ncol = 0; rside = 1   # deteccion de colision por odom
     vcam_t = 0; v_active = False; vside = 1                            # vision (camara+YOLO)
     last_od = None; od_change_t = time.time()                          # vigilancia de odom congelada
-    vhealth_t = 0
+    vhealth_t = 0; vstale_t = 0
     def sc(v):
         return f"{v:.2f}" if (v is not None and v < 900) else ("—" if v is not None else "·")
     try:
@@ -1012,6 +1012,7 @@ def cmd_explore(secs):
             if int(now - t0) % 5 == 0:                            # guarda cobertura cada ~5s
                 save_visited()
             c0 = clear_ahead(cdp, 0); rear = None; cmd = None; ph = ""
+            cf_cam = 1.0; vfresh = False                       # defaults (por si la camara esta off)
 
             # --- VIGILANCIA DE ODOM CONGELADA (feed muerto != colision) ---
             if od is not None:
@@ -1074,18 +1075,22 @@ def cmd_explore(secs):
                     vcam_t = now
                 vclose = False; vdist = ""
                 with vlock:
-                    dr = vision.get("dratio", 0)
-                    if vision["block"] and now - vision["ts"] < 3.0:   # ventana mas amplia (vision lenta por MiDaS; robot lento)
+                    dr = vision.get("dratio", 0); cf_cam = vision.get("cf", 1.0); vts = vision.get("ts", 0)
+                    vfresh = (now - vts < 3.0)                # ventana amplia (robot lento)
+                    if vision["block"] and vfresh:
                         vb = True; vlbl = vision["label"]; vside = vision["side"]
                         vclose = vision.get("close", False); vdist = vision.get("dist", "")
+                if not vfresh and now - t0 > 6 and now - vstale_t > 5:   # aviso: la camara NO actualiza (feed caido/worker atascado)
+                    print("  [!] vision caducada >3s: ¿camara activa en la app? ¿worker lento? (navego solo con laser)")
+                    lg.write("VISION-STALE\n"); vstale_t = now
             if cmd is None and vb:                           # la camara ve un obstaculo
-                if c0 < 0.55 or vclose:                       # CERCA (laser O camara dicen pegado) -> retrocede
+                if vclose or c0 < 0.35:                       # SOLO si esta de verdad pegado -> retrocede
                     rear = clear_ahead(cdp, 180)
                     if rear > REAR_SAFE:
                         cmd = (0, -BACK_SPEED, 0, 0); ph = "VAV-BK"
-                    else:                                    # no puede retroceder -> gira en sitio (ultimo recurso)
+                    else:
                         cmd = (0, 0, -AV_TURN if vside > 0 else AV_TURN, 0); ph = "VAV-" + vlbl[:6]
-                else:                                        # lejos -> gira hacia el lado mas despejado
+                else:                                        # hay hueco -> GIRA hacia el lado mas despejado (no retrocede)
                     cmd = (0, 0, -AV_TURN if vside > 0 else AV_TURN, 0); ph = "VAV-" + vlbl[:6]
             elif not vb:
                 v_active = False
@@ -1110,7 +1115,9 @@ def cmd_explore(secs):
                     if now < redir_until:
                         cmd = (0, 0, redir_dir, 0); ph = "REDIR"
                     else:
-                        cmd = (0, FWD_SPEED, 0, 0); ph = "GO   "; esc_t0 = 0
+                        # PROPORCIONAL: si la camara (fresca) ve el suelo algo tapado delante, FRENA (mas margen)
+                        spd = 0.30 if (vision_on and vfresh and cf_cam < 0.45) else FWD_SPEED
+                        cmd = (0, spd, 0, 0); ph = "GO-sl" if spd < FWD_SPEED else "GO   "; esc_t0 = 0
             if cmd is None and state == "ESC":
                 resume = EXP_FWD_GOOD if (now - esc_t0 < 4.0) else EXP_FWD_MIN   # anti-spin: tras 4s, sale al primer hueco
                 if c0 > resume:                              # hay hueco -> avanza (no sigue girando)
