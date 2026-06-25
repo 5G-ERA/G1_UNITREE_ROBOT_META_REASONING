@@ -1,0 +1,10 @@
+# modelos y cachés
+*.pt
+__pycache__/
+*.pyc
+.DS_Store
+# logs y temporales
+g1_nav.log
+missfont.log
+ziVNypQO
+# (las imágenes de crashes/ se incluyen como dataset; coméntalo si no quieres subirlas)

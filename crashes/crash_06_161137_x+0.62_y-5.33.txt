@@ -1,0 +1,5 @@
+colision #6  2026-06-25 16:11:37
+pose: x=+0.62 y=-5.33 yaw=-81
+LASER frente (rejilla): c0=libre  <- NO lo vio
+CAMARA suelo: izq=0.09 centro=0.35 dcha=0.37  block=True label='toilet'
+nota: si laser=NO lo vio y camara centro alto -> obstaculo que ambos sensores fallaron (cristal/metal/frente sin mapear). Usar esta imagen para ajustar la deteccion.
