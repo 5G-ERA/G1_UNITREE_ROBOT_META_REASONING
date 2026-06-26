@@ -777,6 +777,22 @@ def grab_cam(cdp):
         return None
 
 
+def cam_floor_clear(cam):
+    """Decodifica el frame de camara y devuelve (frac_suelo_CENTRO, near_run) con la segmentacion de suelo
+    de g1_nav_v2. frac alto + near_run bajo = camino DESPEJADO por delante. Util donde el LASER es RUIDOSO
+    (puerta/mesa): la VISION confirma si se puede pasar. None si no hay frame."""
+    if not cam or not isinstance(cam, str) or not cam.startswith("data:image"):
+        return None, None
+    try:
+        import base64, io
+        from PIL import Image
+        img = Image.open(io.BytesIO(base64.b64decode(cam.split(",", 1)[1]))).convert("RGB")
+        lf, cf, rf, refS, nrun, mcont = g.floor_free_bands(img)
+        return cf, nrun
+    except Exception:
+        return None, None
+
+
 def grab_full_cloud(cdp, cap=12000):
     """Nube 'location' CRUDA (todas las alturas, sin filtrar) -> lista plana [x,y,z,...]. Para guardar en
     una colision y poder ver despues si era una MESA (tablero a media altura con hueco debajo) u otro
@@ -858,6 +874,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     gplan = []; gplan_t = 0; cam_t = 0; cam_jpg = None
     aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
     best_d = 1e9; best_d_t = t0; ROBOT_R0 = g.ROBOT_R        # progreso hacia B + holgura normal (para restaurar)
+    vis_center = None; vis_nearrun = None; vis_t = 0         # VISION (suelo despejado) para la puerta (laser ruidoso ahi)
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -916,6 +933,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
+            # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado
+            if c0 < 1.1 and now - vis_t > 0.5:
+                vis_center, vis_nearrun = cam_floor_clear(grab_cam(cdp)); vis_t = now
             cmd = None; ph = ""
 
             # --- CONTACTO (odom-stall fiable / IMU rapido por par-accel) ---
@@ -1056,12 +1076,14 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         a = plan_pts[max(0, bi - 2)]; b = plan_pts[min(len(plan_pts) - 1, bi + 2)]
                         ddir = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))   # eje de la puerta
                         he = (ddir - yaw + 180) % 360 - 180
+                        # VISION manda en la puerta (el laser es ruidoso ahi): suelo despejado por delante?
+                        vis_ok = (vis_center is not None and vis_center > 0.45 and (vis_nearrun or 0) < 8)
                         if abs(he) > 12:                    # alinea el rumbo con el eje ANTES de entrar
                             cmd = (0, 0, -g.AV_TURN if he > 0 else g.AV_TURN, 0); ph = "DOOR-AL"
-                        elif c0 > AGGR_ROBOT_R:             # alineado y con hueco -> entra RECTO y despacio
-                            cmd = (0, 0.28, 0, 0); ph = "DOOR-GO"
+                        elif c0 > AGGR_ROBOT_R or vis_ok:   # entra RECTO si el LASER o la VISION lo ven despejado
+                            cmd = (0, 0.28, 0, 0); ph = "DOOR-GO" + ("v" if vis_ok and c0 <= AGGR_ROBOT_R else "")
                         else:
-                            cmd = (0, 0, 0, 0); ph = "DOOR-WT"   # pared pegada: espera/retoca (no fuerza)
+                            cmd = (0, 0, 0, 0); ph = "DOOR-WT"   # ni laser ni vision: espera (no fuerza)
                         nstop = 0
                     else:
                         _, lyc, rxc, _, lbl = g.dwa_step(x, y, yaw, carrot, op)
