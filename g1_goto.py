@@ -1895,7 +1895,7 @@ def cmd_benchmark(label, viz=False):
         print(f"'{label}' no existe. Waypoints: {list(wps.keys())}"); return
     w = wps[label]
     if not viz:
-        cdp = g.get_cdp()
+        cdp = get_live_cdp()
         lg = open(BENCH_LOG, "a")
         lg.write(f"\n=== BENCHMARK NATIVO {label} {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
         try:
@@ -1910,7 +1910,7 @@ def cmd_benchmark(label, viz=False):
 
     def control():
         try:
-            cdp = g.get_cdp()
+            cdp = get_live_cdp()
             lg = open(BENCH_LOG, "a")
             lg.write(f"\n=== BENCHMARK NATIVO {label} {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
             benchmark_run(cdp, lg, w["x"], w["y"], label, vshare=vshare, lock=lk, stop_event=stop_event)
