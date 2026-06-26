@@ -1016,8 +1016,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
             if cmd is None:
                 if (not plan_pts) or (now - plan_t > g.PLAN_SEC):
-                    # agresivo = costmap SIN inflado (cruza puertas estrechas); normal = con inflado de seguridad
-                    cm = ({c: math.inf for c in oset} if aggressive else g.build_costmap(oset))
+                    # GLOBAL: planifica sobre el MAPA DE REFERENCIA limpio (tiene la puerta abierta) + las
+                    # colisiones aprendidas; NO sobre el laser acumulado (que sella la puerta). El DWA esquiva
+                    # lo vivo (mesa, etc.) localmente. agresivo = sin inflado (cruza puertas estrechas).
+                    plan_obs = (refmap | colmap) if refmap else (oset)
+                    cm = ({c: math.inf for c in plan_obs} if aggressive else g.build_costmap(plan_obs))
                     scell = (round(x / g.OCELL), round(y / g.OCELL))
                     gcell = (round(wx / g.OCELL), round(wy / g.OCELL))
                     cells_path = g.astar(scell, gcell, cm)
