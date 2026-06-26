@@ -684,11 +684,11 @@ def _telem_row(hh):
 
 def ref_points():
     """Puntos de pared 2D (frame G1) del mapa de referencia elegido por env G1_REFMAP:
-       'g1' (DEFECTO) = el mapa propio del G1 (dataset/map_full.json o nav_map.json);
-       'summit'       = el mapa del Summit transformado a frame G1 (summit/ref_map_g1.json)."""
-    choice = os.environ.get("G1_REFMAP", "g1").lower()
+       'summit' (DEFECTO) = mapa del Summit ALINEADO a A/B (bien orientado) -> summit/ref_map_g1.json;
+       'g1'               = mapa propio del G1 (dataset/map_full.json) — OJO: puede salir rotado/desalineado."""
+    choice = os.environ.get("G1_REFMAP", "summit").lower()
     here = os.path.dirname(os.path.abspath(__file__))
-    if choice == "summit":
+    if choice != "g1":                          # por defecto, el mapa Summit alineado (orientacion correcta)
         p = os.path.join(here, "summit", "ref_map_g1.json")
         try:
             if os.path.exists(p):
@@ -697,7 +697,7 @@ def ref_points():
                     return pts
         except Exception:
             pass
-    # 'g1' (defecto): mapa propio del G1
+    # 'g1': mapa propio del G1 (puede estar rotado/desalineado)
     def _clip(pts):
         return [(a, b) for (a, b) in pts if -15 <= a <= 15 and -15 <= b <= 15]   # quita outliers de reloc
     p3 = os.path.join(DATASET_DIR, "map_full.json")
