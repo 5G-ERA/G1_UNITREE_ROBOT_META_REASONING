@@ -439,6 +439,16 @@ def load_ref_map():
     """Mapa de referencia para estimar la confianza de localizacion (scan-to-map). Prefiere
     dataset/map_full.json (3D->banda torso), si no nav_map.json. Devuelve set de celdas OCELL."""
     cells = set()
+    # 1) PREFERIDO: mapa del Summit transformado a frame G1 (limpio, con la puerta real)
+    pg1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "summit", "ref_map_g1.json")
+    try:
+        if os.path.exists(pg1):
+            d = json.load(open(pg1))
+            cells = set((round(p[0] / g.OCELL), round(p[1] / g.OCELL)) for p in d.get("points", []))
+            if cells:
+                return cells
+    except Exception:
+        pass
     p3 = os.path.join(DATASET_DIR, "map_full.json")
     try:
         if os.path.exists(p3):
@@ -508,12 +518,13 @@ def clear_dir(x, y, yaw_deg, off_deg, obs_pts, maxd=2.5, cone=25.0):
 
 
 def global_plan(sx, sy, gx, gy, oset):
-    """A* GLOBAL de (sx,sy) -> (gx,gy) sobre el costmap de 'oset'. Lista de (x,y) en metros. Si A* no halla
-    ruta (o no hay obstaculos) devuelve la RECTA, para que la ventana siempre muestre algo."""
-    cm = g.build_costmap(oset) if oset else {}
+    """A* GLOBAL de (sx,sy) -> (gx,gy). Es solo para VISUALIZAR/orientar, asi que usa el costmap SIN inflado
+    (marca solo las celdas-pared como bloqueadas) para que pueda cruzar puertas estrechas. Si no halla ruta
+    devuelve la RECTA, para que la ventana siempre muestre algo."""
+    cm = {c: math.inf for c in oset}
     cells = g.astar((round(sx / g.OCELL), round(sy / g.OCELL)),
-                    (round(gx / g.OCELL), round(gy / g.OCELL)), cm, margin=20)
-    if cells:
+                    (round(gx / g.OCELL), round(gy / g.OCELL)), cm, margin=25)
+    if cells and len(cells) > 1:
         return [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells]
     return [(sx, sy), (gx, gy)]    # fallback: recta origen->destino
 
@@ -1194,26 +1205,37 @@ def cmd_turntest():
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
 
 
+def _load_refmap_points():
+    """Puntos de pared del mapa de referencia en frame G1 (summit/ref_map_g1.json) para pintar de FONDO."""
+    try:
+        rp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "summit", "ref_map_g1.json")
+        if os.path.exists(rp):
+            return json.load(open(rp)).get("points", [])
+    except Exception:
+        pass
+    return []
+
+
 def _goto_window(vshare, lock, stop_event, label, wps):
-    """Ventana en vivo (hilo principal) de la navegacion A->B: mapa acumulado, laser en vivo, odometria
-    recorrida, ruta A*, carrot, robot+rumbo y el waypoint objetivo. matplotlib debe ir en el hilo principal."""
+    """Ventana en vivo (hilo principal), DOS paneles:
+       izq = mapa cargado (fondo) + plan global + ruta + recorrido + robot;  der = LASER en vivo (robot-centrico)."""
     try:
         import matplotlib
         import matplotlib.pyplot as plt
     except Exception as e:
         print("!! matplotlib no disponible para la ventana:", repr(e))
-        print("   (el control sigue corriendo sin ventana)")
         while not stop_event.is_set():
             time.sleep(0.3)
         return
+    refmap = _load_refmap_points()
     plt.ion()
-    fig, ax = plt.subplots(figsize=(9.5, 9))
+    fig, (ax, axl) = plt.subplots(1, 2, figsize=(16, 8), gridspec_kw={"width_ratios": [1.25, 1]})
     try:
-        fig.canvas.manager.set_window_title(f"G1 goto {label} — mapa + laser + path")
+        fig.canvas.manager.set_window_title(f"G1 {label} — mapa+plan | laser")
     except Exception:
         pass
     fig.canvas.mpl_connect("close_event", lambda e: stop_event.set())
-    print("Ventana abierta. Cierrala o Ctrl+C en la terminal para PARAR el robot.")
+    print("Ventana abierta (mapa+plan | laser). Cierrala o Ctrl+C en la terminal para PARAR el robot.")
     try:
         while not stop_event.is_set():
             with lock:
@@ -1223,38 +1245,51 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                 obs = list(vshare.get("obs", [])); laser = list(vshare.get("laser", []))
                 plan = list(vshare.get("plan", [])); trail = list(vshare.get("trail", []))
                 gplan = list(vshare.get("gplan", []))
+            # ===================== PANEL IZQ: mapa cargado + plan =====================
             ax.clear()
-            # todos los waypoints conocidos (referencia tenue)
+            if refmap:                               # FONDO = mapa real (Summit en frame G1) = paredes/puerta
+                ax.scatter([p[0] for p in refmap], [p[1] for p in refmap],
+                           s=4, c="#9aa6b2", marker="s", linewidths=0, alpha=0.55, label="mapa cargado (paredes)")
             for k, w in wps.items():
-                ax.plot([w["x"]], [w["y"]], "s", c="#cccccc", ms=7)
-                ax.annotate(k, (w["x"], w["y"]), fontsize=8, color="#999999")
-            if obs:                                  # mapa de obstaculos acumulado (con TTL)
+                ax.plot([w["x"]], [w["y"]], "s", c="#cfcfcf", ms=6)
+                ax.annotate(k, (w["x"], w["y"]), fontsize=9, color="#777")
+            if obs:                                  # obstaculos del laser acumulados (TTL)
                 ax.scatter([p[0] for p in obs], [p[1] for p in obs],
-                           s=20, c="#c0392b", marker="s", linewidths=0, alpha=0.55, label="mapa (obstaculos)")
-            if laser:                                # barrido del laser en VIVO (este ciclo)
-                ax.scatter([p[0] for p in laser], [p[1] for p in laser],
-                           s=10, c="#16a085", marker="o", linewidths=0, label="laser en vivo")
-            if trail and len(trail) > 1:             # odometria recorrida
-                ax.plot([p[0] for p in trail], [p[1] for p in trail], "-", c="#7f8c8d", lw=1.0, alpha=0.7, label="recorrido")
-            if gplan and len(gplan) > 1:             # PLAN GLOBAL origen->destino (completo) — VERDE
-                ax.plot([p[0] for p in gplan], [p[1] for p in gplan], "-", c="#00d000", lw=3.2, alpha=0.9,
+                           s=14, c="#c0392b", marker="s", linewidths=0, alpha=0.5, label="obstaculos (laser)")
+            if trail and len(trail) > 1:
+                ax.plot([p[0] for p in trail], [p[1] for p in trail], "-", c="#34495e", lw=1.2, alpha=0.8, label="recorrido")
+            if gplan and len(gplan) > 1:             # PLAN GLOBAL (verde)
+                ax.plot([p[0] for p in gplan], [p[1] for p in gplan], "-", c="#00d000", lw=3.2, alpha=0.95,
                         label="PLAN GLOBAL (A* origen->destino)")
-            if plan and len(plan) > 1:               # ruta A* local (la que ejecuta DWA)
-                ax.plot([p[0] for p in plan], [p[1] for p in plan], "-", c="#1565c0", lw=2.0, label="ruta A* local")
+            if plan and len(plan) > 1:
+                ax.plot([p[0] for p in plan], [p[1] for p in plan], "-", c="#1565c0", lw=1.8, label="ruta A* local")
             if carrot:
-                ax.plot([carrot[0]], [carrot[1]], "o", c="#00bcd4", ms=9, label="carrot")
+                ax.plot([carrot[0]], [carrot[1]], "o", c="#00bcd4", ms=8)
             if goal:
-                ax.plot([goal[0]], [goal[1]], "*", c="#f39c12", ms=24, label=f"objetivo {label}")
-            ax.plot([x], [y], "o", c="#2980b9", ms=12)
-            ax.arrow(x, y, 0.35 * math.cos(math.radians(yaw)), 0.35 * math.sin(math.radians(yaw)),
-                     head_width=0.14, head_length=0.14, fc="#2980b9", ec="#2980b9", length_includes_head=True)
+                ax.plot([goal[0]], [goal[1]], "*", c="#f39c12", ms=22, label=f"objetivo {label}")
+            ax.plot([x], [y], "o", c="#2980b9", ms=11)
+            ax.arrow(x, y, 0.4 * math.cos(math.radians(yaw)), 0.4 * math.sin(math.radians(yaw)),
+                     head_width=0.16, head_length=0.16, fc="#2980b9", ec="#2980b9", length_includes_head=True)
             ax.set_aspect("equal", adjustable="datalim"); ax.grid(True, alpha=0.2)
-            ax.set_xlabel("x mapa (m)"); ax.set_ylabel("y mapa (m)")
-            ax.set_title(f"goto {label}  t={t:.0f}s  fase={ph.strip()}  dist={d:.2f}m  colis={col}")
+            ax.set_xlabel("x (m)"); ax.set_ylabel("y (m)")
+            ax.set_title(f"{label}  t={t:.0f}s  {ph.strip()}  dist={d:.2f}m  colis={col}")
             try:
-                ax.legend(loc="upper right", fontsize=8)
+                ax.legend(loc="upper right", fontsize=7)
             except Exception:
                 pass
+            # ===================== PANEL DER: laser en vivo (robot-centrico) =====================
+            axl.clear()
+            if laser:
+                lx = [p[0] - x for p in laser]; ly = [p[1] - y for p in laser]
+                axl.scatter(lx, ly, s=10, c="#16a085", marker="o", linewidths=0)
+            for rr in (1, 2):                         # anillos de distancia
+                axl.add_artist(plt.Circle((0, 0), rr, fill=False, color="#445", lw=0.6, alpha=0.6))
+            axl.plot(0, 0, "o", c="#2980b9", ms=9)
+            axl.arrow(0, 0, 0.5 * math.cos(math.radians(yaw)), 0.5 * math.sin(math.radians(yaw)),
+                      head_width=0.18, fc="#2980b9", ec="#2980b9")
+            axl.set_xlim(-3, 3); axl.set_ylim(-3, 3); axl.set_aspect("equal")
+            axl.grid(True, alpha=0.2); axl.set_title(f"LASER en vivo  ({len(laser)} pts)")
+            axl.set_xlabel("x rel robot (m)"); axl.set_ylabel("y rel robot (m)")
             plt.pause(0.25)
     except KeyboardInterrupt:
         pass
