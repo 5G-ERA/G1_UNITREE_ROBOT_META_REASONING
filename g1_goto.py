@@ -28,6 +28,8 @@ HBAND_LO, HBAND_HI = -0.9, 0.6   # banda de altura (m) para OBSTACULOS: excluye 
 NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
+AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
+AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -854,6 +856,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     rd = RunRecorder("ours", label, (wx, wy))
     refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
     gplan = []; gplan_t = 0; cam_t = 0; cam_jpg = None
+    aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
+    best_d = 1e9; best_d_t = t0; ROBOT_R0 = g.ROBOT_R        # progreso hacia B + holgura normal (para restaurar)
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -999,10 +1003,21 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     else:
                         brk = None; brk_cool = now + 6.0; dhist = []; plan_pts = []
 
+            # --- MODO AGRESIVO: si lleva atascado sin ACERCARSE a B, baja inflado y holgura (con minimo seguro) ---
+            if d_goal < best_d - 0.15:
+                best_d = d_goal; best_d_t = now
+            if not aggressive and now - best_d_t > AGGR_AFTER:
+                aggressive = True
+                print(f"\n  >>> MODO AGRESIVO ON ({AGGR_AFTER:.0f}s sin acercarse a B): reduzco inflado y holgura "
+                      f"(min seguridad {AGGR_ROBOT_R}m) para cruzar la puerta.")
+                lg.write(f"AGGRESSIVE-ON t={now-t0:.0f}s d={d_goal:.2f}\n")
+            g.ROBOT_R = AGGR_ROBOT_R if aggressive else ROBOT_R0   # holgura del DWA (min seguridad en agresivo)
+
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
             if cmd is None:
                 if (not plan_pts) or (now - plan_t > g.PLAN_SEC):
-                    cm = g.build_costmap(oset)
+                    # agresivo = costmap SIN inflado (cruza puertas estrechas); normal = con inflado de seguridad
+                    cm = ({c: math.inf for c in oset} if aggressive else g.build_costmap(oset))
                     scell = (round(x / g.OCELL), round(y / g.OCELL))
                     gcell = (round(wx / g.OCELL), round(wy / g.OCELL))
                     cells_path = g.astar(scell, gcell, cm)
@@ -1072,6 +1087,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                          f"plan={len(plan_pts)} fases={phcount}\n"); lg.flush()
                 spin_acc = 0.0
 
+            if aggressive:
+                ph = "AGR-" + ph.strip()
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
                     f"c0={c0:.2f} obs={len(oset)} plan={len(plan_pts)} cmd=(ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
@@ -1120,6 +1137,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
         return False
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
+        g.ROBOT_R = locals().get("ROBOT_R0", g.ROBOT_R)    # restaura la holgura normal del DWA
         # resumen de la calibracion de giro: ¿el robot gira en el sentido que el modelo cree?
         tc = locals().get("turncal", [])
         if tc:
