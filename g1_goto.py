@@ -497,6 +497,44 @@ def _install(cdp):
     cdp.eval(IMUFULL_JS)            # + IMU completa (accel/gyro/rpy/par de patas)
 
 
+def get_live_cdp():
+    """Conecta a TODAS las paginas del WebView y devuelve el CDP de la que tiene el SLAM VIVO (pose +
+    nube 'location'). Resuelve el problema de que get_cdp() coja una pagina muerta cuando hay varias
+    (era la causa de nobs=0). Si solo hay una pagina, la devuelve directamente."""
+    try:
+        pages = _all_inspectable_pages()
+    except Exception:
+        pages = []
+    if len(pages) <= 1:
+        return g.get_cdp()
+    cands = []
+    for (ti, url, wsu) in pages:
+        try:
+            c = g.CDP(wsu)
+            c.eval(RELOC_JS); c.eval(RELOC_CLOUD_JS)      # sondas ligeras (pose + nube)
+            cands.append((ti, c))
+        except Exception:
+            pass
+    if not cands:
+        return g.get_cdp()
+    if len(cands) == 1:
+        return cands[0][1]
+    best = None; bestsc = -1
+    end = time.time() + 4.0
+    while time.time() < end and bestsc < 3:
+        for ti, c in cands:
+            try:
+                sc = (2 if c.eval("!!window.__pose") else 0) + \
+                     (1 if int(c.eval("(window.__relocbuf||[]).length") or 0) > 50 else 0)
+            except Exception:
+                sc = -1
+            if sc > bestsc:
+                bestsc = sc; best = c
+        time.sleep(0.4)
+    print(f"  pagina viva elegida (score {bestsc}/3: pose+nube)" + ("" if bestsc >= 2 else "  <-- OJO: poca señal"))
+    return best or cands[0][1]
+
+
 def read_pose(cdp):
     """Pose LOCALIZADA sobre el mapa cargado. Prioriza slam_info.currentPose (autoritativa en relocalizacion),
     luego slam_relocation/odom, luego slam_mapping/odom. Devuelve (src, [x,y,z,qx,qy,qz,qw]) o (None,None)."""
@@ -524,7 +562,7 @@ def yaw_of(q):
 
 def cmd_reloccheck():
     """PASO 1: con el mapa cargado y el robot relocalizado en la app, muestra que datos llegan."""
-    cdp = g.get_cdp()
+    cdp = get_live_cdp()
     _install(cdp)
     print(">>> RELOCCHECK. En la app: carga el mapa y RELOCALIZA el robot. Mueve el robot a mano y mira")
     print("    que la pose CAMBIA (= localizacion viva). Ctrl+C para salir.\n")
@@ -1410,7 +1448,7 @@ def cmd_turntest():
     """DIAGNOSTICO del SIGNO DE GIRO (causa tipica del 'da mil vueltas'). Gira el robot en el sitio a un
     lado y a otro midiendo el yaw REAL de slam_info, y comprueba si coincide con el modelo del DWA
     (wz=-1.8*rx -> rx>0 BAJA el yaw, rx<0 lo SUBE). ESPACIO LIBRE + mando en mano (L2+B)."""
-    cdp = g.get_cdp()
+    cdp = get_live_cdp()
     _install(cdp)
     print(">>> TURN-TEST. Espacio libre alrededor; mando en mano. Voy a girar el robot en el sitio.\n")
     for _ in range(20):
@@ -1605,7 +1643,7 @@ def cmd_goto_viz(label):
 
     def control():
         try:
-            cdp = g.get_cdp()
+            cdp = get_live_cdp()
             _install(cdp)
             lg = open(GOTO_LOG, "a")
             lg.write(f"\n=== GOTOVIZ {label} {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
