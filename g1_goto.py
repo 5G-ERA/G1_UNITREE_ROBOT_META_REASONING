@@ -232,24 +232,30 @@ def cmd_clouddebug():
 
 # Captura la NUBE EN VIVO de operacion/relocalizacion: mensaje worker type='location', data.points =
 # array plano [x,y,z,...]. Guarda la ultima en window.__relocbuf.
+# ROBUSTO: adjunta el listener (1) a cada worker al que la app hace postMessage Y (2) a cada worker NUEVO
+# via el constructor de Worker -> ya no depende del timing (antes a veces salia nobs=0).
 RELOC_CLOUD_JS = r"""(function(){
-  if(!window.__relocCloudHook){ window.__relocCloudHook=1; window.__relocbuf=[]; window.__relocbuf_t=0;
-    var seen=new WeakSet();
+  function grab(ev){ try{
+    var d=ev.data;
+    if(d && d.type==='location' && d.data && d.data.points){
+      var a=d.data.points;
+      window.__relocbuf=(ArrayBuffer.isView(a))?Array.prototype.slice.call(a):Object.values(a);
+      window.__relocbuf_t=Date.now();
+    }
+  }catch(e){} }
+  function attach(w){ try{ if(w && !w.__rcAtt){ w.__rcAtt=1; w.addEventListener('message',grab); } }catch(e){} }
+  if(!window.__relocCloudHook){ window.__relocCloudHook=1;
+    if(!window.__relocbuf) window.__relocbuf=[]; window.__relocbuf_t=window.__relocbuf_t||0;
+    // 1) cada worker al que la app postea
     var o=Worker.prototype.postMessage;
-    Worker.prototype.postMessage=function(m){
-      try{ if(!seen.has(this)){ seen.add(this);
-        this.addEventListener('message',function(ev){ try{
-          var d=ev.data;
-          if(d && d.type==='location' && d.data && d.data.points){
-            var a=d.data.points;
-            window.__relocbuf=(ArrayBuffer.isView(a))?Array.prototype.slice.call(a):Object.values(a);
-            window.__relocbuf_t=Date.now();
-          }
-        }catch(e){} });
-      } }catch(e){}
-      return o.apply(this,arguments);
-    };
-  } return 1;
+    Worker.prototype.postMessage=function(m){ attach(this); return o.apply(this,arguments); };
+    // 2) cada worker NUEVO (constructor) -> coge el que emite 'location' al arrancar nav
+    try{ var OW=window.Worker;
+      function W(a,b){ var w=new OW(a,b); attach(w); return w; }
+      W.prototype=OW.prototype; window.Worker=W;
+    }catch(e){}
+  }
+  return (window.__relocbuf||[]).length;
 })()"""
 
 
@@ -532,7 +538,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     spin_acc = 0.0; prog_pos = None; prog_t = t0; turncal = []; phcount = {}
     minc0 = 9.9
     rd = RunRecorder("ours", label, (wx, wy))
-    refmap = load_ref_map(); health_t = 0; hh = {}
+    refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -574,6 +580,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
 
             # --- OBSTACULOS de la nube 'location' (frame mapa) -> mapa persistente con TTL ---
             live = reloc_cells(cdp)                   # celdas del barrido ACTUAL (laser en vivo)
+            if live:
+                cloud_ok = True
+            elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
+                print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
+                print("          ¿se ven los PUNTITOS del laser en la app?")
+                lg.write("NO-CLOUD warning\n"); cloud_warned = True
             for c in live:
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
@@ -1347,7 +1359,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     t0 = time.time(); tprint = 0; trail = []; poshist = []
     low_t = 0; last_low = None; lt_base = []; ah_base = []; ncol = 0; last_col_t = -99
     minc0 = 9.9; stall_t = t0; last_movepos = None; pose_t = time.time()
-    health_t = 0; hh = {}; jprev = None
+    health_t = 0; hh = {}; jprev = None; cloud_ok = False; cloud_warned = False
     try:
         while not (stop_event is not None and stop_event.is_set()):
             now = time.time()
@@ -1391,6 +1403,12 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
                 return True
 
             live = reloc_cells(cdp, (x, y))       # laser en vivo (mismo metodo que el nuestro -> comparable)
+            if live:
+                cloud_ok = True
+            elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
+                print("\n  [AVISO] no llega la nube 'location' (nobs=0) -> dataset sin laser/loc_match.")
+                print("          ¿se ven los PUNTITOS del laser en la app? Si no, el robot no la publica.")
+                lg.write("NO-CLOUD warning (no 'location' stream)\n"); cloud_warned = True
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
