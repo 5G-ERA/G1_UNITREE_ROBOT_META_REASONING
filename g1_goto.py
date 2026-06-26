@@ -298,6 +298,91 @@ PATHSNIFF_JS = r"""(function(){
 })()"""
 
 
+# Sniffer PASIVO: TU lanzas la navegacion desde la app y capturamos TODO lo util:
+#  - OUT: lo que la app ENVIA por el datachannel (su comando de nav real + lo que sea)
+#  - WORKER IN: mensajes worker->app (laser y posible render de ruta)
+#  - TOPICS: todos, marcando los que parecen ruta + candidato de path
+APPSNIFF_JS = r"""(function(){
+  if(!window.__appSniff){ window.__appSniff=1;
+    window.__snOut={}; window.__snWk={}; window.__snTop={}; window.__snSamples=[]; window.__snPath=null;
+    function push(a,o){ a.push(o); if(a.length>300) a.shift(); }
+    function looksPath(o){ try{ if(Array.isArray(o)&&o.length>=3){ var a=o[0];
+      if(a&&typeof a==='object'&&('x'in a)&&('y'in a)) return o.length;
+      if(Array.isArray(a)&&a.length>=2&&typeof a[0]==='number') return o.length; }}catch(e){} return 0; }
+    function scan(d,dep){ if(dep>5||!d||typeof d!=='object') return 0; var n=looksPath(d);
+      if(n){ if(!window.__snPath) window.__snPath={where:'root',n:n,sample:JSON.stringify(d).slice(0,600)}; return n; }
+      for(var k in d){ try{ var m=looksPath(d[k]);
+        if(m){ if(!window.__snPath) window.__snPath={where:k,n:m,sample:JSON.stringify(d[k]).slice(0,600)}; return m; }
+        var mm=scan(d[k],dep+1); if(mm) return mm; }catch(e){} } return 0; }
+    var S=RTCDataChannel.prototype.send;
+    RTCDataChannel.prototype.send=function(d){ try{ if((this.label||'')==='data' && typeof d==='string'){
+      var v=JSON.parse(d); var tp=(v&&v.topic)?(''+v.topic):'?'; var api='';
+      try{ api=(v.data&&v.data.header&&v.data.header.identity)?v.data.header.identity.api_id:''; }catch(e){}
+      var key=tp+(api!==''?(' api='+api):''); var rec=window.__snOut[key]||{n:0,sample:''}; rec.n++;
+      if(!rec.sample) rec.sample=d.slice(0,600); window.__snOut[key]=rec;
+      if(tp.indexOf('wirelesscontroller')<0) push(window.__snSamples,{dir:'OUT',topic:tp,api:''+api,t:Date.now(),raw:d.slice(0,900)});
+    }}catch(e){} return S.apply(this,arguments); };
+    var seen=new WeakSet(); var o=Worker.prototype.postMessage;
+    Worker.prototype.postMessage=function(m){ try{ if(!seen.has(this)){ seen.add(this);
+      this.addEventListener('message',function(ev){ try{ var d=ev.data; var t=(d&&d.type)?(''+d.type):typeof d;
+        var rec=window.__snWk[t]||{n:0,pathlen:0,keys:''}; rec.n++;
+        if(!rec.keys&&d&&typeof d==='object') rec.keys=Object.keys(d).slice(0,8).join(',');
+        var pl=scan(d,0); if(pl>rec.pathlen) rec.pathlen=pl; window.__snWk[t]=rec;
+      }catch(e){} }); } }catch(e){} return o.apply(this,arguments); };
+    var jp=JSON.parse; JSON.parse=function(s){ var v=jp.apply(this,arguments);
+      try{ if(v&&v.topic){ var tp=''+v.topic; var rec=window.__snTop[tp]||{n:0,pathlen:0}; rec.n++;
+        if(/path|plan|traj|route|nav|key_info|topo|waypoint/i.test(tp)){ var d=(typeof v.data==='string')?jp(v.data):v.data; var pl=scan(d,0); if(pl>rec.pathlen) rec.pathlen=pl; }
+        window.__snTop[tp]=rec; } }catch(e){} return v; };
+  } return 1;
+})()"""
+
+
+def cmd_appsniff(secs=40):
+    """PASIVO: TU lanzas la navegacion DESDE LA APP (pulsa ir a B) y capturo TODO lo util ~secs. No envio
+    nada yo. Ideal para ver el comando de nav real de la app y si expone su ruta planificada."""
+    cdp = g.get_cdp()
+    cdp.eval(DISABLE_DRV_JS)            # no pelear con la app (apaga nuestro driver si quedo de antes)
+    cdp.eval(APPSNIFF_JS); cdp.eval(RELOC_JS)
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "appsniff.log")
+    outj = os.path.join(os.path.dirname(os.path.abspath(__file__)), "appsniff.json")
+    print(">>> APPSNIFF. AHORA, EN LA APP: pon un destino (ir a B) y deja que navegue.")
+    print(f"    Capturo TODO ~{secs}s. Ctrl+C para parar. Logs -> {out} (+ {outj})")
+    try:
+        for i in range(int(secs * 2)):
+            so = json.loads(cdp.eval("JSON.stringify(window.__snOut||{})") or "{}")
+            sw = json.loads(cdp.eval("JSON.stringify(window.__snWk||{})") or "{}")
+            st = json.loads(cdp.eval("JSON.stringify(window.__snTop||{})") or "{}")
+            cand = cdp.eval("JSON.stringify(window.__snPath||null)")
+            L = [f"=== APPSNIFF {time.strftime('%H:%M:%S')} ==="]
+            L.append("-- OUT (lo que la APP envia por el datachannel) --")
+            for k, r in sorted(so.items(), key=lambda kv: -kv[1]["n"]):
+                L.append(f"   n={r['n']:<5} {k}")
+            L.append("-- WORKER IN (worker->app; PATHLEN=puntos tipo ruta) --")
+            for k, r in sorted(sw.items(), key=lambda kv: -kv[1].get("pathlen", 0)):
+                L.append(f"   n={r['n']:<5} PATHLEN={r.get('pathlen',0):<5} tipo='{k}' campos=[{r.get('keys','')}]")
+            L.append("-- TOPICS con pinta de ruta --")
+            for k, r in sorted(st.items(), key=lambda kv: -kv[1].get("pathlen", 0)):
+                if r.get("pathlen", 0) > 0:
+                    L.append(f"   n={r['n']:<5} PATHLEN={r['pathlen']:<5} topic='{k}'")
+            L.append(f">>> CANDIDATO DE RUTA: {cand if cand and cand!='null' else '(ninguno aun)'}")
+            with open(out, "w") as f:
+                f.write("\n".join(L) + "\n")
+            print("\033[2J\033[H", end=""); print("\n".join(L))
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        try:
+            samples = json.loads(cdp.eval("JSON.stringify(window.__snSamples||[])") or "[]")
+            json.dump({"out": json.loads(cdp.eval("JSON.stringify(window.__snOut||{})") or "{}"),
+                       "worker": json.loads(cdp.eval("JSON.stringify(window.__snWk||{})") or "{}"),
+                       "path_candidate": json.loads(cdp.eval("JSON.stringify(window.__snPath||null)") or "null"),
+                       "samples_out": samples}, open(outj, "w"), indent=1)
+        except Exception:
+            pass
+        print(f"\nFin appsniff. Guardado {out} + {outj}. Di 'mira el appsniff' y lo analizo.")
+
+
 def cmd_pathsniff(label):
     """DESCUBRE si el firmware expone su PATH planificado. Envia el goal nativo a <label> y caza durante
     ~20s cualquier mensaje con pinta de ruta. El robot SE MUEVE (firmware). Mando en mano."""
@@ -1838,6 +1923,8 @@ def main():
         cmd_cloudgrab()
     elif c == "pathsniff":
         cmd_pathsniff(sys.argv[2] if len(sys.argv) > 2 else None)
+    elif c == "appsniff":
+        cmd_appsniff(int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 40)
     elif c == "waypoint":
         cmd_waypoint(sys.argv[2] if len(sys.argv) > 2 else None)
     elif c == "listwp":
