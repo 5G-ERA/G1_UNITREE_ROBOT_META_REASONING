@@ -27,6 +27,7 @@ GOTO_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goto.log")
 HBAND_LO, HBAND_HI = -0.9, 0.6   # banda de altura (m) para OBSTACULOS: excluye suelo (~-1.3/-1.0) y techo (~+1.3)
 NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
+GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -592,6 +593,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     else:
         print(" sin datos. ¿Mapa cargado y robot RELOCALIZADO en la app?"); return False
     print(" ok.")
+    # --- GATE de relocalizacion (como la app): pose inicial vs waypoint mas cercano ---
+    fc0 = frame_check(lg, p[0], p[1])
+    if fc0 and fc0["offset_m"] > GATE_M and os.environ.get("G1_NOGATE") != "1":
+        print(f"\n  >>> RELOCALIZACION DUDOSA: arrancas a {fc0['offset_m']}m del waypoint {fc0['nearest_wp']}. NO navego.")
+        print("      Re-localiza en la app (que los puntitos encajen con el mapa) y reintenta (override: G1_NOGATE=1).")
+        lg.write("GATE-BLOCKED reloc dudosa\n")
+        return False
 
     omap = {}                                     # celda OCELL -> ultimo instante visto (mapa persistente con TTL)
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
@@ -627,7 +635,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             if last_pose is None or abs(x - last_pose[0]) > 1e-4 or abs(y - last_pose[1]) > 1e-4:
                 pose_t = now; last_pose = (x, y)
             if not trail:
-                rd.rec["frame_check"] = frame_check(lg, x, y)
+                rd.rec["frame_check"] = fc0
             if not trail or math.hypot(x - trail[-1][0], y - trail[-1][1]) > 0.05:
                 trail.append((x, y))
 
@@ -1480,11 +1488,21 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     else:
         print(" sin pose/datachannel. ¿Mapa cargado y robot relocalizado?"); return False
     print(" ok.")
+    # --- GATE de relocalizacion (como la app): si la pose inicial esta lejos del waypoint mas cercano,
+    #     la relocalizacion es dudosa -> NO navegamos (evita ir a un sitio equivocado). Override G1_NOGATE=1.
+    fc = frame_check(lg, p[0], p[1])
+    if fc and fc["offset_m"] > GATE_M and os.environ.get("G1_NOGATE") != "1":
+        print(f"\n  >>> RELOCALIZACION DUDOSA: arrancas a {fc['offset_m']}m del waypoint {fc['nearest_wp']}.")
+        print("      NO envio el goal. Re-localiza en la app (que los puntitos encajen con el mapa) y reintenta.")
+        print("      (si de verdad arrancas lejos de un waypoint a proposito: G1_NOGATE=1 ...)")
+        lg.write("GATE-BLOCKED reloc dudosa\n")
+        return False
     cdp.eval(native_avoid_js(True))               # esquiva del firmware ON
     r = cdp.eval(native_goal_js(wx, wy))          # GOAL nativo (1102)
     print(f"  Goal nativo (1102) enviado: {r}.  Mando en mano (L2+B) por seguridad.")
     lg.write(f"NATIVE-GOAL {label} ({wx:+.3f},{wy:+.3f}) send={r}\n")
     rd = RunRecorder("native", label, (wx, wy))
+    rd.rec["frame_check"] = fc
 
     t0 = time.time(); tprint = 0; trail = []; poshist = []
     low_t = 0; last_low = None; lt_base = []; ah_base = []; ncol = 0; last_col_t = -99
@@ -1547,7 +1565,6 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
             # mapa acumulado + PLAN GLOBAL (nuestro A* origen->destino) solo para ver/comparar en la ventana
             if start_xy is None:
                 start_xy = (x, y)
-                rd.rec["frame_check"] = frame_check(lg, x, y)
             for c in live:
                 omap[c] = now
             omap = {c: tt for c, tt in omap.items() if now - tt < NAV_OMAP_TTL}
