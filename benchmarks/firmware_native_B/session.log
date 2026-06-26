@@ -1,0 +1,222 @@
+=== BENCHMARK NATIVO B 2026-06-26 19:22:04 ===
+FRAME-CHECK start=(+1.05,+0.59) wp_mas_cercano=A(+0.99,+0.57) offset=0.06m
+NATIVE-GOAL B (-4.730,+3.040) send=sent
+t=  0.0 NATIVO pos=(+1.05,+0.59) yaw=-124.9 d=6.28 spd=0.00 c0=2.50 loc=0.871 bat=49 nobs=93 col=0
+t=  0.1 NATIVO pos=(+1.05,+0.59) yaw=-125.0 d=6.28 spd=0.03 c0=2.50 loc=0.87 bat=49 nobs=95 col=0
+t=  0.3 NATIVO pos=(+1.05,+0.59) yaw=-125.0 d=6.28 spd=0.01 c0=2.50 loc=0.87 bat=49 nobs=95 col=0
+t=  0.4 NATIVO pos=(+1.05,+0.59) yaw=-124.9 d=6.28 spd=0.01 c0=2.50 loc=0.87 bat=49 nobs=95 col=0
+t=  0.5 NATIVO pos=(+1.05,+0.59) yaw=-124.9 d=6.28 spd=0.00 c0=2.50 loc=0.87 bat=49 nobs=95 col=0
+t=  0.7 NATIVO pos=(+1.05,+0.59) yaw=-124.8 d=6.28 spd=0.00 c0=2.50 loc=0.857 bat=49 nobs=97 col=0
+t=  0.8 NATIVO pos=(+1.05,+0.59) yaw=-125.0 d=6.28 spd=0.01 c0=2.50 loc=0.857 bat=49 nobs=97 col=0
+t=  0.9 NATIVO pos=(+1.05,+0.59) yaw=-124.9 d=6.28 spd=0.01 c0=2.50 loc=0.857 bat=49 nobs=97 col=0
+t=  1.1 NATIVO pos=(+1.06,+0.59) yaw=-124.9 d=6.28 spd=0.01 c0=2.50 loc=0.881 bat=49 nobs=95 col=0
+t=  1.2 NATIVO pos=(+1.06,+0.60) yaw=-125.0 d=6.28 spd=0.02 c0=2.50 loc=0.881 bat=49 nobs=95 col=0
+t=  1.3 NATIVO pos=(+1.05,+0.59) yaw=-124.8 d=6.28 spd=0.00 c0=2.50 loc=0.881 bat=49 nobs=95 col=0
+t=  1.4 NATIVO pos=(+1.05,+0.59) yaw=-124.8 d=6.28 spd=0.01 c0=2.50 loc=0.881 bat=49 nobs=95 col=0
+t=  1.6 NATIVO pos=(+1.05,+0.60) yaw=-125.1 d=6.27 spd=0.01 c0=2.50 loc=0.873 bat=49 nobs=103 col=0
+t=  1.7 NATIVO pos=(+1.05,+0.59) yaw=-124.8 d=6.28 spd=0.00 c0=2.50 loc=0.873 bat=49 nobs=103 col=0
+t=  1.8 NATIVO pos=(+1.05,+0.59) yaw=-125.0 d=6.28 spd=0.00 c0=2.50 loc=0.873 bat=49 nobs=103 col=0
+t=  2.0 NATIVO pos=(+1.05,+0.59) yaw=-124.9 d=6.28 spd=0.01 c0=2.50 loc=0.867 bat=49 nobs=105 col=0
+t=  2.1 NATIVO pos=(+1.05,+0.59) yaw=-124.8 d=6.28 spd=0.00 c0=2.50 loc=0.867 bat=49 nobs=105 col=0
+t=  2.2 NATIVO pos=(+1.05,+0.59) yaw=-125.4 d=6.28 spd=0.00 c0=2.50 loc=0.867 bat=49 nobs=105 col=0
+t=  2.4 NATIVO pos=(+1.06,+0.58) yaw=-126.8 d=6.29 spd=0.02 c0=2.50 loc=0.867 bat=49 nobs=105 col=0
+t=  2.5 NATIVO pos=(+1.08,+0.58) yaw=-128.5 d=6.31 spd=0.04 c0=2.50 loc=0.862 bat=49 nobs=97 col=0
+t=  2.6 NATIVO pos=(+1.09,+0.55) yaw=-133.6 d=6.33 spd=0.07 c0=2.50 loc=0.862 bat=49 nobs=97 col=0
+t=  2.7 NATIVO pos=(+1.10,+0.55) yaw=-140.0 d=6.34 spd=0.08 c0=2.50 loc=0.862 bat=49 nobs=97 col=0
+t=  2.9 NATIVO pos=(+1.11,+0.57) yaw=-151.4 d=6.34 spd=0.08 c0=2.50 loc=0.862 bat=49 nobs=97 col=0
+t=  3.0 NATIVO pos=(+1.11,+0.59) yaw=-155.3 d=6.33 spd=0.08 c0=2.50 loc=0.874 bat=49 nobs=95 col=0
+t=  3.1 NATIVO pos=(+1.11,+0.65) yaw=-162.1 d=6.31 spd=0.10 c0=2.50 loc=0.874 bat=49 nobs=98 col=0 STALL
+t=  3.3 NATIVO pos=(+1.12,+0.67) yaw=-163.2 d=6.31 spd=0.12 c0=2.50 loc=0.874 bat=49 nobs=98 col=0
+t=  3.4 NATIVO pos=(+1.11,+0.68) yaw=-166.0 d=6.30 spd=0.18 c0=2.50 loc=0.837 bat=49 nobs=84 col=0
+t=  3.5 NATIVO pos=(+1.11,+0.68) yaw=-166.0 d=6.30 spd=0.16 c0=2.50 loc=0.837 bat=49 nobs=84 col=0
+t=  3.7 NATIVO pos=(+1.11,+0.65) yaw=-169.6 d=6.31 spd=0.10 c0=2.50 loc=0.837 bat=49 nobs=84 col=0
+t=  3.8 NATIVO pos=(+1.11,+0.63) yaw=-172.1 d=6.32 spd=0.05 c0=2.50 loc=0.837 bat=49 nobs=84 col=0
+t=  4.0 NATIVO pos=(+1.11,+0.58) yaw=+178.5 d=6.34 spd=0.12 c0=2.50 loc=0.847 bat=49 nobs=82 col=0
+t=  4.1 NATIVO pos=(+1.12,+0.57) yaw=+171.2 d=6.35 spd=0.12 c0=2.50 loc=0.847 bat=49 nobs=82 col=0
+NATIVE-CONTACT #1 pos=(+1.11,+0.61) legtau=30.1
+t=  4.2 NATIVO pos=(+1.11,+0.61) yaw=+165.6 d=6.33 spd=0.08 c0=2.50 loc=0.847 bat=49 nobs=82 col=1
+t=  4.4 NATIVO pos=(+1.13,+0.62) yaw=+166.0 d=6.34 spd=0.06 c0=2.37 loc=0.859 bat=49 nobs=74 col=1
+t=  4.5 NATIVO pos=(+1.14,+0.61) yaw=+168.2 d=6.36 spd=0.05 c0=2.39 loc=0.859 bat=49 nobs=74 col=1
+t=  4.7 NATIVO pos=(+1.14,+0.58) yaw=+166.8 d=6.37 spd=0.04 c0=2.41 loc=0.859 bat=49 nobs=72 col=1
+t=  4.8 NATIVO pos=(+1.14,+0.56) yaw=+165.0 d=6.37 spd=0.04 c0=2.42 loc=0.833 bat=49 nobs=76 col=1
+t=  4.9 NATIVO pos=(+1.15,+0.55) yaw=+162.6 d=6.38 spd=0.09 c0=2.42 loc=0.833 bat=49 nobs=76 col=1
+t=  5.1 NATIVO pos=(+1.14,+0.56) yaw=+164.5 d=6.37 spd=0.08 c0=2.41 loc=0.833 bat=49 nobs=76 col=1
+t=  5.2 NATIVO pos=(+1.14,+0.57) yaw=+163.6 d=6.37 spd=0.07 c0=2.50 loc=0.868 bat=49 nobs=74 col=1
+t=  5.3 NATIVO pos=(+1.14,+0.56) yaw=+163.5 d=6.37 spd=0.02 c0=2.50 loc=0.868 bat=49 nobs=74 col=1
+t=  5.4 NATIVO pos=(+1.14,+0.56) yaw=+163.5 d=6.37 spd=0.02 c0=2.50 loc=0.868 bat=49 nobs=74 col=1
+t=  5.6 NATIVO pos=(+1.14,+0.56) yaw=+164.0 d=6.37 spd=0.01 c0=2.50 loc=0.868 bat=49 nobs=74 col=1
+t=  5.7 NATIVO pos=(+1.14,+0.56) yaw=+163.9 d=6.37 spd=0.01 c0=2.47 loc=0.852 bat=49 nobs=78 col=1
+t=  5.8 NATIVO pos=(+1.14,+0.56) yaw=+163.7 d=6.37 spd=0.01 c0=2.47 loc=0.852 bat=49 nobs=78 col=1
+t=  6.0 NATIVO pos=(+1.14,+0.56) yaw=+163.6 d=6.37 spd=0.00 c0=2.47 loc=0.852 bat=49 nobs=78 col=1
+t=  6.1 NATIVO pos=(+1.14,+0.56) yaw=+163.9 d=6.37 spd=0.00 c0=2.47 loc=0.852 bat=49 nobs=78 col=1
+t=  6.2 NATIVO pos=(+1.14,+0.56) yaw=+163.8 d=6.37 spd=0.00 c0=2.50 loc=0.855 bat=49 nobs=69 col=1
+t=  6.4 NATIVO pos=(+1.14,+0.56) yaw=+163.8 d=6.37 spd=0.00 c0=2.50 loc=0.855 bat=49 nobs=69 col=1
+t=  6.5 NATIVO pos=(+1.14,+0.56) yaw=+163.3 d=6.37 spd=0.01 c0=2.50 loc=0.855 bat=49 nobs=69 col=1
+t=  6.7 NATIVO pos=(+1.11,+0.52) yaw=+163.7 d=6.36 spd=0.08 c0=2.42 loc=0.86 bat=49 nobs=63 col=1
+t=  6.8 NATIVO pos=(+1.11,+0.51) yaw=+159.3 d=6.36 spd=0.09 c0=2.42 loc=0.86 bat=49 nobs=63 col=1
+t=  6.9 NATIVO pos=(+1.09,+0.52) yaw=+155.8 d=6.35 spd=0.08 c0=2.41 loc=0.86 bat=49 nobs=63 col=1
+t=  7.0 NATIVO pos=(+1.05,+0.58) yaw=+152.3 d=6.28 spd=0.14 c0=2.33 loc=0.86 bat=49 nobs=63 col=1
+t=  7.2 NATIVO pos=(+1.03,+0.63) yaw=+151.0 d=6.24 spd=0.16 c0=2.17 loc=0.894 bat=49 nobs=73 col=1
+t=  7.3 NATIVO pos=(+1.02,+0.67) yaw=+151.3 d=6.22 spd=0.20 c0=2.14 loc=0.894 bat=49 nobs=73 col=1
+t=  7.5 NATIVO pos=(+0.96,+0.72) yaw=+158.8 d=6.14 spd=0.32 c0=2.06 loc=0.894 bat=49 nobs=66 col=1
+t=  7.6 NATIVO pos=(+0.91,+0.73) yaw=+159.7 d=6.10 spd=0.37 c0=1.71 loc=0.881 bat=49 nobs=77 col=1
+t=  7.7 NATIVO pos=(+0.86,+0.74) yaw=+159.8 d=6.05 spd=0.36 c0=1.66 loc=0.881 bat=49 nobs=77 col=1
+t=  7.8 NATIVO pos=(+0.81,+0.74) yaw=+160.8 d=6.00 spd=0.35 c0=1.62 loc=0.881 bat=49 nobs=77 col=1
+t=  8.0 NATIVO pos=(+0.69,+0.69) yaw=+161.7 d=5.91 spd=0.44 c0=1.39 loc=0.868 bat=49 nobs=82 col=1
+t=  8.1 NATIVO pos=(+0.57,+0.70) yaw=+158.3 d=5.79 spd=0.57 c0=1.27 loc=0.868 bat=49 nobs=76 col=1
+t=  8.3 NATIVO pos=(+0.52,+0.72) yaw=+157.4 d=5.74 spd=0.57 c0=1.22 loc=0.868 bat=49 nobs=76 col=1
+t=  8.4 NATIVO pos=(+0.48,+0.74) yaw=+156.4 d=5.70 spd=0.56 c0=1.17 loc=0.868 bat=49 nobs=76 col=1
+t=  8.5 NATIVO pos=(+0.45,+0.77) yaw=+155.6 d=5.66 spd=0.53 c0=1.14 loc=0.874 bat=49 nobs=59 col=1
+t=  8.6 NATIVO pos=(+0.44,+0.86) yaw=+154.5 d=5.61 spd=0.49 c0=1.10 loc=0.874 bat=49 nobs=60 col=1
+t=  8.8 NATIVO pos=(+0.42,+0.91) yaw=+156.1 d=5.57 spd=0.38 c0=1.06 loc=0.874 bat=49 nobs=60 col=1
+t=  8.9 NATIVO pos=(+0.38,+0.95) yaw=+158.4 d=5.52 spd=0.40 c0=1.01 loc=0.907 bat=49 nobs=53 col=1
+t=  9.1 NATIVO pos=(+0.30,+0.99) yaw=+157.7 d=5.43 spd=0.44 c0=0.93 loc=0.907 bat=49 nobs=53 col=1
+t=  9.2 NATIVO pos=(+0.27,+1.00) yaw=+156.1 d=5.40 spd=0.43 c0=0.89 loc=0.907 bat=49 nobs=56 col=1
+t=  9.3 NATIVO pos=(+0.23,+1.01) yaw=+156.5 d=5.36 spd=0.38 c0=0.85 loc=0.907 bat=49 nobs=56 col=1
+t=  9.5 NATIVO pos=(+0.12,+1.01) yaw=+157.1 d=5.26 spd=0.48 c0=0.92 loc=0.923 bat=49 nobs=61 col=1
+t=  9.6 NATIVO pos=(+0.07,+0.99) yaw=+155.6 d=5.22 spd=0.46 c0=0.87 loc=0.923 bat=49 nobs=62 col=1
+t=  9.7 NATIVO pos=(+0.02,+1.00) yaw=+153.9 d=5.17 spd=0.47 c0=1.14 loc=0.923 bat=49 nobs=61 col=1
+t=  9.9 NATIVO pos=(-0.07,+1.05) yaw=+152.5 d=5.07 spd=0.48 c0=1.19 loc=0.91 bat=49 nobs=50 col=1
+t= 10.0 NATIVO pos=(-0.09,+1.08) yaw=+151.7 d=5.04 spd=0.47 c0=1.16 loc=0.91 bat=49 nobs=50 col=1
+t= 10.1 NATIVO pos=(-0.11,+1.11) yaw=+150.5 d=5.01 spd=0.36 c0=1.13 loc=0.91 bat=49 nobs=50 col=1
+t= 10.3 NATIVO pos=(-0.14,+1.20) yaw=+153.2 d=4.95 spd=0.43 c0=1.05 loc=0.944 bat=49 nobs=47 col=1
+t= 10.4 NATIVO pos=(-0.17,+1.22) yaw=+157.5 d=4.91 spd=0.41 c0=1.01 loc=0.944 bat=49 nobs=54 col=1
+t= 10.6 NATIVO pos=(-0.26,+1.21) yaw=+161.4 d=4.83 spd=0.37 c0=0.95 loc=0.944 bat=49 nobs=51 col=1
+NATIVE-CONTACT #2 pos=(-0.31,+1.20) legtau=28.4
+t= 10.7 NATIVO pos=(-0.31,+1.20) yaw=+162.4 d=4.79 spd=0.35 c0=0.80 loc=0.897 bat=49 nobs=44 col=2
+t= 10.9 NATIVO pos=(-0.37,+1.14) yaw=+162.9 d=4.75 spd=0.38 c0=0.78 loc=0.898 bat=49 nobs=45 col=2
+t= 11.0 NATIVO pos=(-0.40,+1.14) yaw=+160.6 d=4.73 spd=0.38 c0=0.76 loc=0.898 bat=49 nobs=38 col=2
+t= 11.1 NATIVO pos=(-0.42,+1.16) yaw=+163.0 d=4.70 spd=0.36 c0=1.01 loc=0.886 bat=49 nobs=55 col=2
+t= 11.3 NATIVO pos=(-0.43,+1.16) yaw=+165.1 d=4.69 spd=0.25 c0=1.00 loc=0.886 bat=49 nobs=55 col=2
+t= 11.4 NATIVO pos=(-0.44,+1.17) yaw=+163.9 d=4.68 spd=0.19 c0=0.99 loc=0.886 bat=49 nobs=55 col=2
+t= 11.5 NATIVO pos=(-0.44,+1.17) yaw=+162.8 d=4.68 spd=0.11 c0=0.99 loc=0.886 bat=49 nobs=55 col=2
+t= 11.7 NATIVO pos=(-0.45,+1.17) yaw=+162.5 d=4.67 spd=0.08 c0=0.98 loc=0.878 bat=49 nobs=51 col=2
+t= 11.8 NATIVO pos=(-0.45,+1.17) yaw=+162.6 d=4.68 spd=0.07 c0=0.98 loc=0.878 bat=49 nobs=51 col=2
+t= 12.0 NATIVO pos=(-0.44,+1.17) yaw=+162.9 d=4.68 spd=0.02 c0=0.98 loc=0.878 bat=49 nobs=51 col=2
+t= 12.1 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.883 bat=49 nobs=48 col=2
+t= 12.2 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.883 bat=49 nobs=48 col=2
+t= 12.3 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.883 bat=49 nobs=48 col=2
+t= 12.5 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.883 bat=49 nobs=48 col=2
+t= 12.6 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.891 bat=49 nobs=52 col=2
+t= 12.7 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.99 loc=0.891 bat=49 nobs=52 col=2
+t= 12.9 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.891 bat=49 nobs=52 col=2
+t= 13.0 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.891 bat=49 nobs=52 col=2
+t= 13.1 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.881 bat=49 nobs=51 col=2
+t= 13.3 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.67 spd=0.01 c0=0.98 loc=0.881 bat=49 nobs=51 col=2
+t= 13.4 NATIVO pos=(-0.45,+1.16) yaw=+162.9 d=4.67 spd=0.00 c0=0.98 loc=0.881 bat=49 nobs=51 col=2
+t= 13.5 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.881 bat=49 nobs=51 col=2
+t= 13.7 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.909 bat=49 nobs=52 col=2
+t= 13.8 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.909 bat=49 nobs=52 col=2
+t= 13.9 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.909 bat=49 nobs=52 col=2 STALL
+t= 14.1 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=1.05 loc=0.915 bat=49 nobs=38 col=2 STALL
+t= 14.2 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=1.05 loc=0.915 bat=49 nobs=38 col=2 STALL
+t= 14.3 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=1.05 loc=0.915 bat=49 nobs=38 col=2 STALL
+t= 14.4 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=1.05 loc=0.915 bat=49 nobs=38 col=2 STALL
+t= 14.6 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.893 bat=49 nobs=53 col=2 STALL
+t= 14.7 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.893 bat=49 nobs=53 col=2 STALL
+t= 14.8 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.893 bat=49 nobs=53 col=2 STALL
+t= 15.0 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.893 bat=49 nobs=53 col=2 STALL
+t= 15.1 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.893 bat=49 nobs=43 col=2 STALL
+t= 15.2 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=43 col=2 STALL
+t= 15.4 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=43 col=2 STALL
+t= 15.5 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.915 bat=49 nobs=59 col=2 STALL
+t= 15.6 NATIVO pos=(-0.44,+1.17) yaw=+162.6 d=4.68 spd=0.01 c0=0.98 loc=0.915 bat=49 nobs=59 col=2 STALL
+t= 15.8 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=59 col=2 STALL
+t= 15.9 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=59 col=2 STALL
+t= 16.0 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.88 bat=49 nobs=51 col=2 STALL
+t= 16.2 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.88 bat=49 nobs=51 col=2 STALL
+t= 16.3 NATIVO pos=(-0.45,+1.16) yaw=+162.6 d=4.67 spd=0.01 c0=0.98 loc=0.88 bat=49 nobs=51 col=2 STALL
+t= 16.5 NATIVO pos=(-0.45,+1.16) yaw=+163.0 d=4.67 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=42 col=2 STALL
+t= 16.6 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=42 col=2 STALL
+t= 16.7 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.67 spd=0.00 c0=0.98 loc=0.893 bat=49 nobs=42 col=2 STALL
+t= 16.9 NATIVO pos=(-0.45,+1.16) yaw=+163.0 d=4.67 spd=0.00 c0=0.98 loc=0.885 bat=49 nobs=43 col=2 STALL
+t= 17.0 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.885 bat=49 nobs=43 col=2 STALL
+t= 17.1 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.885 bat=49 nobs=43 col=2 STALL
+t= 17.2 NATIVO pos=(-0.44,+1.17) yaw=+162.6 d=4.68 spd=0.01 c0=0.98 loc=0.885 bat=49 nobs=43 col=2 STALL
+t= 17.4 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.928 bat=49 nobs=50 col=2 STALL
+t= 17.5 NATIVO pos=(-0.45,+1.16) yaw=+162.9 d=4.67 spd=0.00 c0=0.98 loc=0.928 bat=49 nobs=50 col=2 STALL
+t= 17.6 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.928 bat=49 nobs=50 col=2 STALL
+t= 17.8 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.88 bat=49 nobs=51 col=2 STALL
+t= 17.9 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.88 bat=49 nobs=51 col=2 STALL
+t= 18.0 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.88 bat=49 nobs=51 col=2 STALL
+t= 18.2 NATIVO pos=(-0.44,+1.17) yaw=+162.6 d=4.68 spd=0.01 c0=0.98 loc=0.905 bat=49 nobs=49 col=2 STALL
+t= 18.3 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.905 bat=49 nobs=49 col=2 STALL
+t= 18.5 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.67 spd=0.01 c0=0.98 loc=0.905 bat=49 nobs=49 col=2 STALL
+t= 18.6 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.905 bat=49 nobs=49 col=2 STALL
+t= 18.7 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.87 loc=0.896 bat=49 nobs=54 col=2 STALL
+t= 18.8 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.87 loc=0.896 bat=49 nobs=54 col=2 STALL
+t= 19.0 NATIVO pos=(-0.45,+1.16) yaw=+162.9 d=4.68 spd=0.00 c0=0.87 loc=0.896 bat=49 nobs=54 col=2 STALL
+t= 19.1 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.902 bat=49 nobs=51 col=2 STALL
+t= 19.2 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.902 bat=49 nobs=51 col=2 STALL
+t= 19.4 NATIVO pos=(-0.44,+1.17) yaw=+162.8 d=4.68 spd=0.01 c0=0.99 loc=0.902 bat=49 nobs=51 col=2 STALL
+t= 19.5 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.67 spd=0.01 c0=0.98 loc=0.902 bat=49 nobs=51 col=2 STALL
+t= 19.6 NATIVO pos=(-0.45,+1.16) yaw=+162.9 d=4.68 spd=0.00 c0=0.98 loc=0.906 bat=49 nobs=45 col=2 STALL
+t= 19.8 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.906 bat=49 nobs=45 col=2 STALL
+t= 19.9 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.906 bat=49 nobs=45 col=2 STALL
+t= 20.1 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=1.05 loc=0.895 bat=49 nobs=46 col=2 STALL
+t= 20.2 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=1.05 loc=0.895 bat=49 nobs=46 col=2 STALL
+t= 20.3 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=1.05 loc=0.895 bat=49 nobs=46 col=2 STALL
+t= 20.4 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.912 bat=49 nobs=51 col=2 STALL
+t= 20.6 NATIVO pos=(-0.45,+1.17) yaw=+162.9 d=4.67 spd=0.01 c0=0.98 loc=0.912 bat=49 nobs=51 col=2 STALL
+t= 20.7 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.912 bat=49 nobs=51 col=2 STALL
+t= 20.8 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.907 bat=49 nobs=50 col=2 STALL
+t= 21.0 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.907 bat=49 nobs=50 col=2 STALL
+t= 21.1 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.907 bat=49 nobs=50 col=2 STALL
+t= 21.2 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.907 bat=49 nobs=50 col=2 STALL
+t= 21.4 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.907 bat=49 nobs=49 col=2 STALL
+t= 21.5 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.907 bat=49 nobs=49 col=2 STALL
+t= 21.7 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.99 loc=0.907 bat=49 nobs=49 col=2 STALL
+t= 21.8 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=53 col=2 STALL
+t= 21.9 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=53 col=2 STALL
+t= 22.0 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=53 col=2 STALL
+t= 22.2 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.896 bat=49 nobs=47 col=2 STALL
+t= 22.4 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.896 bat=49 nobs=47 col=2 STALL
+t= 22.5 NATIVO pos=(-0.44,+1.16) yaw=+162.6 d=4.68 spd=0.00 c0=0.99 loc=0.896 bat=49 nobs=47 col=2 STALL
+t= 22.6 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=1.05 loc=0.914 bat=49 nobs=50 col=2 STALL
+t= 22.8 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=1.05 loc=0.914 bat=49 nobs=50 col=2 STALL
+t= 22.9 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=1.05 loc=0.914 bat=49 nobs=50 col=2 STALL
+t= 23.0 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.863 bat=49 nobs=45 col=2 STALL
+t= 23.2 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.863 bat=49 nobs=45 col=2 STALL
+t= 23.3 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.863 bat=49 nobs=45 col=2 STALL
+t= 23.4 NATIVO pos=(-0.45,+1.16) yaw=+162.9 d=4.68 spd=0.01 c0=0.98 loc=0.863 bat=49 nobs=45 col=2 STALL
+t= 23.6 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.894 bat=49 nobs=50 col=2 STALL
+t= 23.7 NATIVO pos=(-0.44,+1.17) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.894 bat=49 nobs=50 col=2 STALL
+t= 23.8 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.894 bat=49 nobs=50 col=2 STALL
+t= 23.9 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.894 bat=49 nobs=50 col=2 STALL
+t= 24.1 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.913 bat=49 nobs=47 col=2 STALL
+t= 24.2 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.913 bat=49 nobs=47 col=2 STALL
+t= 24.4 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.67 spd=0.02 c0=0.98 loc=0.913 bat=49 nobs=47 col=2 STALL
+t= 24.5 NATIVO pos=(-0.45,+1.17) yaw=+162.9 d=4.67 spd=0.01 c0=0.98 loc=0.915 bat=49 nobs=51 col=2 STALL
+t= 24.6 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.67 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=51 col=2 STALL
+t= 24.7 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.67 spd=0.01 c0=0.98 loc=0.915 bat=49 nobs=51 col=2 STALL
+t= 24.9 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.915 bat=49 nobs=51 col=2 STALL
+t= 25.0 NATIVO pos=(-0.44,+1.17) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.892 bat=49 nobs=54 col=2 STALL
+t= 25.1 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.02 c0=0.99 loc=0.892 bat=49 nobs=54 col=2 STALL
+t= 25.2 NATIVO pos=(-0.44,+1.17) yaw=+162.6 d=4.68 spd=0.01 c0=0.98 loc=0.892 bat=49 nobs=54 col=2 STALL
+t= 25.4 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.9 bat=49 nobs=51 col=2 STALL
+t= 25.5 NATIVO pos=(-0.44,+1.17) yaw=+162.6 d=4.68 spd=0.01 c0=0.99 loc=0.9 bat=49 nobs=51 col=2 STALL
+t= 25.6 NATIVO pos=(-0.45,+1.16) yaw=+162.6 d=4.68 spd=0.01 c0=0.98 loc=0.9 bat=49 nobs=51 col=2 STALL
+t= 25.8 NATIVO pos=(-0.45,+1.16) yaw=+163.0 d=4.67 spd=0.01 c0=0.98 loc=0.889 bat=49 nobs=50 col=2 STALL
+t= 25.9 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.889 bat=49 nobs=50 col=2 STALL
+t= 26.0 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.889 bat=49 nobs=50 col=2 STALL
+t= 26.2 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.907 bat=49 nobs=47 col=2 STALL
+t= 26.4 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.907 bat=49 nobs=47 col=2 STALL
+t= 26.5 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.67 spd=0.00 c0=0.98 loc=0.907 bat=49 nobs=47 col=2 STALL
+t= 26.6 NATIVO pos=(-0.44,+1.17) yaw=+162.6 d=4.68 spd=0.01 c0=0.99 loc=0.907 bat=49 nobs=47 col=2 STALL
+t= 26.7 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.921 bat=49 nobs=59 col=2 STALL
+t= 26.9 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.99 loc=0.921 bat=49 nobs=59 col=2 STALL
+t= 27.0 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.98 loc=0.921 bat=49 nobs=59 col=2 STALL
+t= 27.1 NATIVO pos=(-0.44,+1.16) yaw=+162.8 d=4.68 spd=0.00 c0=0.99 loc=0.908 bat=49 nobs=45 col=2 STALL
+t= 27.3 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.908 bat=49 nobs=45 col=2 STALL
+t= 27.4 NATIVO pos=(-0.45,+1.16) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.908 bat=49 nobs=45 col=2 STALL
+t= 27.5 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.68 spd=0.01 c0=0.98 loc=0.908 bat=49 nobs=45 col=2 STALL
+t= 27.7 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.67 spd=0.01 c0=0.98 loc=0.908 bat=49 nobs=45 col=2 STALL
+t= 27.8 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.67 spd=0.01 c0=0.98 loc=0.895 bat=49 nobs=58 col=2 STALL
+t= 27.9 NATIVO pos=(-0.45,+1.17) yaw=+162.8 d=4.67 spd=0.01 c0=0.98 loc=0.895 bat=49 nobs=58 col=2 STALL
+t= 28.1 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.895 bat=49 nobs=58 col=2 STALL
+t= 28.2 NATIVO pos=(-0.45,+1.17) yaw=+162.7 d=4.68 spd=0.00 c0=0.98 loc=0.893 bat=49 nobs=52 col=2 STALL
+t= 28.3 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=52 col=2 STALL
+t= 28.5 NATIVO pos=(-0.44,+1.17) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=52 col=2 STALL
+t= 28.6 NATIVO pos=(-0.44,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.99 loc=0.893 bat=49 nobs=38 col=2 STALL
+t= 28.7 NATIVO pos=(-0.45,+1.16) yaw=+162.7 d=4.68 spd=0.01 c0=0.98 loc=0.893 bat=49 nobs=38 col=2 STALL
+FIN
