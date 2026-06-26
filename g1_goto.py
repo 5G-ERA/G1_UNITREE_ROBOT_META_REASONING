@@ -305,6 +305,7 @@ PATHSNIFF_JS = r"""(function(){
 APPSNIFF_JS = r"""(function(){
   if(!window.__appSniff){ window.__appSniff=1;
     window.__snOut={}; window.__snWk={}; window.__snTop={}; window.__snSamples=[]; window.__snPath=null;
+    window.__snAll={parse:0,worker:0,send:0};
     function push(a,o){ a.push(o); if(a.length>300) a.shift(); }
     function looksPath(o){ try{ if(Array.isArray(o)&&o.length>=3){ var a=o[0];
       if(a&&typeof a==='object'&&('x'in a)&&('y'in a)) return o.length;
@@ -315,7 +316,7 @@ APPSNIFF_JS = r"""(function(){
         if(m){ if(!window.__snPath) window.__snPath={where:k,n:m,sample:JSON.stringify(d[k]).slice(0,600)}; return m; }
         var mm=scan(d[k],dep+1); if(mm) return mm; }catch(e){} } return 0; }
     var S=RTCDataChannel.prototype.send;
-    RTCDataChannel.prototype.send=function(d){ try{ if((this.label||'')==='data' && typeof d==='string'){
+    RTCDataChannel.prototype.send=function(d){ try{ window.__snAll.send++; if((this.label||'')==='data' && typeof d==='string'){
       var v=JSON.parse(d); var tp=(v&&v.topic)?(''+v.topic):'?'; var api='';
       try{ api=(v.data&&v.data.header&&v.data.header.identity)?v.data.header.identity.api_id:''; }catch(e){}
       var key=tp+(api!==''?(' api='+api):''); var rec=window.__snOut[key]||{n:0,sample:''}; rec.n++;
@@ -324,13 +325,13 @@ APPSNIFF_JS = r"""(function(){
     }}catch(e){} return S.apply(this,arguments); };
     var seen=new WeakSet(); var o=Worker.prototype.postMessage;
     Worker.prototype.postMessage=function(m){ try{ if(!seen.has(this)){ seen.add(this);
-      this.addEventListener('message',function(ev){ try{ var d=ev.data; var t=(d&&d.type)?(''+d.type):typeof d;
+      this.addEventListener('message',function(ev){ try{ window.__snAll.worker++; var d=ev.data; var t=(d&&d.type)?(''+d.type):typeof d;
         var rec=window.__snWk[t]||{n:0,pathlen:0,keys:''}; rec.n++;
         if(!rec.keys&&d&&typeof d==='object') rec.keys=Object.keys(d).slice(0,8).join(',');
         var pl=scan(d,0); if(pl>rec.pathlen) rec.pathlen=pl; window.__snWk[t]=rec;
       }catch(e){} }); } }catch(e){} return o.apply(this,arguments); };
     var jp=JSON.parse; JSON.parse=function(s){ var v=jp.apply(this,arguments);
-      try{ if(v&&v.topic){ var tp=''+v.topic; var rec=window.__snTop[tp]||{n:0,pathlen:0}; rec.n++;
+      try{ if(v&&v.topic){ window.__snAll.parse++; var tp=''+v.topic; var rec=window.__snTop[tp]||{n:0,pathlen:0}; rec.n++;
         if(/path|plan|traj|route|nav|key_info|topo|waypoint/i.test(tp)){ var d=(typeof v.data==='string')?jp(v.data):v.data; var pl=scan(d,0); if(pl>rec.pathlen) rec.pathlen=pl; }
         window.__snTop[tp]=rec; } }catch(e){} return v; };
   } return 1;
@@ -352,8 +353,14 @@ def cmd_appsniff(secs=40):
             so = json.loads(cdp.eval("JSON.stringify(window.__snOut||{})") or "{}")
             sw = json.loads(cdp.eval("JSON.stringify(window.__snWk||{})") or "{}")
             st = json.loads(cdp.eval("JSON.stringify(window.__snTop||{})") or "{}")
+            allc = json.loads(cdp.eval("JSON.stringify(window.__snAll||{})") or "{}")
             cand = cdp.eval("JSON.stringify(window.__snPath||null)")
-            L = [f"=== APPSNIFF {time.strftime('%H:%M:%S')} ==="]
+            tot = sum(allc.values()) if allc else 0
+            L = [f"=== APPSNIFF {time.strftime('%H:%M:%S')}  TRAFICO total: parse={allc.get('parse',0)} "
+                 f"worker={allc.get('worker',0)} send={allc.get('send',0)} ==="]
+            if i > 6 and tot == 0:
+                L.append("  >>> SIN TRAFICO en esta pagina. La app cambio de pantalla al navegar, o me enganche a otra")
+                L.append("      pagina. SOLUCION: mantente en la pantalla de OPERACION, reintenta, y navega SIN cambiar de vista.")
             L.append("-- OUT (lo que la APP envia por el datachannel) --")
             for k, r in sorted(so.items(), key=lambda kv: -kv[1]["n"]):
                 L.append(f"   n={r['n']:<5} {k}")
