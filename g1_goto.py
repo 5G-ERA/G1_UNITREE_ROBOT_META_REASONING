@@ -508,11 +508,14 @@ def clear_dir(x, y, yaw_deg, off_deg, obs_pts, maxd=2.5, cone=25.0):
 
 
 def global_plan(sx, sy, gx, gy, oset):
-    """A* GLOBAL de (sx,sy) -> (gx,gy) sobre el costmap de 'oset'. Lista de (x,y) en metros, o []."""
-    cm = g.build_costmap(oset)
+    """A* GLOBAL de (sx,sy) -> (gx,gy) sobre el costmap de 'oset'. Lista de (x,y) en metros. Si A* no halla
+    ruta (o no hay obstaculos) devuelve la RECTA, para que la ventana siempre muestre algo."""
+    cm = g.build_costmap(oset) if oset else {}
     cells = g.astar((round(sx / g.OCELL), round(sy / g.OCELL)),
                     (round(gx / g.OCELL), round(gy / g.OCELL)), cm, margin=20)
-    return [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells] if cells else []
+    if cells:
+        return [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells]
+    return [(sx, sy), (gx, gy)]    # fallback: recta origen->destino
 
 
 def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None):
@@ -783,7 +786,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
 
             # --- PLAN GLOBAL origen->destino (para verlo completo en la ventana) ---
             if vshare is not None and now - gplan_t > 3.0 and trail:
-                gplan = global_plan(trail[0][0], trail[0][1], wx, wy, oset) if oset else []
+                gplan = global_plan(trail[0][0], trail[0][1], wx, wy, oset or refmap)
                 gplan_t = now
             # --- publica estado para la ventana en vivo ---
             if vshare is not None:
@@ -1233,8 +1236,8 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                            s=10, c="#16a085", marker="o", linewidths=0, label="laser en vivo")
             if trail and len(trail) > 1:             # odometria recorrida
                 ax.plot([p[0] for p in trail], [p[1] for p in trail], "-", c="#7f8c8d", lw=1.0, alpha=0.7, label="recorrido")
-            if gplan and len(gplan) > 1:             # PLAN GLOBAL origen->destino (completo)
-                ax.plot([p[0] for p in gplan], [p[1] for p in gplan], "-", c="#9b59b6", lw=3.0, alpha=0.85,
+            if gplan and len(gplan) > 1:             # PLAN GLOBAL origen->destino (completo) — VERDE
+                ax.plot([p[0] for p in gplan], [p[1] for p in gplan], "-", c="#00d000", lw=3.2, alpha=0.9,
                         label="PLAN GLOBAL (A* origen->destino)")
             if plan and len(plan) > 1:               # ruta A* local (la que ejecuta DWA)
                 ax.plot([p[0] for p in plan], [p[1] for p in plan], "-", c="#1565c0", lw=2.0, label="ruta A* local")
@@ -1438,8 +1441,8 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
                 omap[c] = now
             omap = {c: tt for c, tt in omap.items() if now - tt < NAV_OMAP_TTL}
             if vshare is not None and now - gplan_t > 3.0:
-                oset = set(omap.keys())
-                gplan = global_plan(start_xy[0], start_xy[1], wx, wy, oset) if oset else []
+                obs_plan = set(omap.keys()) or refmap          # mapa vivo, o el de referencia, o (vacio)=recta
+                gplan = global_plan(start_xy[0], start_xy[1], wx, wy, obs_plan)
                 gplan_t = now
 
             if now - low_t > 0.2:                  # contacto por IMU/par (mismo detector)
