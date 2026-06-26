@@ -1010,3 +1010,482 @@ t= 45.9 DWA-F pos=(+0.31,+0.35) yaw= -52.8 d=0.70 c0=1.94 obs=707 cmd=(ly=+0.40,
 t= 46.1 DWA-F pos=(+0.33,+0.28) yaw= -42.1 d=0.69 c0=1.88 obs=708 cmd=(ly=+0.40,rx=-0.45)
 ABORT A
 FIN
+
+=== GOTOVIZ B 2026-06-26 10:51:49 ===
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=186
+t=  0.0 SEEK-T pos=(-1.36,-0.32) yaw= -10.9 d=4.62 goal_err=+148 carrot_err=  +0 c0=2.50 obs=186 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=186
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-1deg/s OK
+t=  0.2 SEEK-T pos=(-1.36,-0.32) yaw= -11.0 d=4.61 goal_err=+148 carrot_err=  +0 c0=2.50 obs=186 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=186
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-0deg/s OK
+t=  0.3 SEEK-T pos=(-1.36,-0.32) yaw= -11.0 d=4.62 goal_err=+148 carrot_err=  +0 c0=2.50 obs=186 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=228
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+31deg/s OK
+t=  0.5 SEEK-T pos=(-1.36,-0.32) yaw=  -6.1 d=4.61 goal_err=+143 carrot_err=  +0 c0=2.50 obs=228 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=228
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+35deg/s OK
+t=  0.6 SEEK-T pos=(-1.37,-0.32) yaw=  -1.5 d=4.61 goal_err=+138 carrot_err=  +0 c0=2.50 obs=228 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=228
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+45deg/s OK
+t=  0.8 SEEK-T pos=(-1.39,-0.33) yaw=  +5.3 d=4.60 goal_err=+131 carrot_err=  +0 c0=2.50 obs=228 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=260
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+33deg/s OK
+t=  0.9 SEEK-T pos=(-1.39,-0.32) yaw=  +9.6 d=4.59 goal_err=+127 carrot_err=  +0 c0=2.50 obs=260 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=260
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+19deg/s OK
+t=  1.0 SEEK-T pos=(-1.41,-0.30) yaw= +12.2 d=4.56 goal_err=+124 carrot_err=  +0 c0=2.50 obs=260 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=260
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+72deg/s OK
+t=  1.2 SEEK-T pos=(-1.43,-0.27) yaw= +21.6 d=4.53 goal_err=+115 carrot_err=  +0 c0=2.50 obs=260 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=299
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+28deg/s OK
+t=  1.3 SEEK-T pos=(-1.43,-0.26) yaw= +25.5 d=4.52 goal_err=+111 carrot_err=  +0 c0=2.50 obs=299 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=299
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+44deg/s OK
+t=  1.4 SEEK-T pos=(-1.42,-0.27) yaw= +31.3 d=4.53 goal_err=+105 carrot_err=  +0 c0=2.50 obs=299 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=299
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+105deg/s OK
+t=  1.6 SEEK-T pos=(-1.38,-0.30) yaw= +46.0 d=4.58 goal_err=+91 carrot_err=  +0 c0=2.23 obs=299 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=332
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+50deg/s OK
+t=  1.7 SEEK-T pos=(-1.37,-0.30) yaw= +52.2 d=4.59 goal_err=+85 carrot_err=  +0 c0=2.23 obs=332 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=332
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+45deg/s OK
+t=  1.8 SEEK-T pos=(-1.37,-0.29) yaw= +58.2 d=4.58 goal_err=+79 carrot_err=  +0 c0=2.22 obs=332 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.6 obs=332
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+28deg/s OK
+t=  2.0 SEEK-T pos=(-1.39,-0.28) yaw= +61.6 d=4.56 goal_err=+75 carrot_err=  +0 c0=2.23 obs=332 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=332
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+48deg/s OK
+t=  2.1 SEEK-T pos=(-1.43,-0.28) yaw= +68.4 d=4.53 goal_err=+68 carrot_err=  +0 c0=2.23 obs=332 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=366
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+19deg/s OK
+t=  2.2 SEEK-T pos=(-1.43,-0.27) yaw= +70.9 d=4.53 goal_err=+66 carrot_err=  +0 c0=2.23 obs=366 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=366
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+71deg/s OK
+t=  2.4 SEEK-T pos=(-1.41,-0.26) yaw= +80.4 d=4.53 goal_err=+56 carrot_err=  +0 c0=2.09 obs=366 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=366
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+51deg/s OK
+t=  2.5 SEEK-T pos=(-1.39,-0.25) yaw= +86.6 d=4.54 goal_err=+50 carrot_err=  +0 c0=1.76 obs=366 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=398
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+51deg/s OK
+t=  2.6 SEEK-T pos=(-1.38,-0.23) yaw= +93.3 d=4.54 goal_err=+44 carrot_err=  +0 c0=1.56 obs=398 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=398
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+39deg/s OK
+t=  2.7 SEEK-T pos=(-1.38,-0.23) yaw= +98.4 d=4.53 goal_err=+39 carrot_err=  +0 c0=1.56 obs=398 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=398
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+68deg/s OK
+t=  2.9 SEEK-T pos=(-1.41,-0.24) yaw=+106.9 d=4.52 goal_err=+30 carrot_err=  +0 c0=1.47 obs=398 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=398
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+33deg/s OK
+t=  3.0 SEEK-T pos=(-1.41,-0.26) yaw=+110.8 d=4.53 goal_err=+26 carrot_err=  +0 c0=1.48 obs=398 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=423
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+14deg/s OK
+t=  3.1 SEEK-T pos=(-1.42,-0.26) yaw=+112.8 d=4.53 goal_err=+24 carrot_err=  +0 c0=1.39 obs=423 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=423
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+72deg/s OK
+t=  3.3 SEEK-F pos=(-1.41,-0.24) yaw=+121.7 d=4.52 goal_err=+15 carrot_err=  +0 c0=1.37 obs=423 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=423
+t=  3.4 SEEK-F pos=(-1.40,-0.21) yaw=+129.1 d=4.51 goal_err=+8 carrot_err=  +0 c0=1.17 obs=423 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=445
+t=  3.6 SEEK-F pos=(-1.41,-0.20) yaw=+135.8 d=4.49 goal_err=+2 carrot_err=  +0 c0=1.07 obs=445 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=445
+t=  3.7 SEEK-F pos=(-1.42,-0.21) yaw=+138.9 d=4.49 goal_err=-2 carrot_err=  +0 c0=1.06 obs=445 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=445
+t=  3.9 SEEK-F pos=(-1.43,-0.22) yaw=+138.0 d=4.49 goal_err=-1 carrot_err=  +0 c0=1.05 obs=445 plan=0 cmd=(ly=+0.40,rx=+0.00)
+COLISION #1 [imu] pos=(-1.44,-0.20) yaw=+133
+t=  4.0 R-BACK pos=(-1.44,-0.20) yaw=+132.9 d=4.47 goal_err=+4 carrot_err=  +0 c0=1.04 obs=458 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  4.2 R-BACK pos=(-1.44,-0.13) yaw=+130.4 d=4.43 goal_err=+7 carrot_err=  +0 c0=0.21 obs=472 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  4.3 R-BACK pos=(-1.45,-0.12) yaw=+133.3 d=4.41 goal_err=+4 carrot_err=  +0 c0=0.19 obs=472 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  4.4 R-BACK pos=(-1.45,-0.11) yaw=+137.4 d=4.40 goal_err=+0 carrot_err=  +0 c0=0.18 obs=482 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  4.6 R-TURN pos=(-1.47,-0.11) yaw=+134.1 d=4.38 goal_err=+4 carrot_err=  +0 c0=0.17 obs=482 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-30deg/s OK
+t=  4.7 R-TURN pos=(-1.47,-0.11) yaw=+130.2 d=4.39 goal_err=+7 carrot_err=  +0 c0=0.17 obs=482 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+6deg/s >>> SIGNO INVERTIDO <<<
+t=  4.8 R-TURN pos=(-1.45,-0.11) yaw=+131.1 d=4.40 goal_err=+7 carrot_err=  +0 c0=0.18 obs=489 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+11deg/s >>> SIGNO INVERTIDO <<<
+t=  5.0 R-TURN pos=(-1.43,-0.11) yaw=+132.5 d=4.42 goal_err=+6 carrot_err=  +0 c0=0.20 obs=489 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-26deg/s OK
+t=  5.1 R-TURN pos=(-1.43,-0.12) yaw=+128.9 d=4.42 goal_err=+9 carrot_err=  +0 c0=0.21 obs=489 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-32deg/s OK
+t=  5.2 R-TURN pos=(-1.44,-0.13) yaw=+124.8 d=4.42 goal_err=+13 carrot_err=  +0 c0=0.21 obs=489 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-87deg/s OK
+t=  5.4 R-TURN pos=(-1.46,-0.15) yaw=+113.3 d=4.42 goal_err=+24 carrot_err=  +0 c0=0.20 obs=497 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-38deg/s OK
+t=  5.5 R-TURN pos=(-1.46,-0.16) yaw=+107.1 d=4.43 goal_err=+30 carrot_err=  +0 c0=0.21 obs=497 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-74deg/s OK
+t=  5.7 R-TURN pos=(-1.41,-0.18) yaw= +96.8 d=4.47 goal_err=+41 carrot_err=  +0 c0=0.38 obs=504 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-19deg/s OK
+t=  5.8 R-TURN pos=(-1.40,-0.19) yaw= +93.9 d=4.50 goal_err=+44 carrot_err=  +0 c0=0.39 obs=504 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=504
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-19deg/s OK
+t=  5.9 SEEK-T pos=(-1.40,-0.21) yaw= +91.5 d=4.51 goal_err=+46 carrot_err=  +0 c0=0.41 obs=504 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=504
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-58deg/s >>> SIGNO INVERTIDO <<<
+t=  6.1 SEEK-T pos=(-1.40,-0.22) yaw= +83.6 d=4.51 goal_err=+54 carrot_err=  +0 c0=0.42 obs=504 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=509
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-20deg/s >>> SIGNO INVERTIDO <<<
+t=  6.2 SEEK-T pos=(-1.42,-0.23) yaw= +81.0 d=4.51 goal_err=+56 carrot_err=  +0 c0=0.43 obs=509 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=509
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+5deg/s OK
+t=  6.3 SEEK-T pos=(-1.44,-0.24) yaw= +81.6 d=4.49 goal_err=+55 carrot_err=  +0 c0=0.44 obs=509 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=509
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-3deg/s OK
+t=  6.5 SEEK-T pos=(-1.45,-0.25) yaw= +81.3 d=4.49 goal_err=+55 carrot_err=  +0 c0=0.45 obs=509 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=512
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+29deg/s OK
+t=  6.6 SEEK-T pos=(-1.46,-0.24) yaw= +85.4 d=4.48 goal_err=+51 carrot_err=  +0 c0=0.44 obs=512 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=512
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+39deg/s OK
+t=  6.7 SEEK-T pos=(-1.47,-0.24) yaw= +90.4 d=4.47 goal_err=+46 carrot_err=  +0 c0=0.44 obs=512 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=512
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+56deg/s OK
+t=  6.9 SEEK-T pos=(-1.51,-0.25) yaw= +97.4 d=4.45 goal_err=+39 carrot_err=  +0 c0=0.27 obs=512 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=514
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+19deg/s OK
+t=  7.0 SEEK-T pos=(-1.51,-0.25) yaw=+100.5 d=4.45 goal_err=+35 carrot_err=  +0 c0=0.27 obs=514 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=514
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+67deg/s OK
+t=  7.2 SEEK-T pos=(-1.51,-0.25) yaw=+109.4 d=4.45 goal_err=+27 carrot_err=  +0 c0=0.26 obs=514 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.4 obs=514
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+44deg/s OK
+t=  7.3 SEEK-T pos=(-1.50,-0.23) yaw=+115.7 d=4.45 goal_err=+21 carrot_err=  +0 c0=0.25 obs=514 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.4 obs=518
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+53deg/s OK
+t=  7.4 SEEK-S pos=(-1.50,-0.21) yaw=+122.3 d=4.44 goal_err=+14 carrot_err=  +0 c0=0.24 obs=518 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.4 obs=518
+t=  7.6 SEEK-S pos=(-1.50,-0.21) yaw=+127.7 d=4.43 goal_err=+9 carrot_err=  +0 c0=0.23 obs=518 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.4 obs=518
+t=  7.7 SEEK-S pos=(-1.52,-0.23) yaw=+135.5 d=4.44 goal_err=+1 carrot_err=  +0 c0=0.37 obs=518 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.4 obs=518
+t=  7.9 SEEK-S pos=(-1.52,-0.25) yaw=+135.8 d=4.44 goal_err=+0 carrot_err=  +0 c0=0.37 obs=518 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=521
+t=  8.0 SEEK-S pos=(-1.52,-0.25) yaw=+135.2 d=4.45 goal_err=+1 carrot_err=  +0 c0=0.38 obs=521 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=521
+t=  8.1 SEEK-S pos=(-1.51,-0.25) yaw=+136.4 d=4.45 goal_err=-0 carrot_err=  +0 c0=0.38 obs=521 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=521
+t=  8.3 SEEK-S pos=(-1.49,-0.24) yaw=+136.4 d=4.46 goal_err=-0 carrot_err=  +0 c0=0.26 obs=521 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=524
+t=  8.4 SEEK-S pos=(-1.49,-0.23) yaw=+135.7 d=4.46 goal_err=+1 carrot_err=  +0 c0=0.26 obs=524 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=524
+t=  8.5 SEEK-S pos=(-1.49,-0.23) yaw=+135.8 d=4.45 goal_err=+0 carrot_err=  +0 c0=0.25 obs=524 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=524
+t=  8.7 SEEK-S pos=(-1.49,-0.24) yaw=+136.0 d=4.46 goal_err=+0 carrot_err=  +0 c0=0.26 obs=524 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=524
+t=  8.8 SEEK-S pos=(-1.49,-0.24) yaw=+136.1 d=4.45 goal_err=+0 carrot_err=  +0 c0=0.26 obs=524 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=524
+t=  9.0 SEEK-S pos=(-1.50,-0.24) yaw=+136.0 d=4.45 goal_err=+0 carrot_err=  +0 c0=0.26 obs=524 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.5 obs=524
+t=  9.1 SEEK-S pos=(-1.49,-0.23) yaw=+135.9 d=4.46 goal_err=+0 carrot_err=  +0 c0=0.26 obs=524 plan=0 cmd=(ly=+0.00,rx=+0.00)
+t=  9.3 BRK-BK pos=(-1.50,-0.23) yaw=+136.0 d=4.45 goal_err=+0 carrot_err=  +0 c0=0.26 obs=524 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  9.4 BRK-BK pos=(-1.49,-0.23) yaw=+136.0 d=4.45 goal_err=+0 carrot_err=  +0 c0=0.25 obs=525 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  9.5 BRK-BK pos=(-1.50,-0.23) yaw=+136.0 d=4.45 goal_err=+0 carrot_err=  +0 c0=0.26 obs=525 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t=  9.7 BRK-TR pos=(-1.50,-0.24) yaw=+136.0 d=4.46 goal_err=+0 carrot_err=  +0 c0=0.26 obs=525 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-3deg/s OK
+t=  9.8 BRK-TR pos=(-1.48,-0.26) yaw=+135.7 d=4.49 goal_err=+0 carrot_err=  +0 c0=0.29 obs=525 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+9deg/s >>> SIGNO INVERTIDO <<<
+t=  9.9 BRK-TR pos=(-1.46,-0.28) yaw=+136.9 d=4.51 goal_err=-1 carrot_err=  +0 c0=0.31 obs=528 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+11deg/s >>> SIGNO INVERTIDO <<<
+t= 10.0 BRK-TR pos=(-1.44,-0.29) yaw=+138.5 d=4.53 goal_err=-2 carrot_err=  +0 c0=0.33 obs=528 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-89deg/s OK
+t= 10.2 BRK-TR pos=(-1.44,-0.33) yaw=+126.5 d=4.56 goal_err=+9 carrot_err=  +0 c0=0.36 obs=528 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-46deg/s OK
+t= 10.3 BRK-TR pos=(-1.42,-0.34) yaw=+119.1 d=4.58 goal_err=+17 carrot_err=  +0 c0=0.38 obs=531 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-75deg/s OK
+t= 10.5 BRK-TR pos=(-1.37,-0.35) yaw=+109.9 d=4.63 goal_err=+26 carrot_err=  +0 c0=0.42 obs=531 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-23deg/s OK
+t= 10.6 BRK-TR pos=(-1.36,-0.37) yaw=+106.1 d=4.64 goal_err=+30 carrot_err=  +0 c0=0.44 obs=531 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-27deg/s OK
+t= 10.8 BRK-TR pos=(-1.35,-0.39) yaw=+102.4 d=4.66 goal_err=+34 carrot_err=  +0 c0=0.46 obs=531 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-53deg/s OK
+t= 10.9 BRK-TR pos=(-1.35,-0.41) yaw= +95.2 d=4.68 goal_err=+41 carrot_err=  +0 c0=0.61 obs=533 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-25deg/s OK
+t= 11.0 BRK-TR pos=(-1.36,-0.42) yaw= +92.0 d=4.68 goal_err=+44 carrot_err=  +0 c0=0.62 obs=533 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-33deg/s OK
+t= 11.2 BRK-TR pos=(-1.37,-0.42) yaw= +87.3 d=4.67 goal_err=+48 carrot_err=  +0 c0=0.62 obs=533 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-71deg/s OK
+t= 11.3 BRK-TR pos=(-1.35,-0.45) yaw= +78.3 d=4.71 goal_err=+57 carrot_err=  +0 c0=0.66 obs=536 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-39deg/s OK
+t= 11.4 BRK-TR pos=(-1.34,-0.48) yaw= +72.8 d=4.73 goal_err=+63 carrot_err=  +0 c0=0.68 obs=536 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-35deg/s OK
+t= 11.6 BRK-TR pos=(-1.34,-0.50) yaw= +68.5 d=4.75 goal_err=+67 carrot_err=  +0 c0=2.30 obs=536 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-49deg/s OK
+t= 11.7 BRK-TR pos=(-1.34,-0.54) yaw= +62.2 d=4.78 goal_err=+73 carrot_err=  +0 c0=2.33 obs=536 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-25deg/s OK
+t= 11.8 BRK-TR pos=(-1.34,-0.55) yaw= +58.2 d=4.78 goal_err=+77 carrot_err=  +0 c0=2.34 obs=538 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-27deg/s OK
+t= 12.0 BRK-TR pos=(-1.34,-0.55) yaw= +54.9 d=4.78 goal_err=+80 carrot_err=  +0 c0=2.35 obs=538 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=538
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-42deg/s OK
+t= 12.1 SEEK-T pos=(-1.37,-0.54) yaw= +49.0 d=4.76 goal_err=+86 carrot_err=  +0 c0=2.35 obs=538 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=538
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-41deg/s >>> SIGNO INVERTIDO <<<
+t= 12.2 SEEK-T pos=(-1.39,-0.54) yaw= +43.9 d=4.74 goal_err=+91 carrot_err=  +0 c0=2.35 obs=538 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=539
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-40deg/s >>> SIGNO INVERTIDO <<<
+t= 12.4 SEEK-T pos=(-1.40,-0.54) yaw= +38.3 d=4.73 goal_err=+96 carrot_err=  +0 c0=2.46 obs=539 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=539
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+23deg/s OK
+t= 12.5 SEEK-T pos=(-1.42,-0.56) yaw= +41.2 d=4.74 goal_err=+93 carrot_err=  +0 c0=2.39 obs=539 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=539
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+6deg/s OK
+t= 12.6 SEEK-T pos=(-1.42,-0.58) yaw= +42.0 d=4.74 goal_err=+92 carrot_err=  +0 c0=2.40 obs=539 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=545
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+26deg/s OK
+t= 12.8 SEEK-T pos=(-1.43,-0.57) yaw= +45.5 d=4.74 goal_err=+88 carrot_err=  +0 c0=2.41 obs=545 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=545
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+59deg/s OK
+t= 12.9 SEEK-T pos=(-1.49,-0.55) yaw= +53.0 d=4.68 goal_err=+80 carrot_err=  +0 c0=2.41 obs=545 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=545
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+12deg/s OK
+t= 13.1 SEEK-T pos=(-1.50,-0.55) yaw= +55.0 d=4.67 goal_err=+78 carrot_err=  +0 c0=2.41 obs=545 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=545
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+71deg/s OK
+t= 13.2 SEEK-T pos=(-1.50,-0.54) yaw= +64.0 d=4.67 goal_err=+70 carrot_err=  +0 c0=0.75 obs=545 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=550
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+34deg/s OK
+t= 13.4 SEEK-T pos=(-1.48,-0.54) yaw= +69.8 d=4.69 goal_err=+64 carrot_err=  +0 c0=0.75 obs=550 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=550
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+56deg/s OK
+t= 13.5 SEEK-T pos=(-1.46,-0.53) yaw= +76.8 d=4.69 goal_err=+57 carrot_err=  +0 c0=0.74 obs=550 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=550
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+68deg/s OK
+t= 13.6 SEEK-T pos=(-1.47,-0.54) yaw= +86.0 d=4.69 goal_err=+48 carrot_err=  +0 c0=0.56 obs=550 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+37deg/s OK
+t= 13.7 SEEK-T pos=(-1.49,-0.55) yaw= +90.9 d=4.68 goal_err=+43 carrot_err=  +0 c0=0.56 obs=552 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+40deg/s OK
+t= 13.9 SEEK-T pos=(-1.50,-0.57) yaw= +96.7 d=4.69 goal_err=+37 carrot_err=  +0 c0=0.58 obs=552 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+28deg/s OK
+t= 14.0 SEEK-T pos=(-1.50,-0.56) yaw=+100.0 d=4.69 goal_err=+33 carrot_err=  +0 c0=0.57 obs=552 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+45deg/s OK
+t= 14.1 SEEK-T pos=(-1.49,-0.55) yaw=+106.0 d=4.68 goal_err=+28 carrot_err=  +0 c0=0.56 obs=552 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+51deg/s OK
+t= 14.3 SEEK-T pos=(-1.47,-0.53) yaw=+112.8 d=4.68 goal_err=+21 carrot_err=  +0 c0=0.47 obs=552 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+71deg/s OK
+t= 14.4 SEEK-S pos=(-1.49,-0.53) yaw=+123.2 d=4.67 goal_err=+10 carrot_err=  +0 c0=0.45 obs=552 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=552
+t= 14.6 SEEK-S pos=(-1.50,-0.55) yaw=+127.3 d=4.67 goal_err=+6 carrot_err=  +0 c0=0.46 obs=552 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=554
+t= 14.7 SEEK-S pos=(-1.51,-0.58) yaw=+133.9 d=4.69 goal_err=-1 carrot_err=  +0 c0=0.48 obs=554 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=554
+t= 14.9 SEEK-S pos=(-1.51,-0.58) yaw=+134.3 d=4.69 goal_err=-1 carrot_err=  +0 c0=0.48 obs=554 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=554
+t= 15.0 SEEK-S pos=(-1.50,-0.56) yaw=+136.8 d=4.69 goal_err=-3 carrot_err=  +0 c0=0.47 obs=554 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=557
+t= 15.1 SEEK-S pos=(-1.49,-0.56) yaw=+136.7 d=4.68 goal_err=-3 carrot_err=  +0 c0=0.47 obs=557 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=557
+t= 15.3 SEEK-S pos=(-1.49,-0.55) yaw=+135.8 d=4.68 goal_err=-2 carrot_err=  +0 c0=0.47 obs=557 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=557
+t= 15.4 SEEK-S pos=(-1.49,-0.54) yaw=+135.2 d=4.67 goal_err=-2 carrot_err=  +0 c0=0.45 obs=557 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=557
+t= 15.6 SEEK-S pos=(-1.50,-0.53) yaw=+135.2 d=4.66 goal_err=-2 carrot_err=  +0 c0=0.45 obs=557 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=557
+t= 15.7 SEEK-S pos=(-1.50,-0.53) yaw=+135.1 d=4.66 goal_err=-2 carrot_err=  +0 c0=0.45 obs=557 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=557
+t= 15.8 SEEK-S pos=(-1.50,-0.53) yaw=+135.2 d=4.66 goal_err=-2 carrot_err=  +0 c0=0.45 obs=557 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=562
+t= 16.0 SEEK-S pos=(-1.50,-0.54) yaw=+135.2 d=4.67 goal_err=-2 carrot_err=  +0 c0=0.45 obs=562 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=4.7 obs=562
+t= 16.1 SEEK-S pos=(-1.50,-0.54) yaw=+134.9 d=4.67 goal_err=-1 carrot_err=  +0 c0=0.45 obs=562 plan=0 cmd=(ly=+0.00,rx=+0.00)
+t= 16.2 BRK-BK pos=(-1.50,-0.54) yaw=+135.2 d=4.67 goal_err=-2 carrot_err=  +0 c0=0.46 obs=562 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 16.4 BRK-BK pos=(-1.50,-0.54) yaw=+135.2 d=4.67 goal_err=-2 carrot_err=  +0 c0=0.45 obs=562 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 16.5 BRK-BK pos=(-1.50,-0.54) yaw=+135.2 d=4.66 goal_err=-2 carrot_err=  +0 c0=0.45 obs=562 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 16.7 BRK-TR pos=(-1.50,-0.53) yaw=+135.0 d=4.66 goal_err=-1 carrot_err=  +0 c0=0.45 obs=562 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-7deg/s >>> SIGNO INVERTIDO <<<
+t= 16.8 BRK-TR pos=(-1.49,-0.54) yaw=+134.1 d=4.67 goal_err=-1 carrot_err=  +0 c0=0.46 obs=562 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+22deg/s OK
+t= 16.9 BRK-TR pos=(-1.46,-0.59) yaw=+137.7 d=4.73 goal_err=-4 carrot_err=  +0 c0=0.52 obs=566 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+17deg/s OK
+t= 17.1 BRK-TR pos=(-1.45,-0.60) yaw=+140.0 d=4.75 goal_err=-7 carrot_err=  +0 c0=0.53 obs=566 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-2deg/s OK
+t= 17.2 BRK-TR pos=(-1.44,-0.68) yaw=+139.7 d=4.81 goal_err=-7 carrot_err=  +0 c0=0.60 obs=566 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+13deg/s OK
+t= 17.3 BRK-TR pos=(-1.43,-0.70) yaw=+141.2 d=4.83 goal_err=-8 carrot_err=  +0 c0=0.62 obs=569 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+37deg/s OK
+t= 17.5 BRK-TR pos=(-1.43,-0.70) yaw=+146.1 d=4.83 goal_err=-13 carrot_err=  +0 c0=0.62 obs=569 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+100deg/s OK
+t= 17.6 BRK-TR pos=(-1.43,-0.70) yaw=+158.6 d=4.84 goal_err=-26 carrot_err=  +0 c0=0.98 obs=569 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+25deg/s OK
+t= 17.7 BRK-TR pos=(-1.42,-0.74) yaw=+162.0 d=4.86 goal_err=-29 carrot_err=  +0 c0=0.78 obs=574 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+37deg/s OK
+t= 17.9 BRK-TR pos=(-1.41,-0.77) yaw=+167.4 d=4.89 goal_err=-35 carrot_err=  +0 c0=0.79 obs=574 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+70deg/s OK
+t= 18.0 BRK-TR pos=(-1.41,-0.79) yaw=+176.8 d=4.91 goal_err=-45 carrot_err=  +0 c0=0.79 obs=574 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+35deg/s OK
+t= 18.1 BRK-TR pos=(-1.41,-0.77) yaw=-178.1 d=4.90 goal_err=-49 carrot_err=  +0 c0=0.79 obs=575 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+45deg/s OK
+t= 18.3 BRK-TR pos=(-1.41,-0.75) yaw=-172.2 d=4.88 goal_err=-55 carrot_err=  +0 c0=0.79 obs=575 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+104deg/s OK
+t= 18.4 BRK-TR pos=(-1.46,-0.71) yaw=-156.0 d=4.82 goal_err=-71 carrot_err=  +0 c0=0.75 obs=575 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+37deg/s OK
+t= 18.6 BRK-TR pos=(-1.46,-0.71) yaw=-151.3 d=4.82 goal_err=-76 carrot_err=  +0 c0=0.74 obs=576 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+65deg/s OK
+t= 18.7 BRK-TR pos=(-1.44,-0.74) yaw=-142.1 d=4.85 goal_err=-85 carrot_err=  +0 c0=0.80 obs=576 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+34deg/s OK
+t= 18.8 BRK-TR pos=(-1.42,-0.75) yaw=-137.5 d=4.87 goal_err=-90 carrot_err=  +0 c0=0.82 obs=576 plan=0 cmd=(ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+17deg/s OK
+t= 19.0 BRK-TR pos=(-1.41,-0.75) yaw=-135.1 d=4.88 goal_err=-92 carrot_err=  +0 c0=0.91 obs=578 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=578
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+24deg/s OK
+t= 19.1 SEEK-T pos=(-1.41,-0.76) yaw=-132.0 d=4.89 goal_err=-95 carrot_err=  +0 c0=0.91 obs=578 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=578
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+84deg/s >>> SIGNO INVERTIDO <<<
+t= 19.2 SEEK-T pos=(-1.45,-0.75) yaw=-120.4 d=4.85 goal_err=-107 carrot_err=  +0 c0=1.00 obs=578 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=578
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+52deg/s >>> SIGNO INVERTIDO <<<
+t= 19.4 SEEK-T pos=(-1.46,-0.76) yaw=-113.5 d=4.85 goal_err=-114 carrot_err=  +0 c0=1.05 obs=578 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=579
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+19deg/s >>> SIGNO INVERTIDO <<<
+t= 19.5 SEEK-T pos=(-1.46,-0.76) yaw=-111.0 d=4.85 goal_err=-117 carrot_err=  +0 c0=1.05 obs=579 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=579
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-14deg/s OK
+t= 19.7 SEEK-T pos=(-1.45,-0.76) yaw=-113.3 d=4.86 goal_err=-115 carrot_err=  +0 c0=1.05 obs=579 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=579
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-103deg/s OK
+t= 19.8 SEEK-T pos=(-1.47,-0.75) yaw=-126.6 d=4.84 goal_err=-101 carrot_err=  +0 c0=0.86 obs=579 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=579
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-33deg/s OK
+t= 19.9 SEEK-T pos=(-1.48,-0.73) yaw=-131.4 d=4.82 goal_err=-96 carrot_err=  +0 c0=0.86 obs=579 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=580
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-25deg/s OK
+t= 20.1 SEEK-T pos=(-1.49,-0.71) yaw=-134.6 d=4.80 goal_err=-93 carrot_err=  +0 c0=0.77 obs=580 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=580
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-48deg/s OK
+t= 20.2 SEEK-T pos=(-1.48,-0.69) yaw=-141.9 d=4.79 goal_err=-86 carrot_err=  +0 c0=0.78 obs=580 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=580
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-40deg/s OK
+t= 20.3 SEEK-T pos=(-1.47,-0.70) yaw=-146.9 d=4.80 goal_err=-81 carrot_err=  +0 c0=0.79 obs=580 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.8 obs=581
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-34deg/s OK
+t= 20.5 SEEK-T pos=(-1.47,-0.71) yaw=-151.7 d=4.82 goal_err=-76 carrot_err=  +0 c0=0.74 obs=581 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=581
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-83deg/s OK
+t= 20.6 SEEK-T pos=(-1.46,-0.76) yaw=-162.0 d=4.85 goal_err=-66 carrot_err=  +0 c0=0.74 obs=581 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=581
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-49deg/s OK
+t= 20.8 SEEK-T pos=(-1.46,-0.78) yaw=-169.1 d=4.87 goal_err=-59 carrot_err=  +0 c0=0.74 obs=581 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=581
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-48deg/s OK
+t= 20.9 SEEK-T pos=(-1.44,-0.79) yaw=-175.8 d=4.89 goal_err=-52 carrot_err=  +0 c0=0.76 obs=581 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=582
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-84deg/s OK
+t= 21.0 SEEK-T pos=(-1.42,-0.75) yaw=+172.4 d=4.87 goal_err=-40 carrot_err=  +0 c0=0.78 obs=582 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=582
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-36deg/s OK
+t= 21.2 SEEK-T pos=(-1.40,-0.74) yaw=+167.4 d=4.88 goal_err=-35 carrot_err=  +0 c0=0.80 obs=582 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=582
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-50deg/s OK
+t= 21.3 SEEK-T pos=(-1.37,-0.73) yaw=+160.5 d=4.89 goal_err=-27 carrot_err=  +0 c0=0.84 obs=582 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=585
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-31deg/s OK
+t= 21.5 SEEK-T pos=(-1.36,-0.74) yaw=+155.8 d=4.91 goal_err=-23 carrot_err=  +0 c0=0.98 obs=585 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=4.9 obs=585
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-77deg/s OK
+t= 21.6 SEEK-F pos=(-1.36,-0.78) yaw=+145.4 d=4.93 goal_err=-13 carrot_err=  +0 c0=0.72 obs=585 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.0 obs=585
+t= 21.7 SEEK-F pos=(-1.35,-0.79) yaw=+139.5 d=4.95 goal_err=-7 carrot_err=  +0 c0=0.74 obs=585 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.0 obs=585
+t= 21.9 SEEK-F pos=(-1.33,-0.79) yaw=+134.9 d=4.96 goal_err=-2 carrot_err=  +0 c0=0.75 obs=585 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.0 obs=590
+t= 22.0 SEEK-F pos=(-1.29,-0.78) yaw=+133.7 d=4.98 goal_err=-0 carrot_err=  +0 c0=0.77 obs=590 plan=0 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.0 obs=590
+t= 22.2 SEEK-F pos=(-1.29,-0.78) yaw=+134.4 d=4.99 goal_err=-1 carrot_err=  +0 c0=0.78 obs=590 plan=0 cmd=(ly=+0.40,rx=+0.00)
+COLISION #2 [imu] pos=(-1.34,-0.80) yaw=+135
+t= 22.3 R-BACK pos=(-1.34,-0.80) yaw=+134.9 d=4.97 goal_err=-2 carrot_err=  +0 c0=0.76 obs=591 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 22.5 R-BACK pos=(-1.34,-0.80) yaw=+132.8 d=4.97 goal_err=-0 carrot_err=  +0 c0=0.33 obs=602 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 22.6 R-BACK pos=(-1.35,-0.77) yaw=+130.2 d=4.94 goal_err=+3 carrot_err=  +0 c0=0.31 obs=602 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 22.7 R-BACK pos=(-1.34,-0.75) yaw=+132.1 d=4.93 goal_err=+1 carrot_err=  +0 c0=0.30 obs=603 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 22.9 R-TURN pos=(-1.34,-0.74) yaw=+132.7 d=4.92 goal_err=+1 carrot_err=  +0 c0=0.29 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-0deg/s OK
+t= 23.0 R-TURN pos=(-1.33,-0.75) yaw=+132.7 d=4.94 goal_err=+1 carrot_err=  +0 c0=0.31 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+6deg/s >>> SIGNO INVERTIDO <<<
+t= 23.1 R-TURN pos=(-1.33,-0.79) yaw=+133.5 d=4.96 goal_err=-1 carrot_err=  +0 c0=0.33 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-11deg/s OK
+t= 23.3 R-TURN pos=(-1.35,-0.82) yaw=+132.0 d=4.97 goal_err=+1 carrot_err=  +0 c0=0.33 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-51deg/s OK
+t= 23.4 R-TURN pos=(-1.36,-0.84) yaw=+125.7 d=4.98 goal_err=+7 carrot_err=  +0 c0=0.34 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-83deg/s OK
+t= 23.5 R-TURN pos=(-1.33,-0.86) yaw=+114.3 d=5.02 goal_err=+18 carrot_err=  +0 c0=0.38 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-36deg/s OK
+t= 23.7 R-TURN pos=(-1.30,-0.86) yaw=+109.5 d=5.04 goal_err=+23 carrot_err=  +0 c0=0.47 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-57deg/s OK
+t= 23.8 R-TURN pos=(-1.24,-0.89) yaw=+101.4 d=5.10 goal_err=+32 carrot_err=  +0 c0=0.51 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-25deg/s OK
+t= 23.9 R-TURN pos=(-1.23,-0.89) yaw= +98.0 d=5.11 goal_err=+35 carrot_err=  +0 c0=0.52 obs=603 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-33deg/s OK
+t= 24.1 R-TURN pos=(-1.24,-0.90) yaw= +93.7 d=5.11 goal_err=+39 carrot_err=  +0 c0=0.52 obs=606 plan=0 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=606
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-31deg/s OK
+t= 24.2 SEEK-T pos=(-1.25,-0.91) yaw= +89.9 d=5.11 goal_err=+43 carrot_err=  +0 c0=0.53 obs=606 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=606
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-58deg/s >>> SIGNO INVERTIDO <<<
+t= 24.3 SEEK-T pos=(-1.28,-0.93) yaw= +81.7 d=5.10 goal_err=+51 carrot_err=  +0 c0=0.54 obs=606 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=606
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-33deg/s >>> SIGNO INVERTIDO <<<
+t= 24.5 SEEK-T pos=(-1.28,-0.95) yaw= +77.2 d=5.11 goal_err=+55 carrot_err=  +0 c0=0.56 obs=606 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=608
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+21deg/s OK
+t= 24.6 SEEK-T pos=(-1.28,-0.98) yaw= +80.1 d=5.14 goal_err=+52 carrot_err=  +0 c0=0.59 obs=608 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=608
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+4deg/s OK
+t= 24.8 SEEK-T pos=(-1.27,-0.99) yaw= +80.7 d=5.15 goal_err=+51 carrot_err=  +0 c0=0.60 obs=608 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=608
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+32deg/s OK
+t= 24.9 SEEK-T pos=(-1.29,-0.99) yaw= +84.9 d=5.14 goal_err=+47 carrot_err=  +0 c0=0.60 obs=608 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=609
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+49deg/s OK
+t= 25.0 SEEK-T pos=(-1.33,-1.01) yaw= +92.1 d=5.13 goal_err=+39 carrot_err=  +0 c0=0.61 obs=609 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=609
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+17deg/s OK
+t= 25.2 SEEK-T pos=(-1.34,-1.01) yaw= +94.3 d=5.12 goal_err=+37 carrot_err=  +0 c0=0.61 obs=609 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=609
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+27deg/s OK
+t= 25.3 SEEK-T pos=(-1.34,-1.00) yaw= +98.0 d=5.11 goal_err=+33 carrot_err=  +0 c0=0.48 obs=609 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+78deg/s OK
+t= 25.4 SEEK-T pos=(-1.33,-0.99) yaw=+107.9 d=5.12 goal_err=+24 carrot_err=  +0 c0=0.48 obs=611 plan=0 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+42deg/s OK
+t= 25.6 SEEK-S pos=(-1.31,-0.97) yaw=+113.3 d=5.11 goal_err=+18 carrot_err=  +0 c0=0.47 obs=611 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+t= 25.7 SEEK-S pos=(-1.31,-0.96) yaw=+119.5 d=5.10 goal_err=+12 carrot_err=  +0 c0=0.46 obs=611 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+t= 25.8 SEEK-S pos=(-1.33,-0.97) yaw=+128.1 d=5.10 goal_err=+3 carrot_err=  +0 c0=0.46 obs=611 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+t= 26.0 SEEK-S pos=(-1.33,-0.99) yaw=+129.0 d=5.11 goal_err=+2 carrot_err=  +0 c0=0.47 obs=611 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+t= 26.1 SEEK-S pos=(-1.33,-1.00) yaw=+128.2 d=5.12 goal_err=+3 carrot_err=  +0 c0=0.48 obs=611 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=611
+t= 26.2 SEEK-S pos=(-1.32,-1.01) yaw=+127.1 d=5.13 goal_err=+4 carrot_err=  +0 c0=0.50 obs=611 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 26.4 SEEK-S pos=(-1.32,-1.01) yaw=+127.5 d=5.14 goal_err=+4 carrot_err=  +0 c0=0.50 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 26.5 SEEK-S pos=(-1.31,-1.00) yaw=+127.7 d=5.14 goal_err=+4 carrot_err=  +0 c0=0.50 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 26.6 SEEK-S pos=(-1.31,-1.00) yaw=+127.7 d=5.13 goal_err=+4 carrot_err=  +0 c0=0.49 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 26.7 SEEK-S pos=(-1.30,-0.99) yaw=+127.1 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 26.9 SEEK-S pos=(-1.30,-0.99) yaw=+127.0 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 27.0 SEEK-S pos=(-1.30,-0.99) yaw=+127.0 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.1 obs=612
+t= 27.1 SEEK-S pos=(-1.30,-0.99) yaw=+127.1 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=612 plan=0 cmd=(ly=+0.00,rx=+0.00)
+t= 27.3 BRK-BK pos=(-1.30,-0.99) yaw=+127.1 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=612 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 27.4 BRK-BK pos=(-1.30,-0.99) yaw=+127.1 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=614 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 27.5 BRK-BK pos=(-1.30,-0.99) yaw=+127.1 d=5.13 goal_err=+5 carrot_err=  +0 c0=0.49 obs=614 plan=0 cmd=(ly=-0.35,rx=+0.00)
+t= 27.7 BRK-TR pos=(-1.30,-1.00) yaw=+126.8 d=5.14 goal_err=+5 carrot_err=  +0 c0=0.50 obs=614 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-3deg/s OK
+t= 27.8 BRK-TR pos=(-1.29,-1.01) yaw=+126.3 d=5.15 goal_err=+5 carrot_err=  +0 c0=0.51 obs=614 plan=0 cmd=(ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=+24deg/s >>> SIGNO INVERTIDO <<<
+t= 27.9 BRK-TR pos=(-1.26,-1.04) yaw=+129.7 d=5.19 goal_err=+2 carrot_err=  +0 c0=0.55 obs=616 plan=0 cmd=(ly=+0.00,rx=+0.45)
+TURN-CAL-RESUMEN rx>0 -> medido~-32.50212534308005deg/s (modelo<0) ; rx<0 -> medido~34.93025379100111deg/s (modelo>0) :: OK (modelo correcto)
+FASES {'SEEK-T': 80, 'SEEK-F': 10, 'R-BACK': 8, 'R-TURN': 20, 'SEEK-S': 39, 'BRK-BK': 9, 'BRK-TR': 39}
+FIN

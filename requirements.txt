@@ -1,0 +1,28 @@
+# G1 UNITREE ROBOT — Python dependencies (Python 3.10+ recommended)
+# Install:  pip install -r requirements.txt
+
+# --- Core (needed by virtually all scripts) ---
+websocket-client
+requests
+numpy
+matplotlib
+pillow
+
+# --- Direct WebRTC connection (LocalAP) ---
+# Community driver for Unitree Go2/G1. Needed by the older "direct WebRTC" scripts:
+#   g1_slam_viz.py, slam_g1_mapping.py, g1_teleop.py, capture_slam_data.py, etc.
+# https://github.com/legion1581/unitree_webrtc_connect
+unitree_webrtc_connect
+
+# --- Camera perception (optional, HEAVY) ---
+# Only for the vision layer in g1_nav_v2.py / g1_goto.py (YOLOv8 + MiDaS depth).
+# Comment these out if you don't run vision.
+ultralytics
+timm
+
+# ----------------------------------------------------------------------------
+# EXTERNAL (not pip): the current A->B navigation (g1_goto.py, g1_nav_v2.py)
+# connects to the iPhone app's WebView over USB and needs ios-webkit-debug-proxy:
+#   macOS:           brew install ios-webkit-debug-proxy
+#   Ubuntu/Debian:   sudo apt install ios-webkit-debug-proxy
+# (the direct-WebRTC scripts above do NOT need it.)

@@ -544,6 +544,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     print("\n  POSE PERDIDA (3s). STOP. Relocaliza en la app y reintenta."); return False
                 time.sleep(0.2); continue
             x, y, yaw = p[0], p[1], yaw_of(p)         # yaw en GRADOS
+            if last_pose is not None and math.hypot(x - last_pose[0], y - last_pose[1]) > 0.5:
+                jd = math.hypot(x - last_pose[0], y - last_pose[1])     # >0.5m en un ciclo (~0.1s) = salto reloc
+                rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
+                                                        "from": [round(last_pose[0], 2), round(last_pose[1], 2)]})
+                lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
             if last_pose is None or abs(x - last_pose[0]) > 1e-4 or abs(y - last_pose[1]) > 1e-4:
                 pose_t = now; last_pose = (x, y)
             if not trail or math.hypot(x - trail[-1][0], y - trail[-1][1]) > 0.05:
@@ -997,21 +1002,40 @@ def cmd_buildmap(secs=40, force_loc=False):
     else:
         # --- MODO OPERACION: acumula 'location' (frame mapa Z-up) ---
         src = "location (Z-up, map frame)"
-        print(f">>> BUILDMAP {secs}s (modo operacion): mueve/gira el robot DESPACIO; acumulo 'location'. Ctrl+C para fijar.")
+        print(f">>> BUILDMAP {secs}s (modo operacion): conduce DESPACIO, ATRAVIESA la puerta a la habitacion B.")
+        print(f"    Filtros: campo cercano (<{g.NEAR_BLIND}m), SALTOS de relocalizacion (frame descartado) y")
+        print("    PERSISTENCIA (un voxel debe verse en varios frames -> mata el rastro de persona/dinamico).")
         if nloc < 100:
             print("  AVISO: no llega nube 'location'. ¿Mapa cargado y RELOCALIZADO (modo operation, como en benchmark)?")
-        t0 = time.time()
+        t0 = time.time(); nf = 0; jumps = 0; fi = 0; prevp = None
         try:
             while time.time() - t0 < secs:
+                src2, p, _ = read_pose(cdp)
+                px, py = (p[0], p[1]) if p else (None, None)
+                if p and prevp is not None and math.hypot(px - prevp[0], py - prevp[1]) > 0.5:
+                    jumps += 1; prevp = (px, py)             # salto de pose (imposible andando) = glitch reloc
+                    print(f"  [reloc-JUMP #{jumps}] salto de pose -> descarto frame        ", end="\r")
+                    time.sleep(0.3); continue                # los puntos irian a un sitio equivocado
+                if p:
+                    prevp = (px, py)
                 buf = grab_full_cloud(cdp, cap=20000)
+                fr = set()
                 for i in range(0, len(buf) - 2, 3):
-                    k = (round(buf[i] / 0.05), round(buf[i + 1] / 0.05), round(buf[i + 2] / 0.05))
-                    acc[k] = acc.get(k, 0) + 1
-                print(f"  voxels={len(acc)}   t={time.time()-t0:.0f}/{secs}s", end="\r")
+                    xx, yy, zz = buf[i], buf[i + 1], buf[i + 2]
+                    if abs(zz) > 2.0:
+                        continue                            # altura imposible = outlier
+                    if px is not None and math.hypot(xx - px, yy - py) < g.NEAR_BLIND:
+                        nf += 1; continue                   # anillo fantasma (cuerpo/suelo) junto al robot
+                    fr.add((round(xx / 0.05), round(yy / 0.05), round(zz / 0.05)))
+                for k in fr:
+                    acc[k] = acc.get(k, 0) + 1              # cuenta FRAMES distintos en que aparece el voxel
+                fi += 1
+                print(f"  voxels={len(acc)} frames={fi}  (cercano {nf}, saltos {jumps})  t={time.time()-t0:.0f}/{secs}s   ", end="\r")
                 time.sleep(0.3)
         except KeyboardInterrupt:
             pass
-        minhits = 2
+        minhits = 3        # PERSISTENCIA: solo voxels vistos en >=3 frames distintos (estatico). Persona/ruido cae.
+        print(f"\n  {jumps} frames descartados por salto de relocalizacion; {fi} frames usados.")
 
     pts = [[k[0] * 0.05, k[1] * 0.05, k[2] * 0.05] for k, c in acc.items() if c >= minhits]
     try:
@@ -1323,7 +1347,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     t0 = time.time(); tprint = 0; trail = []; poshist = []
     low_t = 0; last_low = None; lt_base = []; ah_base = []; ncol = 0; last_col_t = -99
     minc0 = 9.9; stall_t = t0; last_movepos = None; pose_t = time.time()
-    health_t = 0; hh = {}
+    health_t = 0; hh = {}; jprev = None
     try:
         while not (stop_event is not None and stop_event.is_set()):
             now = time.time()
@@ -1334,6 +1358,12 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
                 time.sleep(0.15); continue
             pose_t = now
             x, y, yaw = p[0], p[1], yaw_of(p)
+            if jprev is not None and math.hypot(x - jprev[0], y - jprev[1]) > 0.5:
+                jd = math.hypot(x - jprev[0], y - jprev[1])
+                rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
+                                                        "from": [round(jprev[0], 2), round(jprev[1], 2)]})
+                lg.write(f"RELOC-JUMP {jd:.2f}m\n")
+            jprev = (x, y)
             if not trail or math.hypot(x - trail[-1][0], y - trail[-1][1]) > 0.05:
                 trail.append((x, y))
             poshist.append((now, x, y)); poshist = [h for h in poshist if now - h[0] <= 0.8]
