@@ -1297,10 +1297,14 @@ def _goto_window(vshare, lock, stop_event, label, wps):
         fig.canvas.manager.set_window_title(f"G1 {label} — mapa+plan | laser | camara")
     except Exception:
         pass
-    fig.canvas.mpl_connect("close_event", lambda e: stop_event.set())
-    print("Ventana abierta (mapa+plan | laser). Cierrala o Ctrl+C en la terminal para PARAR el robot.")
+    closed = {"v": False}
+    def _on_close(e):
+        closed["v"] = True; stop_event.set()      # cerrar la ventana PARA el robot si aun navega
+    fig.canvas.mpl_connect("close_event", _on_close)
+    print("Ventana abierta. Al TERMINAR la navegacion la dejo ABIERTA para que la revises; cierrala tu cuando quieras.")
+    print("(cerrar la ventana o Ctrl+C durante la navegacion PARA el robot.)")
     try:
-        while not stop_event.is_set():
+        while not closed["v"]:                     # sigue viva aunque la navegacion termine (stop_event)
             with lock:
                 x = vshare["x"]; y = vshare["y"]; yaw = vshare["yaw"]; ph = vshare["ph"]
                 d = vshare.get("d", 0); col = vshare.get("col", 0); t = vshare.get("t", 0)
@@ -1335,7 +1339,9 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                      head_width=0.16, head_length=0.16, fc="#2980b9", ec="#2980b9", length_includes_head=True)
             ax.set_aspect("equal"); ax.grid(True, alpha=0.2)
             ax.set_xlabel("x (m)"); ax.set_ylabel("y (m)")
-            ax.set_title(f"{label}  t={t:.0f}s  {ph.strip()}  dist={d:.2f}m  colis={col}")
+            done_sfx = "   [TERMINADO — cierra la ventana cuando quieras]" if stop_event.is_set() else ""
+            ax.set_title(f"{label}  t={t:.0f}s  {ph.strip()}  dist={d:.2f}m  colis={col}{done_sfx}",
+                         color=("#1a7d3c" if stop_event.is_set() else "black"))
             # CENTRA la vista en la accion (robot+waypoints+plan+recorrido), ignora el ruido lejano del mapa
             vw = [(x, y)] + ([goal] if goal else []) + [(w["x"], w["y"]) for w in wps.values()] + trail + gplan
             if vw:
