@@ -479,6 +479,32 @@ def load_ref_map():
     return set((round(x / g.OCELL), round(y / g.OCELL)) for x, y in ref_points())
 
 
+def frame_check(lg, x0, y0):
+    """Compara la pose INICIAL con el waypoint mas cercano. Si arrancas FISICAMENTE en un waypoint pero la
+    pose dice que estas lejos de su coordenada guardada => la relocalizacion de esta sesion difiere de la
+    de cuando se capturaron los waypoints (deriva de frame). Devuelve dict para el dataset."""
+    try:
+        wps = json.load(open(WP_FILE))
+    except Exception:
+        wps = {}
+    if not wps:
+        return None
+    near, w = min(wps.items(), key=lambda kv: math.hypot(kv[1]["x"] - x0, kv[1]["y"] - y0))
+    off = math.hypot(w["x"] - x0, w["y"] - y0)
+    msg = (f"FRAME-CHECK start=({x0:+.2f},{y0:+.2f}) wp_mas_cercano={near}({w['x']:+.2f},{w['y']:+.2f}) "
+           f"offset={off:.2f}m")
+    try:
+        lg.write(msg + "\n")
+    except Exception:
+        pass
+    if off < 0.4:
+        print(f"  {msg}  -> frame OK (pose y waypoints alineados)")
+    else:
+        print(f"  {msg}\n  >>> OJO: arrancas lejos del waypoint mas cercano. Si fisicamente estas EN un "
+              f"waypoint, la relocalizacion difiere de la captura -> re-captura A/B/C en ESTA sesion.")
+    return {"start": [round(x0, 2), round(y0, 2)], "nearest_wp": near, "offset_m": round(off, 2)}
+
+
 def match_score(live_cells, ref_cells):
     """Confianza de localizacion ESTIMADA: fraccion de celdas del laser en vivo que caen sobre (o junto a)
     una celda del mapa conocido. ~1 = bien localizado (el laser encaja con el mapa); bajo = deriva/duda.
@@ -592,6 +618,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
             if last_pose is None or abs(x - last_pose[0]) > 1e-4 or abs(y - last_pose[1]) > 1e-4:
                 pose_t = now; last_pose = (x, y)
+            if not trail:
+                rd.rec["frame_check"] = frame_check(lg, x, y)
             if not trail or math.hypot(x - trail[-1][0], y - trail[-1][1]) > 0.05:
                 trail.append((x, y))
 
@@ -1488,6 +1516,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
             # mapa acumulado + PLAN GLOBAL (nuestro A* origen->destino) solo para ver/comparar en la ventana
             if start_xy is None:
                 start_xy = (x, y)
+                rd.rec["frame_check"] = frame_check(lg, x, y)
             for c in live:
                 omap[c] = now
             omap = {c: tt for c, tt in omap.items() if now - tt < NAV_OMAP_TTL}
