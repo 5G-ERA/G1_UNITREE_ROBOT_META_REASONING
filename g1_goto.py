@@ -338,40 +338,72 @@ APPSNIFF_JS = r"""(function(){
 })()"""
 
 
+def _all_inspectable_pages():
+    """Lista (titulo, url, ws_url) de TODAS las paginas inspeccionables del WebView (no solo la mejor)."""
+    import requests
+    devs = requests.get(g.PROXY + "/json", timeout=5).json()
+    if not devs:
+        return []
+    durl = devs[0]["url"]
+    pages = requests.get(f"http://{durl}/json", timeout=5).json()
+    return [(p.get("title", "?"), p.get("url", "?"), p.get("webSocketDebuggerUrl"))
+            for p in pages if p.get("webSocketDebuggerUrl")]
+
+
 def cmd_appsniff(secs=40):
-    """PASIVO: TU lanzas la navegacion DESDE LA APP (pulsa ir a B) y capturo TODO lo util ~secs. No envio
-    nada yo. Ideal para ver el comando de nav real de la app y si expone su ruta planificada."""
-    cdp = g.get_cdp()
-    cdp.eval(DISABLE_DRV_JS)            # no pelear con la app (apaga nuestro driver si quedo de antes)
-    cdp.eval(APPSNIFF_JS); cdp.eval(RELOC_JS)
+    """PASIVO multi-pagina: se engancha a TODAS las paginas del WebView. TU navegas DESDE LA APP (ir a B)
+    y captura TODO en la que tenga trafico (la activa). No envio nada yo."""
+    pages = _all_inspectable_pages()
+    if not pages:
+        print("No hay paginas inspeccionables. ¿ios_webkit_debug_proxy + app en SLAM?"); return
+    cdps = []
+    for (ti, url, wsu) in pages:
+        try:
+            c = g.CDP(wsu)
+            c.eval(DISABLE_DRV_JS); c.eval(APPSNIFF_JS); c.eval(RELOC_JS)
+            cdps.append((ti, url, c))
+            print(f"  enganchado: '{ti[:22]}'  {url[:46]}")
+        except Exception as e:
+            print(f"  (no enganche '{(ti or '')[:22]}': {repr(e)[:50]})")
+    if not cdps:
+        print("No pude engancharme a ninguna pagina."); return
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "appsniff.log")
     outj = os.path.join(os.path.dirname(os.path.abspath(__file__)), "appsniff.json")
-    print(">>> APPSNIFF. AHORA, EN LA APP: pon un destino (ir a B) y deja que navegue.")
-    print(f"    Capturo TODO ~{secs}s. Ctrl+C para parar. Logs -> {out} (+ {outj})")
+    print(f"\n>>> APPSNIFF en {len(cdps)} paginas. EN LA APP: pon destino B y navega. Capturo ~{secs}s. Ctrl+C para parar.\n")
+
+    def traffic(c):
+        try:
+            a = json.loads(c.eval("JSON.stringify(window.__snAll||{})") or "{}")
+            return sum(a.values()), a
+        except Exception:
+            return 0, {}
+
+    def best_cdp():
+        bc = None; bn = -1; rows = []
+        for (ti, url, c) in cdps:
+            tot, a = traffic(c); rows.append((ti, tot, a))
+            if tot > bn:
+                bn = tot; bc = c
+        return bc, bn, rows
     try:
         for i in range(int(secs * 2)):
-            so = json.loads(cdp.eval("JSON.stringify(window.__snOut||{})") or "{}")
-            sw = json.loads(cdp.eval("JSON.stringify(window.__snWk||{})") or "{}")
-            st = json.loads(cdp.eval("JSON.stringify(window.__snTop||{})") or "{}")
-            allc = json.loads(cdp.eval("JSON.stringify(window.__snAll||{})") or "{}")
-            cand = cdp.eval("JSON.stringify(window.__snPath||null)")
-            tot = sum(allc.values()) if allc else 0
-            L = [f"=== APPSNIFF {time.strftime('%H:%M:%S')}  TRAFICO total: parse={allc.get('parse',0)} "
-                 f"worker={allc.get('worker',0)} send={allc.get('send',0)} ==="]
-            if i > 6 and tot == 0:
-                L.append("  >>> SIN TRAFICO en esta pagina. La app cambio de pantalla al navegar, o me enganche a otra")
-                L.append("      pagina. SOLUCION: mantente en la pantalla de OPERACION, reintenta, y navega SIN cambiar de vista.")
-            L.append("-- OUT (lo que la APP envia por el datachannel) --")
-            for k, r in sorted(so.items(), key=lambda kv: -kv[1]["n"]):
-                L.append(f"   n={r['n']:<5} {k}")
-            L.append("-- WORKER IN (worker->app; PATHLEN=puntos tipo ruta) --")
-            for k, r in sorted(sw.items(), key=lambda kv: -kv[1].get("pathlen", 0)):
-                L.append(f"   n={r['n']:<5} PATHLEN={r.get('pathlen',0):<5} tipo='{k}' campos=[{r.get('keys','')}]")
-            L.append("-- TOPICS con pinta de ruta --")
-            for k, r in sorted(st.items(), key=lambda kv: -kv[1].get("pathlen", 0)):
-                if r.get("pathlen", 0) > 0:
-                    L.append(f"   n={r['n']:<5} PATHLEN={r['pathlen']:<5} topic='{k}'")
-            L.append(f">>> CANDIDATO DE RUTA: {cand if cand and cand!='null' else '(ninguno aun)'}")
+            bc, bn, rows = best_cdp()
+            L = [f"=== APPSNIFF {time.strftime('%H:%M:%S')}  ({len(cdps)} paginas) ==="]
+            for ti, tot, a in rows:
+                L.append(f"  pagina '{ti[:24]:<24}' trafico={tot:<6} (parse={a.get('parse',0)} worker={a.get('worker',0)} send={a.get('send',0)})")
+            if bc and bn > 0:
+                so = json.loads(bc.eval("JSON.stringify(window.__snOut||{})") or "{}")
+                sw = json.loads(bc.eval("JSON.stringify(window.__snWk||{})") or "{}")
+                cand = bc.eval("JSON.stringify(window.__snPath||null)")
+                L.append("  -- OUT (la APP envia) --")
+                for k, r in sorted(so.items(), key=lambda kv: -kv[1]["n"]):
+                    L.append(f"     n={r['n']:<4} {k}")
+                L.append("  -- WORKER (PATHLEN=puntos tipo ruta) --")
+                for k, r in sorted(sw.items(), key=lambda kv: -kv[1].get("pathlen", 0)):
+                    L.append(f"     n={r['n']:<4} PATHLEN={r.get('pathlen',0):<4} tipo='{k}' [{r.get('keys','')}]")
+                L.append(f"  >>> CANDIDATO DE RUTA: {cand if cand and cand!='null' else '(ninguno aun)'}")
+            else:
+                L.append("  (sin trafico aun en NINGUNA pagina; navega desde la app)")
             with open(out, "w") as f:
                 f.write("\n".join(L) + "\n")
             print("\033[2J\033[H", end=""); print("\n".join(L))
@@ -380,11 +412,13 @@ def cmd_appsniff(secs=40):
         pass
     finally:
         try:
-            samples = json.loads(cdp.eval("JSON.stringify(window.__snSamples||[])") or "[]")
-            json.dump({"out": json.loads(cdp.eval("JSON.stringify(window.__snOut||{})") or "{}"),
-                       "worker": json.loads(cdp.eval("JSON.stringify(window.__snWk||{})") or "{}"),
-                       "path_candidate": json.loads(cdp.eval("JSON.stringify(window.__snPath||null)") or "null"),
-                       "samples_out": samples}, open(outj, "w"), indent=1)
+            bc, bn, _ = best_cdp()
+            if bc:
+                json.dump({"out": json.loads(bc.eval("JSON.stringify(window.__snOut||{})") or "{}"),
+                           "worker": json.loads(bc.eval("JSON.stringify(window.__snWk||{})") or "{}"),
+                           "path_candidate": json.loads(bc.eval("JSON.stringify(window.__snPath||null)") or "null"),
+                           "samples_out": json.loads(bc.eval("JSON.stringify(window.__snSamples||[])") or "[]")},
+                          open(outj, "w"), indent=1)
         except Exception:
             pass
         print(f"\nFin appsniff. Guardado {out} + {outj}. Di 'mira el appsniff' y lo analizo.")
