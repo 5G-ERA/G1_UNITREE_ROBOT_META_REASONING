@@ -1016,30 +1016,57 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
             if cmd is None:
                 if (not plan_pts) or (now - plan_t > g.PLAN_SEC):
-                    # GLOBAL: planifica sobre el MAPA DE REFERENCIA limpio (tiene la puerta abierta) + las
-                    # colisiones aprendidas; NO sobre el laser acumulado (que sella la puerta). El DWA esquiva
-                    # lo vivo (mesa, etc.) localmente. agresivo = sin inflado (cruza puertas estrechas).
-                    plan_obs = (refmap | colmap) if refmap else (oset)
-                    cm = ({c: math.inf for c in plan_obs} if aggressive else g.build_costmap(plan_obs))
+                    # GLOBAL: A* sobre el MAPA DE REFERENCIA limpio (puerta abierta) + colisiones aprendidas,
+                    # SIEMPRE SIN INFLADO (con inflado, a 0.2m, la puerta se cierra y nunca hay ruta -> "mil
+                    # vueltas"). La seguridad la da el DWA (holgura ROBOT_R). El DWA esquiva lo vivo localmente.
+                    plan_obs = (refmap | colmap) if refmap else oset
+                    cm = {c: math.inf for c in plan_obs}
                     scell = (round(x / g.OCELL), round(y / g.OCELL))
                     gcell = (round(wx / g.OCELL), round(wy / g.OCELL))
                     cells_path = g.astar(scell, gcell, cm)
                     plan_pts = [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells_path] if cells_path else []
                     plan_t = now
                     if not plan_pts:
-                        lg.write(f"A*-FAIL goal=({wx:+.1f},{wy:+.1f}) d={d_goal:.1f} obs={len(oset)}\n")
+                        lg.write(f"A*-FAIL goal=({wx:+.1f},{wy:+.1f}) d={d_goal:.1f} obs={len(plan_obs)}\n")
                 if plan_pts:
                     carrot = g.path_carrot(plan_pts, x, y)
-                    _, lyc, rxc, _, lbl = g.dwa_step(x, y, yaw, carrot, op)
-                    cmd = (0, lyc, rxc, 0); ph = lbl
-                    if lyc == 0 and rxc == 0:
-                        nstop += 1
-                        if nstop > 12:                    # ~1.2s encajonado -> desatasco
-                            cl = clear_dir(x, y, yaw, +55, op); cr = clear_dir(x, y, yaw, -55, op)
-                            brk = {"ph": "BACK", "t0": now, "dir": -g.AV_TURN if cl >= cr else g.AV_TURN}
-                            nstop = 0; plan_pts = []
-                    else:
+                    # --- MANIOBRA DE PUERTA: detecta el CUELLO (punto del plan por delante con menos holgura
+                    #     a obstaculos vivos). Si hay puerta cerca -> alinea el rumbo con su EJE y entra RECTO. ---
+                    door = None
+                    if op:
+                        bc = 9.9; bi = -1
+                        for i, p in enumerate(plan_pts):
+                            dd = math.hypot(p[0] - x, p[1] - y)
+                            if dd < 0.1 or dd > 1.7:
+                                continue
+                            clr = min((p[0] - o[0]) ** 2 + (p[1] - o[1]) ** 2 for o in op) ** 0.5
+                            if clr < bc:
+                                bc = clr; bi = i
+                        if bi >= 0 and bc < 0.55:           # hueco estrecho por delante = puerta
+                            door = (bi, plan_pts[bi], bc)
+                    if door is not None:
+                        bi, dp, bc = door
+                        a = plan_pts[max(0, bi - 2)]; b = plan_pts[min(len(plan_pts) - 1, bi + 2)]
+                        ddir = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))   # eje de la puerta
+                        he = (ddir - yaw + 180) % 360 - 180
+                        if abs(he) > 12:                    # alinea el rumbo con el eje ANTES de entrar
+                            cmd = (0, 0, -g.AV_TURN if he > 0 else g.AV_TURN, 0); ph = "DOOR-AL"
+                        elif c0 > AGGR_ROBOT_R:             # alineado y con hueco -> entra RECTO y despacio
+                            cmd = (0, 0.28, 0, 0); ph = "DOOR-GO"
+                        else:
+                            cmd = (0, 0, 0, 0); ph = "DOOR-WT"   # pared pegada: espera/retoca (no fuerza)
                         nstop = 0
+                    else:
+                        _, lyc, rxc, _, lbl = g.dwa_step(x, y, yaw, carrot, op)
+                        cmd = (0, lyc, rxc, 0); ph = lbl
+                        if lyc == 0 and rxc == 0:
+                            nstop += 1
+                            if nstop > 12:                  # ~1.2s encajonado -> desatasco
+                                cl = clear_dir(x, y, yaw, +55, op); cr = clear_dir(x, y, yaw, -55, op)
+                                brk = {"ph": "BACK", "t0": now, "dir": -g.AV_TURN if cl >= cr else g.AV_TURN}
+                                nstop = 0; plan_pts = []
+                        else:
+                            nstop = 0
                 else:
                     # sin ruta A* -> orienta al goal y avanza si el frente esta despejado (busqueda simple)
                     bg = math.degrees(math.atan2(wy - y, wx - x))
