@@ -945,8 +945,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             if contact:
                 ncol += 1; last_col_t = now
                 yr = math.radians(yaw); fxx, fyy = math.cos(yr), math.sin(yr); pxx, pyy = -fyy, fxx
-                for d in (0.35, 0.5, 0.65, 0.8):
-                    for L in (-0.3, -0.15, 0.0, 0.15, 0.3):
+                for d in (0.30, 0.45):                     # marca PEQUEÑA (antes encerraba el paso de vuelta)
+                    for L in (-0.1, 0.0, 0.1):
                         colmap.add((round((x + d * fxx + L * pxx) / g.OCELL),
                                     round((y + d * fyy + L * pyy) / g.OCELL)))
                 cl = clear_dir(x, y, yaw, +55, op); cr = clear_dir(x, y, yaw, -55, op)
@@ -1021,12 +1021,16 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     #          REFERENCIA limpio SIN inflado (que tiene la puerta abierta). DWA = seguridad.
                     scell = (round(x / g.OCELL), round(y / g.OCELL))
                     gcell = (round(wx / g.OCELL), round(wy / g.OCELL))
-                    cm = ({c: math.inf for c in oset} if aggressive else g.build_costmap(oset))
+                    if aggressive:
+                        # AGRESIVO: obstaculos RECIENTES (4s, no sella la puerta) + mapa limpio (puerta abierta),
+                        # SIN colmap (las marcas de colision encierran) ni inflado. Rodea la mesa, cruza la puerta.
+                        recent = {c for c, tt in omap.items() if now - tt < 4.0}
+                        cm = {c: math.inf for c in (recent | (refmap or set()))}
+                    else:
+                        cm = g.build_costmap(oset)         # aproximacion rapida con el laser vivo (con seguridad)
                     cells_path = g.astar(scell, gcell, cm)
-                    used_ref = False
-                    if not cells_path and refmap:
-                        cells_path = g.astar(scell, gcell, {c: math.inf for c in (refmap | colmap)})
-                        used_ref = bool(cells_path)
+                    if not cells_path and refmap:          # ultimo recurso: solo el mapa limpio (siempre tiene la puerta)
+                        cells_path = g.astar(scell, gcell, {c: math.inf for c in refmap})
                     plan_pts = [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells_path] if cells_path else []
                     plan_t = now
                     if not plan_pts:
