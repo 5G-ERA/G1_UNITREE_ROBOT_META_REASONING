@@ -1,0 +1,41 @@
+{
+  "note": "map a point: p_dst = scale*R@p_src + t ; R=[[c,-s],[s,c]] with rot_deg",
+  "g1_to_summit": {
+    "scale": 1.00898,
+    "rot_deg": -332.04,
+    "t": [
+      -3.5099,
+      -0.8739
+    ]
+  },
+  "summit_to_g1": {
+    "scale": 0.9911,
+    "rot_deg": 332.04,
+    "t": [
+      3.4787,
+      -0.866
+    ]
+  },
+  "correspondences": {
+    "A": {
+      "g1": [
+        0.98,
+        0.54
+      ],
+      "summit": [
+        -2.892,
+        0.071
+      ]
+    },
+    "B": {
+      "g1": [
+        -4.71,
+        2.84
+      ],
+      "summit": [
+        -9.051,
+        -0.571
+      ]
+    }
+  }
+}
