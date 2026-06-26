@@ -435,36 +435,48 @@ def _telem_row(hh):
     return {k: v for k, v in row.items() if v is not None}
 
 
-def load_ref_map():
-    """Mapa de referencia para estimar la confianza de localizacion (scan-to-map). Prefiere
-    dataset/map_full.json (3D->banda torso), si no nav_map.json. Devuelve set de celdas OCELL."""
-    cells = set()
-    # 1) PREFERIDO: mapa del Summit transformado a frame G1 (limpio, con la puerta real)
-    pg1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "summit", "ref_map_g1.json")
-    try:
-        if os.path.exists(pg1):
-            d = json.load(open(pg1))
-            cells = set((round(p[0] / g.OCELL), round(p[1] / g.OCELL)) for p in d.get("points", []))
-            if cells:
-                return cells
-    except Exception:
-        pass
+def ref_points():
+    """Puntos de pared 2D (frame G1) del mapa de referencia elegido por env G1_REFMAP:
+       'g1' (DEFECTO) = el mapa propio del G1 (dataset/map_full.json o nav_map.json);
+       'summit'       = el mapa del Summit transformado a frame G1 (summit/ref_map_g1.json)."""
+    choice = os.environ.get("G1_REFMAP", "g1").lower()
+    here = os.path.dirname(os.path.abspath(__file__))
+    if choice == "summit":
+        p = os.path.join(here, "summit", "ref_map_g1.json")
+        try:
+            if os.path.exists(p):
+                pts = [(q[0], q[1]) for q in json.load(open(p)).get("points", [])]
+                if pts:
+                    return pts
+        except Exception:
+            pass
+    # 'g1' (defecto): mapa propio del G1
+    def _clip(pts):
+        return [(a, b) for (a, b) in pts if -15 <= a <= 15 and -15 <= b <= 15]   # quita outliers de reloc
     p3 = os.path.join(DATASET_DIR, "map_full.json")
     try:
         if os.path.exists(p3):
-            d = json.load(open(p3))
-            for pt in d.get("points", []):
-                if len(pt) >= 3 and HBAND_LO <= pt[2] <= HBAND_HI:
-                    cells.add((round(pt[0] / g.OCELL), round(pt[1] / g.OCELL)))
-            if cells:
-                return cells
+            d = json.load(open(p3)); pts = []
+            for q in d.get("points", []):
+                if len(q) >= 3 and HBAND_LO <= q[2] <= HBAND_HI:
+                    pts.append((q[0], q[1]))
+                elif len(q) == 2:
+                    pts.append((q[0], q[1]))
+            pts = _clip(pts)
+            if pts:
+                return pts
     except Exception:
         pass
     try:
-        d = json.load(open(MAP_FILE))
-        return set(tuple(c) for c in d.get("cells", []))
+        d = json.load(open(MAP_FILE)); OC = d.get("OCELL", g.OCELL)
+        return _clip([(c[0] * OC, c[1] * OC) for c in d.get("cells", [])])
     except Exception:
-        return set()
+        return []
+
+
+def load_ref_map():
+    """Mapa de referencia (set de celdas OCELL, frame G1) para confianza/plan. Ver ref_points()."""
+    return set((round(x / g.OCELL), round(y / g.OCELL)) for x, y in ref_points())
 
 
 def match_score(live_cells, ref_cells):
@@ -1206,14 +1218,9 @@ def cmd_turntest():
 
 
 def _load_refmap_points():
-    """Puntos de pared del mapa de referencia en frame G1 (summit/ref_map_g1.json) para pintar de FONDO."""
-    try:
-        rp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "summit", "ref_map_g1.json")
-        if os.path.exists(rp):
-            return json.load(open(rp)).get("points", [])
-    except Exception:
-        pass
-    return []
+    """Puntos de pared del mapa de referencia (frame G1) para pintar de FONDO. Mapa elegido por G1_REFMAP
+    ('g1' por defecto = mapa propio del G1; 'summit' = mapa del Summit alineado)."""
+    return ref_points()
 
 
 def _goto_window(vshare, lock, stop_event, label, wps):
