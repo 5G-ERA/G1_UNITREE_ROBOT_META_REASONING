@@ -81,6 +81,10 @@ Coordinate note: the cloud is in **Three.js Y-up** frame (the app's renderer), t
   - `frontier [secs] [viz]` — **deliberative** exploration: arcs to the nearest reachable **frontier**
     with A* path planning. `viz` opens a live window (**map + robot camera**, great for screen-recording).
     Saves `map_latest.png` + `map_latest.json` every 30 s for later inspection.
+- `g1_nav_v2.py` — **experimental** fork of `g1_nav.py` (stable one untouched). Adds: stronger models for
+  Apple-Silicon (`G1_YOLO=yolov8m.pt`, `G1_DEPTH=DPT_Hybrid`), **information-gain frontiers** (heads for
+  wide openings/doors, not the nearest nook), **analogy from past collisions** (avoids obstacles that
+  *look like* something it hit before), confidence-aware speed, and an IMU-discovery scaffold (`imu` cmd).
 - `g1_inject_teleop.py` — option-C teleop injection (sniff/capture/drive) — proof that we can move the robot via the app's datachannel
 - `g1_teleop.py` — direct walking via `rt/wirelesscontroller` (app closed)
 

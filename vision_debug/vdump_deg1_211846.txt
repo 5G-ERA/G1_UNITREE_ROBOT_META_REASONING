@@ -1,0 +1,6 @@
+VISION DUMP deg1 2026-06-25 21:18:46
+suelo_frac: izq=0.89 centro=0.56 dcha=0.52   (1=todo suelo, 0=nada de suelo)
+refS=65 refV=108  (referencia de la franja de pies; si rara -> mal segmentado)
+mcont(suelo contiguo desde abajo)=0.28  contact_frac=0.72  dmet=0.66m
+edge nrun=64 (>=7 = pata/objeto fino)  depth_ratio=0.76 (>0.75 = pared cerca)
+lectura: poco verde con suelo despejado => referencia de pies MALA (cabeza inclinada / luz).

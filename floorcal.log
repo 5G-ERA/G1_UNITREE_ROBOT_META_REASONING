@@ -1,0 +1,77 @@
+
+=== FLOORCAL AUTO 2026-06-25 19:07:43 ===
+SAMPLE d_lidar=0.562 contact_frac=0.488
+SAMPLE d_lidar=0.698 contact_frac=0.606
+SAMPLE d_lidar=0.612 contact_frac=0.813
+SAMPLE d_lidar=0.420 contact_frac=0.820
+SAMPLE d_lidar=0.964 contact_frac=0.544
+SAMPLE d_lidar=1.103 contact_frac=0.621
+SAMPLE d_lidar=1.175 contact_frac=0.606
+SAMPLE d_lidar=1.129 contact_frac=0.542
+SAMPLE d_lidar=1.216 contact_frac=0.506
+SAMPLE d_lidar=1.131 contact_frac=0.459
+SAMPLE d_lidar=1.214 contact_frac=0.458
+SAMPLE d_lidar=1.113 contact_frac=0.456
+SAMPLE d_lidar=1.213 contact_frac=0.456
+SAMPLE d_lidar=1.133 contact_frac=0.456
+SAMPLE d_lidar=1.215 contact_frac=0.456
+SAMPLE d_lidar=1.122 contact_frac=0.454
+SAMPLE d_lidar=1.215 contact_frac=0.455
+SAMPLE d_lidar=1.133 contact_frac=0.453
+SAMPLE d_lidar=1.230 contact_frac=0.454
+SAMPLE d_lidar=1.273 contact_frac=0.456
+SAMPLE d_lidar=1.352 contact_frac=0.465
+SAMPLE d_lidar=1.027 contact_frac=0.458
+SAMPLE d_lidar=0.934 contact_frac=0.501
+SAMPLE d_lidar=0.885 contact_frac=0.550
+SAMPLE d_lidar=0.838 contact_frac=0.672
+SAMPLE d_lidar=0.786 contact_frac=0.685
+SAMPLE d_lidar=0.935 contact_frac=0.708
+SAMPLE d_lidar=0.979 contact_frac=0.707
+SAMPLE d_lidar=1.106 contact_frac=0.640
+SAMPLE d_lidar=1.252 contact_frac=0.626
+SAMPLE d_lidar=1.161 contact_frac=0.615
+SAMPLE d_lidar=1.205 contact_frac=0.565
+SAMPLE d_lidar=1.279 contact_frac=0.524
+SAMPLE d_lidar=0.828 contact_frac=0.490
+SAMPLE d_lidar=0.650 contact_frac=0.537
+SAMPLE d_lidar=0.571 contact_frac=0.605
+SAMPLE d_lidar=0.696 contact_frac=0.719
+SAMPLE d_lidar=0.781 contact_frac=0.944
+SAMPLE d_lidar=0.907 contact_frac=0.941
+SAMPLE d_lidar=0.805 contact_frac=0.913
+SAMPLE d_lidar=0.856 contact_frac=0.859
+SAMPLE d_lidar=0.932 contact_frac=0.704
+SAMPLE d_lidar=1.034 contact_frac=0.714
+SAMPLE d_lidar=1.113 contact_frac=0.694
+SAMPLE d_lidar=1.069 contact_frac=0.528
+SAMPLE d_lidar=1.133 contact_frac=0.525
+SAMPLE d_lidar=1.044 contact_frac=0.524
+SAMPLE d_lidar=0.835 contact_frac=0.522
+SAMPLE d_lidar=0.793 contact_frac=0.592
+SAMPLE d_lidar=0.683 contact_frac=0.640
+SAMPLE d_lidar=0.614 contact_frac=0.684
+SAMPLE d_lidar=0.541 contact_frac=0.808
+SAMPLE d_lidar=0.613 contact_frac=0.845
+SAMPLE d_lidar=0.672 contact_frac=0.843
+SAMPLE d_lidar=0.716 contact_frac=0.851
+SAMPLE d_lidar=0.668 contact_frac=0.853
+SAMPLE d_lidar=0.598 contact_frac=0.871
+SAMPLE d_lidar=0.650 contact_frac=0.890
+SAMPLE d_lidar=0.593 contact_frac=0.903
+SAMPLE d_lidar=0.509 contact_frac=0.949
+SAMPLE d_lidar=0.967 contact_frac=0.580
+RESULT === CALIBRACION (61 muestras, error medio frac=0.101) === | FLOOR_HORIZON = 0.313 | FLOOR_K       = 0.276
+=== CALIBRACION (61 muestras, error medio frac=0.101) ===
+FLOOR_HORIZON = 0.313
+FLOOR_K       = 0.276
+-> pega esos dos valores en g1_nav.py (lineas FLOOR_HORIZON / FLOOR_K).
+comprobacion (d_lidar -> d_estimada):
+   0.56m -> 1.57m
+   1.21m -> 1.90m
+   1.35m -> 1.81m
+   1.16m -> 0.91m
+   0.86m -> 0.51m
+   0.61m -> 0.74m
+   0.97m -> 1.03m
+FIN

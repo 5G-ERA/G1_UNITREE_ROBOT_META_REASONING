@@ -1,0 +1,1012 @@
+
+=== GOTO 2026-06-26 09:26:51 ===
+t=  0.0 DWA-F pos=(-1.60,-0.34) yaw=+113.9 d=2.73 c0=0.94 obs=159 cmd=(ly=+0.40,rx=+0.45)
+t=  0.1 DWA-F pos=(-1.60,-0.34) yaw=+113.9 d=2.73 c0=0.94 obs=159 cmd=(ly=+0.40,rx=+0.45)
+t=  0.3 DWA-F pos=(-1.60,-0.34) yaw=+113.9 d=2.72 c0=0.94 obs=159 cmd=(ly=+0.40,rx=+0.45)
+t=  0.4 DWA-F pos=(-1.60,-0.34) yaw=+113.2 d=2.72 c0=0.94 obs=159 cmd=(ly=+0.40,rx=+0.45)
+t=  0.5 DWA-F pos=(-1.62,-0.35) yaw=+112.4 d=2.74 c0=0.95 obs=212 cmd=(ly=+0.40,rx=+0.45)
+t=  0.7 DWA-F pos=(-1.65,-0.35) yaw=+112.9 d=2.77 c0=1.55 obs=212 cmd=(ly=+0.40,rx=+0.45)
+t=  0.8 DWA-F pos=(-1.67,-0.33) yaw=+104.8 d=2.79 c0=0.93 obs=212 cmd=(ly=+0.40,rx=+0.45)
+t=  0.9 DWA-F pos=(-1.67,-0.30) yaw= +98.9 d=2.78 c0=0.91 obs=233 cmd=(ly=+0.40,rx=+0.45)
+t=  1.1 DWA-F pos=(-1.64,-0.26) yaw= +90.4 d=2.73 c0=0.86 obs=233 cmd=(ly=+0.40,rx=+0.45)
+t=  1.2 DWA-F pos=(-1.60,-0.24) yaw= +88.3 d=2.70 c0=0.84 obs=233 cmd=(ly=+0.40,rx=+0.45)
+t=  1.4 DWA-F pos=(-1.57,-0.19) yaw= +90.4 d=2.66 c0=0.79 obs=260 cmd=(ly=+0.40,rx=+0.45)
+t=  1.5 DWA-F pos=(-1.57,-0.16) yaw= +90.9 d=2.64 c0=0.76 obs=260 cmd=(ly=+0.40,rx=+0.45)
+t=  1.6 DWA-F pos=(-1.57,-0.14) yaw= +89.4 d=2.64 c0=0.74 obs=260 cmd=(ly=+0.40,rx=+0.45)
+t=  1.8 DWA-F pos=(-1.59,-0.08) yaw= +86.1 d=2.64 c0=0.68 obs=260 cmd=(ly=+0.40,rx=+0.45)
+t=  1.9 DWA-F pos=(-1.61,-0.05) yaw= +84.7 d=2.65 c0=0.65 obs=269 cmd=(ly=+0.40,rx=+0.45)
+t=  2.1 DWA-F pos=(-1.63,-0.02) yaw= +81.4 d=2.67 c0=0.62 obs=269 cmd=(ly=+0.40,rx=+0.45)
+t=  2.2 DWA-F pos=(-1.62,+0.03) yaw= +71.2 d=2.65 c0=0.57 obs=269 cmd=(ly=+0.40,rx=+0.45)
+t=  2.4 DWA-F pos=(-1.55,+0.04) yaw= +64.9 d=2.58 c0=0.78 obs=283 cmd=(ly=+0.40,rx=+0.45)
+t=  2.5 DWA-F pos=(-1.53,+0.04) yaw= +63.1 d=2.56 c0=0.77 obs=283 cmd=(ly=+0.40,rx=+0.45)
+t=  2.6 DWA-F pos=(-1.51,+0.05) yaw= +63.5 d=2.54 c0=0.75 obs=283 cmd=(ly=+0.40,rx=+0.45)
+t=  2.8 DWA-F pos=(-1.50,+0.08) yaw= +65.0 d=2.52 c0=0.73 obs=300 cmd=(ly=+0.40,rx=+0.45)
+t=  2.9 DWA-F pos=(-1.48,+0.13) yaw= +63.6 d=2.49 c0=0.67 obs=300 cmd=(ly=+0.40,rx=+0.45)
+t=  3.0 DWA-F pos=(-1.47,+0.17) yaw= +62.2 d=2.48 c0=0.64 obs=300 cmd=(ly=+0.40,rx=+0.45)
+t=  3.2 DWA-F pos=(-1.49,+0.24) yaw= +57.7 d=2.49 c0=0.57 obs=309 cmd=(ly=+0.40,rx=+0.45)
+t=  3.3 DWA-F pos=(-1.49,+0.26) yaw= +52.2 d=2.48 c0=0.73 obs=309 cmd=(ly=+0.40,rx=+0.45)
+t=  3.5 DWA-F pos=(-1.44,+0.28) yaw= +42.7 d=2.44 c0=0.69 obs=309 cmd=(ly=+0.40,rx=+0.45)
+t=  3.6 DWA-F pos=(-1.41,+0.26) yaw= +39.4 d=2.40 c0=0.67 obs=318 cmd=(ly=+0.40,rx=+0.45)
+t=  3.7 DWA-F pos=(-1.39,+0.25) yaw= +37.5 d=2.38 c0=0.67 obs=318 cmd=(ly=+0.40,rx=+0.45)
+t=  3.9 DWA-F pos=(-1.35,+0.27) yaw= +39.3 d=2.34 c0=0.63 obs=318 cmd=(ly=+0.40,rx=+0.45)
+t=  4.0 DWA-F pos=(-1.33,+0.28) yaw= +38.8 d=2.32 c0=0.61 obs=321 cmd=(ly=+0.40,rx=+0.45)
+t=  4.2 DWA-F pos=(-1.30,+0.30) yaw= +37.1 d=2.29 c0=0.58 obs=321 cmd=(ly=+0.40,rx=+0.45)
+t=  4.3 DWA-F pos=(-1.25,+0.37) yaw= +35.2 d=2.23 c0=0.62 obs=321 cmd=(ly=+0.40,rx=+0.45)
+t=  4.4 DWA-F pos=(-1.23,+0.40) yaw= +33.6 d=2.21 c0=0.59 obs=326 cmd=(ly=+0.40,rx=+0.45)
+t=  4.6 DWA-F pos=(-1.22,+0.41) yaw= +29.3 d=2.21 c0=0.58 obs=326 cmd=(ly=+0.40,rx=+0.45)
+t=  4.7 DWA-F pos=(-1.22,+0.37) yaw= +26.3 d=2.20 c0=0.60 obs=326 cmd=(ly=+0.40,rx=+0.45)
+t=  4.8 DWA-F pos=(-1.20,+0.30) yaw= +26.0 d=2.19 c0=0.64 obs=330 cmd=(ly=+0.40,rx=+0.00)
+t=  5.0 DWA-F pos=(-1.21,+0.22) yaw= +23.1 d=2.21 c0=2.50 obs=330 cmd=(ly=+0.40,rx=+0.00)
+t=  5.1 DWA-F pos=(-1.21,+0.20) yaw= +18.5 d=2.22 c0=2.50 obs=330 cmd=(ly=+0.40,rx=+0.00)
+t=  5.3 DWA-F pos=(-1.21,+0.17) yaw= +16.2 d=2.22 c0=2.50 obs=330 cmd=(ly=+0.40,rx=+0.00)
+t=  5.4 DWA-F pos=(-1.18,+0.10) yaw= +21.0 d=2.20 c0=2.50 obs=335 cmd=(ly=+0.40,rx=+0.00)
+t=  5.5 DWA-F pos=(-1.15,+0.07) yaw= +22.7 d=2.18 c0=2.50 obs=335 cmd=(ly=+0.40,rx=+0.00)
+t=  5.7 DWA-F pos=(-1.09,+0.06) yaw= +24.7 d=2.12 c0=2.50 obs=335 cmd=(ly=+0.40,rx=+0.00)
+t=  5.8 DWA-F pos=(-1.06,+0.07) yaw= +24.8 d=2.09 c0=2.50 obs=339 cmd=(ly=+0.40,rx=+0.00)
+t=  6.0 DWA-F pos=(-1.03,+0.09) yaw= +25.3 d=2.06 c0=2.50 obs=339 cmd=(ly=+0.40,rx=+0.00)
+t=  6.1 DWA-F pos=(-0.99,+0.16) yaw= +24.0 d=2.01 c0=2.50 obs=339 cmd=(ly=+0.40,rx=+0.00)
+t=  6.2 DWA-F pos=(-0.97,+0.19) yaw= +21.1 d=1.98 c0=2.50 obs=341 cmd=(ly=+0.40,rx=+0.00)
+t=  6.4 DWA-F pos=(-0.94,+0.20) yaw= +19.3 d=1.94 c0=2.50 obs=342 cmd=(ly=+0.40,rx=+0.00)
+t=  6.5 DWA-F pos=(-0.88,+0.18) yaw= +19.1 d=1.89 c0=2.50 obs=342 cmd=(ly=+0.40,rx=+0.00)
+t=  6.6 DWA-F pos=(-0.85,+0.17) yaw= +20.9 d=1.87 c0=2.50 obs=342 cmd=(ly=+0.40,rx=+0.00)
+t=  6.8 DWA-F pos=(-0.79,+0.19) yaw= +25.2 d=1.80 c0=2.50 obs=347 cmd=(ly=+0.40,rx=+0.00)
+t=  6.9 DWA-F pos=(-0.78,+0.23) yaw= +26.1 d=1.78 c0=2.50 obs=347 cmd=(ly=+0.40,rx=+0.00)
+t=  7.0 DWA-F pos=(-0.76,+0.24) yaw= +24.9 d=1.77 c0=2.50 obs=347 cmd=(ly=+0.40,rx=+0.00)
+t=  7.2 DWA-F pos=(-0.72,+0.25) yaw= +17.4 d=1.72 c0=2.50 obs=351 cmd=(ly=+0.40,rx=+0.00)
+t=  7.3 DWA-F pos=(-0.69,+0.24) yaw= +15.2 d=1.69 c0=2.50 obs=352 cmd=(ly=+0.40,rx=+0.00)
+t=  7.4 DWA-F pos=(-0.64,+0.21) yaw= +15.7 d=1.66 c0=2.50 obs=352 cmd=(ly=+0.40,rx=+0.00)
+t=  7.6 DWA-F pos=(-0.62,+0.21) yaw= +19.1 d=1.63 c0=2.50 obs=352 cmd=(ly=+0.40,rx=+0.00)
+t=  7.7 DWA-F pos=(-0.56,+0.23) yaw= +25.2 d=1.57 c0=2.50 obs=370 cmd=(ly=+0.40,rx=+0.00)
+t=  7.9 DWA-F pos=(-0.54,+0.25) yaw= +25.5 d=1.54 c0=2.50 obs=370 cmd=(ly=+0.40,rx=+0.00)
+t=  8.0 DWA-F pos=(-0.51,+0.32) yaw= +24.8 d=1.50 c0=2.50 obs=370 cmd=(ly=+0.40,rx=+0.45)
+t=  8.1 DWA-F pos=(-0.51,+0.35) yaw= +23.4 d=1.50 c0=2.50 obs=380 cmd=(ly=+0.40,rx=+0.45)
+t=  8.3 DWA-F pos=(-0.46,+0.38) yaw= +17.3 d=1.44 c0=2.50 obs=380 cmd=(ly=+0.40,rx=+0.00)
+t=  8.4 DWA-F pos=(-0.42,+0.37) yaw= +12.9 d=1.41 c0=2.50 obs=381 cmd=(ly=+0.40,rx=+0.00)
+t=  8.5 DWA-F pos=(-0.39,+0.36) yaw=  +9.5 d=1.38 c0=2.50 obs=381 cmd=(ly=+0.40,rx=+0.00)
+t=  8.7 DWA-F pos=(-0.35,+0.33) yaw=  +8.4 d=1.35 c0=2.50 obs=433 cmd=(ly=+0.40,rx=+0.00)
+t=  8.8 DWA-F pos=(-0.31,+0.30) yaw= +11.9 d=1.31 c0=2.50 obs=433 cmd=(ly=+0.40,rx=+0.00)
+t=  9.0 DWA-F pos=(-0.24,+0.32) yaw= +17.2 d=1.24 c0=2.50 obs=433 cmd=(ly=+0.40,rx=+0.00)
+t=  9.1 DWA-F pos=(-0.22,+0.34) yaw= +17.4 d=1.21 c0=2.50 obs=452 cmd=(ly=+0.40,rx=+0.00)
+t=  9.2 DWA-F pos=(-0.20,+0.37) yaw= +17.9 d=1.19 c0=2.50 obs=452 cmd=(ly=+0.40,rx=+0.00)
+t=  9.4 DWA-F pos=(-0.18,+0.43) yaw= +15.7 d=1.16 c0=2.50 obs=452 cmd=(ly=+0.40,rx=+0.00)
+t=  9.5 DWA-F pos=(-0.16,+0.44) yaw= +13.7 d=1.14 c0=2.50 obs=464 cmd=(ly=+0.40,rx=+0.00)
+t=  9.7 DWA-F pos=(-0.13,+0.44) yaw= +10.9 d=1.12 c0=2.50 obs=464 cmd=(ly=+0.40,rx=+0.00)
+t=  9.8 DWA-F pos=(-0.08,+0.42) yaw=  +7.1 d=1.06 c0=2.50 obs=464 cmd=(ly=+0.40,rx=+0.00)
+t=  9.9 DWA-F pos=(-0.04,+0.39) yaw=  +7.3 d=1.03 c0=2.50 obs=477 cmd=(ly=+0.40,rx=+0.00)
+t= 10.1 DWA-F pos=(-0.02,+0.37) yaw=  +8.4 d=1.01 c0=2.50 obs=477 cmd=(ly=+0.40,rx=+0.00)
+t= 10.2 DWA-F pos=(+0.05,+0.37) yaw= +14.7 d=0.95 c0=2.50 obs=477 cmd=(ly=+0.40,rx=+0.00)
+t= 10.4 DWA-F pos=(+0.07,+0.39) yaw= +15.5 d=0.92 c0=2.50 obs=477 cmd=(ly=+0.40,rx=+0.00)
+t= 10.5 DWA-F pos=(+0.10,+0.44) yaw= +15.6 d=0.88 c0=2.50 obs=492 cmd=(ly=+0.40,rx=+0.00)
+t= 10.6 DWA-F pos=(+0.10,+0.48) yaw= +14.9 d=0.88 c0=2.50 obs=492 cmd=(ly=+0.40,rx=+0.00)
+t= 10.8 DWA-F pos=(+0.11,+0.50) yaw= +12.9 d=0.87 c0=2.50 obs=492 cmd=(ly=+0.40,rx=+0.00)
+t= 10.9 DWA-F pos=(+0.17,+0.50) yaw=  +7.2 d=0.81 c0=2.50 obs=501 cmd=(ly=+0.40,rx=+0.00)
+t= 11.0 DWA-F pos=(+0.20,+0.49) yaw=  +5.6 d=0.78 c0=2.50 obs=501 cmd=(ly=+0.40,rx=+0.00)
+t= 11.2 DWA-F pos=(+0.26,+0.43) yaw=  +4.8 d=0.73 c0=2.50 obs=501 cmd=(ly=+0.40,rx=+0.00)
+t= 11.3 DWA-F pos=(+0.28,+0.42) yaw=  +7.1 d=0.71 c0=2.50 obs=519 cmd=(ly=+0.40,rx=+0.00)
+t= 11.5 DWA-F pos=(+0.30,+0.43) yaw= +11.0 d=0.68 c0=2.50 obs=519 cmd=(ly=+0.40,rx=+0.00)
+t= 11.6 DWA-F pos=(+0.36,+0.46) yaw= +13.3 d=0.62 c0=2.50 obs=519 cmd=(ly=+0.40,rx=+0.00)
+t= 11.8 DWA-F pos=(+0.38,+0.49) yaw= +13.8 d=0.60 c0=2.50 obs=519 cmd=(ly=+0.40,rx=+0.00)
+t= 11.9 DWA-F pos=(+0.41,+0.55) yaw= +11.1 d=0.57 c0=2.50 obs=526 cmd=(ly=+0.40,rx=+0.00)
+t= 12.0 DWA-F pos=(+0.44,+0.56) yaw=  +8.6 d=0.54 c0=2.50 obs=526 cmd=(ly=+0.40,rx=+0.00)
+t= 12.2 DWA-F pos=(+0.49,+0.55) yaw=  +3.1 d=0.49 c0=2.50 obs=526 cmd=(ly=+0.40,rx=+0.00)
+t= 12.3 DWA-F pos=(+0.49,+0.55) yaw=  +3.1 d=0.49 c0=2.50 obs=526 cmd=(ly=+0.40,rx=+0.00)
+t= 12.5 DWA-F pos=(+0.55,+0.49) yaw=  +2.5 d=0.43 c0=2.50 obs=530 cmd=(ly=+0.40,rx=+0.00)
+t= 12.6 DWA-F pos=(+0.61,+0.46) yaw=  +7.9 d=0.38 c0=2.50 obs=530 cmd=(ly=+0.40,rx=+0.00)
+REACHED A err=0.35 ncol=0
+FIN
+
+=== GOTO 2026-06-26 09:28:38 ===
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=210
+t=  0.0 SEEK-T pos=(+0.71,+0.54) yaw=  +5.1 d=5.89 c0=2.50 obs=210 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=210
+t=  0.1 SEEK-T pos=(+0.71,+0.55) yaw=  +5.0 d=5.89 c0=2.50 obs=210 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=263
+t=  0.3 SEEK-T pos=(+0.72,+0.55) yaw=  +5.1 d=5.89 c0=2.50 obs=263 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=263
+t=  0.4 SEEK-T pos=(+0.71,+0.54) yaw=  +5.2 d=5.89 c0=2.50 obs=263 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=291
+t=  0.5 SEEK-T pos=(+0.71,+0.59) yaw= +13.9 d=5.88 c0=2.50 obs=291 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=291
+t=  0.7 SEEK-T pos=(+0.69,+0.61) yaw= +17.3 d=5.85 c0=2.50 obs=291 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=291
+t=  0.8 SEEK-T pos=(+0.69,+0.62) yaw= +23.8 d=5.84 c0=2.50 obs=291 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=291
+t=  1.0 SEEK-T pos=(+0.70,+0.62) yaw= +28.4 d=5.85 c0=2.50 obs=291 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=331
+t=  1.1 SEEK-T pos=(+0.71,+0.62) yaw= +33.1 d=5.86 c0=2.50 obs=331 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=331
+t=  1.2 SEEK-T pos=(+0.77,+0.60) yaw= +45.5 d=5.92 c0=2.50 obs=331 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=331
+t=  1.4 SEEK-T pos=(+0.79,+0.60) yaw= +51.8 d=5.94 c0=2.50 obs=331 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=331
+t=  1.5 SEEK-T pos=(+0.79,+0.60) yaw= +61.9 d=5.94 c0=2.50 obs=331 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=361
+t=  1.7 SEEK-T pos=(+0.76,+0.60) yaw= +65.8 d=5.92 c0=2.50 obs=361 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=361
+t=  1.8 SEEK-T pos=(+0.75,+0.59) yaw= +71.9 d=5.91 c0=2.50 obs=361 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=361
+t=  1.9 SEEK-T pos=(+0.75,+0.60) yaw= +75.2 d=5.91 c0=2.43 obs=361 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=389
+t=  2.1 SEEK-T pos=(+0.77,+0.60) yaw= +80.7 d=5.92 c0=2.27 obs=389 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=389
+t=  2.2 SEEK-T pos=(+0.78,+0.62) yaw= +88.7 d=5.93 c0=2.07 obs=389 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=389
+t=  2.4 SEEK-T pos=(+0.77,+0.63) yaw= +99.6 d=5.91 c0=1.85 obs=389 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=389
+t=  2.5 SEEK-T pos=(+0.75,+0.62) yaw=+104.0 d=5.90 c0=1.52 obs=389 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=425
+t=  2.6 SEEK-T pos=(+0.73,+0.61) yaw=+110.9 d=5.89 c0=1.51 obs=425 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=425
+t=  2.8 SEEK-T pos=(+0.73,+0.62) yaw=+114.2 d=5.89 c0=1.50 obs=425 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=425
+t=  2.9 SEEK-T pos=(+0.74,+0.63) yaw=+119.4 d=5.89 c0=1.50 obs=425 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=446
+t=  3.1 SEEK-T pos=(+0.74,+0.63) yaw=+119.4 d=5.89 c0=1.50 obs=446 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=446
+t=  3.2 SEEK-T pos=(+0.76,+0.68) yaw=+133.1 d=5.88 c0=1.36 obs=446 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=446
+t=  3.3 SEEK-F pos=(+0.75,+0.68) yaw=+138.9 d=5.88 c0=1.36 obs=446 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=463
+t=  3.5 SEEK-F pos=(+0.75,+0.68) yaw=+143.5 d=5.87 c0=1.35 obs=463 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=463
+t=  3.6 SEEK-F pos=(+0.74,+0.67) yaw=+147.4 d=5.87 c0=1.35 obs=463 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=463
+t=  3.8 SEEK-F pos=(+0.74,+0.64) yaw=+154.5 d=5.89 c0=1.38 obs=463 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=463
+t=  3.9 SEEK-F pos=(+0.74,+0.65) yaw=+156.6 d=5.88 c0=1.37 obs=463 cmd=(ly=+0.40,rx=+0.00)
+COLISION #1 [imu] pos=(+0.75,+0.68) yaw=+158
+t=  4.0 R-BACK pos=(+0.75,+0.68) yaw=+157.8 d=5.87 c0=1.35 obs=482 cmd=(ly=-0.35,rx=+0.00)
+t=  4.2 R-BACK pos=(+0.70,+0.67) yaw=+160.4 d=5.84 c0=0.33 obs=496 cmd=(ly=-0.35,rx=+0.00)
+t=  4.3 R-BACK pos=(+0.68,+0.66) yaw=+160.0 d=5.82 c0=0.32 obs=496 cmd=(ly=-0.35,rx=+0.00)
+t=  4.4 R-BACK pos=(+0.68,+0.66) yaw=+160.0 d=5.82 c0=0.32 obs=516 cmd=(ly=-0.35,rx=+0.00)
+t=  4.6 R-TURN pos=(+0.67,+0.66) yaw=+156.4 d=5.81 c0=0.30 obs=516 cmd=(ly=+0.00,rx=-0.45)
+t=  4.7 R-TURN pos=(+0.67,+0.66) yaw=+156.4 d=5.81 c0=0.30 obs=516 cmd=(ly=+0.00,rx=-0.45)
+t=  4.9 R-TURN pos=(+0.65,+0.68) yaw=+157.1 d=5.78 c0=0.28 obs=529 cmd=(ly=+0.00,rx=-0.45)
+t=  5.0 R-TURN pos=(+0.65,+0.68) yaw=+157.2 d=5.78 c0=0.28 obs=529 cmd=(ly=+0.00,rx=-0.45)
+t=  5.1 R-TURN pos=(+0.68,+0.66) yaw=+160.6 d=5.82 c0=0.31 obs=529 cmd=(ly=+0.00,rx=-0.45)
+t=  5.3 R-TURN pos=(+0.68,+0.66) yaw=+160.6 d=5.82 c0=0.31 obs=543 cmd=(ly=+0.00,rx=-0.45)
+t=  5.4 R-TURN pos=(+0.70,+0.66) yaw=+160.5 d=5.84 c0=0.34 obs=543 cmd=(ly=+0.00,rx=-0.45)
+t=  5.5 R-TURN pos=(+0.71,+0.69) yaw=+171.9 d=5.84 c0=0.32 obs=543 cmd=(ly=+0.00,rx=-0.45)
+t=  5.7 R-TURN pos=(+0.75,+0.66) yaw=-171.0 d=5.88 c0=0.35 obs=567 cmd=(ly=+0.00,rx=-0.45)
+t=  5.8 R-TURN pos=(+0.74,+0.66) yaw=-167.1 d=5.88 c0=0.35 obs=567 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=567
+t=  5.9 SEEK-T pos=(+0.72,+0.68) yaw=-155.0 d=5.85 c0=0.33 obs=567 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=567
+t=  6.1 SEEK-T pos=(+0.70,+0.69) yaw=-147.1 d=5.83 c0=0.32 obs=567 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=583
+t=  6.2 SEEK-T pos=(+0.70,+0.69) yaw=-141.2 d=5.82 c0=0.31 obs=583 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=583
+t=  6.4 SEEK-T pos=(+0.71,+0.68) yaw=-141.4 d=5.84 c0=0.32 obs=583 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=583
+t=  6.5 SEEK-T pos=(+0.72,+0.68) yaw=-144.1 d=5.84 c0=0.33 obs=583 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=583
+t=  6.6 SEEK-T pos=(+0.72,+0.69) yaw=-151.0 d=5.84 c0=0.33 obs=583 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=602
+t=  6.8 SEEK-T pos=(+0.72,+0.73) yaw=-162.9 d=5.83 c0=0.34 obs=602 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=602
+t=  6.9 SEEK-T pos=(+0.73,+0.75) yaw=-166.2 d=5.83 c0=0.33 obs=602 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=602
+t=  7.0 SEEK-T pos=(+0.73,+0.76) yaw=-169.2 d=5.83 c0=0.33 obs=602 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.8 obs=609
+t=  7.2 SEEK-T pos=(+0.75,+0.77) yaw=-177.8 d=5.84 c0=0.35 obs=609 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=609
+t=  7.3 SEEK-S pos=(+0.76,+0.76) yaw=+178.5 d=5.85 c0=0.36 obs=609 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=609
+t=  7.5 SEEK-S pos=(+0.75,+0.73) yaw=+172.7 d=5.86 c0=0.36 obs=609 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=615
+t=  7.6 SEEK-S pos=(+0.75,+0.70) yaw=+168.8 d=5.86 c0=0.36 obs=615 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=615
+t=  7.8 SEEK-S pos=(+0.75,+0.67) yaw=+167.0 d=5.88 c0=0.36 obs=615 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=615
+t=  7.9 SEEK-S pos=(+0.76,+0.67) yaw=+168.1 d=5.89 c0=0.37 obs=615 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=620
+t=  8.0 SEEK-S pos=(+0.76,+0.67) yaw=+167.6 d=5.89 c0=0.37 obs=620 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=620
+t=  8.2 SEEK-S pos=(+0.75,+0.67) yaw=+167.4 d=5.88 c0=0.36 obs=620 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=620
+t=  8.3 SEEK-S pos=(+0.75,+0.67) yaw=+167.7 d=5.88 c0=0.35 obs=620 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=620
+t=  8.5 SEEK-S pos=(+0.75,+0.67) yaw=+167.5 d=5.88 c0=0.36 obs=620 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=623
+t=  8.6 SEEK-S pos=(+0.75,+0.67) yaw=+167.4 d=5.88 c0=0.35 obs=623 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=623
+t=  8.7 SEEK-S pos=(+0.75,+0.67) yaw=+167.7 d=5.88 c0=0.35 obs=623 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=623
+t=  8.9 SEEK-S pos=(+0.75,+0.67) yaw=+167.7 d=5.88 c0=0.36 obs=623 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=5.9 obs=624
+t=  9.0 SEEK-S pos=(+0.75,+0.67) yaw=+167.6 d=5.88 c0=0.36 obs=624 cmd=(ly=+0.00,rx=+0.00)
+t=  9.2 BRK-BK pos=(+0.75,+0.67) yaw=+167.6 d=5.88 c0=0.36 obs=624 cmd=(ly=-0.35,rx=+0.00)
+t=  9.3 BRK-BK pos=(+0.75,+0.67) yaw=+167.6 d=5.88 c0=0.36 obs=624 cmd=(ly=-0.35,rx=+0.00)
+t=  9.4 BRK-BK pos=(+0.75,+0.67) yaw=+167.7 d=5.88 c0=0.36 obs=624 cmd=(ly=-0.35,rx=+0.00)
+t=  9.6 BRK-TR pos=(+0.75,+0.67) yaw=+167.1 d=5.88 c0=0.36 obs=627 cmd=(ly=+0.00,rx=-0.45)
+t=  9.7 BRK-TR pos=(+0.76,+0.66) yaw=+166.9 d=5.90 c0=0.37 obs=627 cmd=(ly=+0.00,rx=-0.45)
+t=  9.8 BRK-TR pos=(+0.81,+0.66) yaw=+170.3 d=5.94 c0=0.42 obs=627 cmd=(ly=+0.00,rx=-0.45)
+t= 10.0 BRK-TR pos=(+0.82,+0.65) yaw=+171.6 d=5.95 c0=0.42 obs=630 cmd=(ly=+0.00,rx=-0.45)
+t= 10.1 BRK-TR pos=(+0.84,+0.62) yaw=+173.5 d=5.99 c0=0.44 obs=630 cmd=(ly=+0.00,rx=-0.45)
+t= 10.2 BRK-TR pos=(+0.87,+0.59) yaw=+173.1 d=6.02 c0=0.47 obs=630 cmd=(ly=+0.00,rx=-0.45)
+t= 10.4 BRK-TR pos=(+0.88,+0.59) yaw=-179.9 d=6.03 c0=0.48 obs=630 cmd=(ly=+0.00,rx=-0.45)
+t= 10.5 BRK-TR pos=(+0.88,+0.61) yaw=-173.1 d=6.03 c0=0.49 obs=631 cmd=(ly=+0.00,rx=-0.45)
+t= 10.6 BRK-TR pos=(+0.91,+0.61) yaw=-168.1 d=6.05 c0=0.51 obs=631 cmd=(ly=+0.00,rx=-0.45)
+t= 10.8 BRK-TR pos=(+0.93,+0.59) yaw=-161.4 d=6.07 c0=0.53 obs=631 cmd=(ly=+0.00,rx=-0.45)
+t= 10.9 BRK-TR pos=(+0.92,+0.59) yaw=-157.3 d=6.07 c0=0.52 obs=636 cmd=(ly=+0.00,rx=-0.45)
+t= 11.0 BRK-TR pos=(+0.90,+0.61) yaw=-145.1 d=6.04 c0=2.50 obs=636 cmd=(ly=+0.00,rx=-0.45)
+t= 11.2 BRK-TR pos=(+0.87,+0.62) yaw=-138.0 d=6.01 c0=2.50 obs=636 cmd=(ly=+0.00,rx=-0.45)
+t= 11.3 BRK-TR pos=(+0.86,+0.62) yaw=-131.1 d=6.00 c0=2.50 obs=641 cmd=(ly=+0.00,rx=-0.45)
+t= 11.4 BRK-TR pos=(+0.86,+0.62) yaw=-125.7 d=6.00 c0=2.50 obs=641 cmd=(ly=+0.00,rx=-0.45)
+t= 11.6 BRK-TR pos=(+0.89,+0.61) yaw=-117.5 d=6.03 c0=2.50 obs=641 cmd=(ly=+0.00,rx=-0.45)
+t= 11.7 BRK-TR pos=(+0.90,+0.62) yaw=-113.3 d=6.04 c0=2.50 obs=647 cmd=(ly=+0.00,rx=-0.45)
+t= 11.8 BRK-TR pos=(+0.91,+0.62) yaw=-111.1 d=6.05 c0=2.50 obs=647 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=647
+t= 12.0 SEEK-T pos=(+0.90,+0.60) yaw=-103.1 d=6.04 c0=2.46 obs=647 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=647
+t= 12.1 SEEK-T pos=(+0.88,+0.60) yaw= -96.7 d=6.02 c0=2.32 obs=647 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=647
+t= 12.3 SEEK-T pos=(+0.86,+0.59) yaw= -89.3 d=6.02 c0=2.12 obs=647 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=647
+t= 12.4 SEEK-T pos=(+0.87,+0.58) yaw= -84.8 d=6.02 c0=2.01 obs=647 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=647
+t= 12.5 SEEK-T pos=(+0.87,+0.58) yaw= -86.5 d=6.03 c0=2.01 obs=647 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=647
+t= 12.7 SEEK-T pos=(+0.86,+0.59) yaw= -96.9 d=6.01 c0=2.46 obs=647 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=648
+t= 12.8 SEEK-T pos=(+0.86,+0.60) yaw= -98.3 d=6.00 c0=2.46 obs=648 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=648
+t= 13.0 SEEK-T pos=(+0.88,+0.60) yaw=-105.4 d=6.03 c0=2.50 obs=648 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=648
+t= 13.1 SEEK-T pos=(+0.91,+0.60) yaw=-111.8 d=6.05 c0=2.50 obs=648 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=650
+t= 13.2 SEEK-T pos=(+0.92,+0.62) yaw=-119.2 d=6.05 c0=2.50 obs=650 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=650
+t= 13.4 SEEK-T pos=(+0.92,+0.65) yaw=-130.8 d=6.04 c0=2.50 obs=650 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=650
+t= 13.5 SEEK-T pos=(+0.92,+0.68) yaw=-135.8 d=6.03 c0=2.50 obs=650 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=652
+t= 13.7 SEEK-T pos=(+0.93,+0.70) yaw=-139.1 d=6.04 c0=2.50 obs=652 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.0 obs=652
+t= 13.8 SEEK-T pos=(+0.95,+0.72) yaw=-145.7 d=6.05 c0=0.56 obs=652 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=652
+t= 13.9 SEEK-T pos=(+0.95,+0.72) yaw=-149.7 d=6.05 c0=0.57 obs=652 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=652
+t= 14.1 SEEK-T pos=(+0.98,+0.71) yaw=-157.1 d=6.08 c0=0.59 obs=652 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=653
+t= 14.2 SEEK-T pos=(+0.99,+0.71) yaw=-163.0 d=6.09 c0=0.60 obs=653 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=653
+t= 14.4 SEEK-T pos=(+1.00,+0.75) yaw=-172.9 d=6.09 c0=0.61 obs=653 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=653
+t= 14.5 SEEK-T pos=(+1.02,+0.75) yaw=-178.2 d=6.11 c0=0.63 obs=653 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=654
+t= 14.6 SEEK-S pos=(+1.04,+0.76) yaw=+177.8 d=6.12 c0=0.64 obs=654 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=654
+t= 14.8 SEEK-S pos=(+1.07,+0.78) yaw=+170.4 d=6.14 c0=0.52 obs=654 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=654
+t= 14.9 SEEK-S pos=(+1.08,+0.78) yaw=+168.3 d=6.15 c0=0.53 obs=654 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.2 obs=654
+t= 15.0 SEEK-S pos=(+1.08,+0.76) yaw=+168.3 d=6.15 c0=0.53 obs=654 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=655
+t= 15.2 SEEK-S pos=(+1.06,+0.73) yaw=+170.5 d=6.15 c0=0.53 obs=655 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.2 obs=655
+t= 15.3 SEEK-S pos=(+1.06,+0.72) yaw=+170.4 d=6.15 c0=0.54 obs=655 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.2 obs=655
+t= 15.5 SEEK-S pos=(+1.06,+0.71) yaw=+171.2 d=6.15 c0=0.54 obs=655 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.2 obs=655
+t= 15.6 SEEK-S pos=(+1.05,+0.71) yaw=+171.2 d=6.15 c0=0.54 obs=655 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=655
+t= 15.8 SEEK-S pos=(+1.04,+0.71) yaw=+171.0 d=6.14 c0=0.53 obs=655 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=655
+t= 15.9 SEEK-S pos=(+1.04,+0.71) yaw=+171.2 d=6.13 c0=0.52 obs=655 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=656
+t= 16.0 SEEK-S pos=(+1.03,+0.71) yaw=+171.1 d=6.13 c0=0.64 obs=656 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=656
+t= 16.2 SEEK-S pos=(+1.04,+0.70) yaw=+170.8 d=6.14 c0=0.53 obs=656 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.1 obs=656
+t= 16.3 SEEK-S pos=(+1.04,+0.70) yaw=+170.5 d=6.14 c0=0.53 obs=656 cmd=(ly=+0.00,rx=+0.00)
+t= 16.5 BRK-BK pos=(+1.04,+0.70) yaw=+170.8 d=6.14 c0=0.65 obs=656 cmd=(ly=-0.35,rx=+0.00)
+t= 16.6 BRK-BK pos=(+1.04,+0.70) yaw=+171.0 d=6.14 c0=0.64 obs=658 cmd=(ly=-0.35,rx=+0.00)
+t= 16.7 BRK-BK pos=(+1.03,+0.70) yaw=+171.0 d=6.13 c0=0.64 obs=658 cmd=(ly=-0.35,rx=+0.00)
+t= 16.9 BRK-TR pos=(+1.03,+0.70) yaw=+170.4 d=6.13 c0=0.64 obs=658 cmd=(ly=+0.00,rx=-0.45)
+t= 17.0 BRK-TR pos=(+1.05,+0.69) yaw=+169.3 d=6.15 c0=0.54 obs=658 cmd=(ly=+0.00,rx=-0.45)
+t= 17.1 BRK-TR pos=(+1.07,+0.67) yaw=+169.4 d=6.18 c0=0.58 obs=658 cmd=(ly=+0.00,rx=-0.45)
+t= 17.3 BRK-TR pos=(+1.09,+0.64) yaw=+169.8 d=6.21 c0=0.69 obs=658 cmd=(ly=+0.00,rx=-0.45)
+t= 17.4 BRK-TR pos=(+1.13,+0.60) yaw=+169.8 d=6.26 c0=0.73 obs=664 cmd=(ly=+0.00,rx=-0.45)
+t= 17.5 BRK-TR pos=(+1.14,+0.60) yaw=+173.6 d=6.27 c0=0.74 obs=664 cmd=(ly=+0.00,rx=-0.45)
+t= 17.7 BRK-TR pos=(+1.18,+0.61) yaw=-175.3 d=6.30 c0=0.78 obs=664 cmd=(ly=+0.00,rx=-0.45)
+t= 17.8 BRK-TR pos=(+1.20,+0.59) yaw=-172.3 d=6.33 c0=0.80 obs=664 cmd=(ly=+0.00,rx=-0.45)
+t= 17.9 BRK-TR pos=(+1.22,+0.55) yaw=-164.6 d=6.36 c0=0.82 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.1 BRK-TR pos=(+1.22,+0.56) yaw=-159.6 d=6.36 c0=0.82 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.2 BRK-TR pos=(+1.22,+0.57) yaw=-154.1 d=6.35 c0=2.42 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.3 BRK-TR pos=(+1.20,+0.59) yaw=-147.9 d=6.33 c0=2.50 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.5 BRK-TR pos=(+1.17,+0.61) yaw=-134.9 d=6.29 c0=2.50 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.6 BRK-TR pos=(+1.17,+0.60) yaw=-130.4 d=6.29 c0=2.50 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.7 BRK-TR pos=(+1.21,+0.60) yaw=-121.4 d=6.33 c0=2.50 obs=666 cmd=(ly=+0.00,rx=-0.45)
+t= 18.9 BRK-TR pos=(+1.22,+0.61) yaw=-118.2 d=6.34 c0=2.50 obs=667 cmd=(ly=+0.00,rx=-0.45)
+t= 19.0 BRK-TR pos=(+1.23,+0.60) yaw=-116.3 d=6.35 c0=2.50 obs=667 cmd=(ly=+0.00,rx=-0.45)
+t= 19.2 BRK-TR pos=(+1.21,+0.59) yaw=-107.7 d=6.33 c0=2.40 obs=667 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=668
+t= 19.3 SEEK-T pos=(+1.18,+0.58) yaw=-101.0 d=6.31 c0=2.03 obs=668 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=668
+t= 19.4 SEEK-T pos=(+1.17,+0.57) yaw= -94.1 d=6.31 c0=1.88 obs=668 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=668
+t= 19.6 SEEK-T pos=(+1.19,+0.56) yaw= -85.9 d=6.33 c0=1.67 obs=668 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=670
+t= 19.7 SEEK-T pos=(+1.20,+0.57) yaw= -87.2 d=6.34 c0=1.68 obs=670 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=670
+t= 19.8 SEEK-T pos=(+1.20,+0.58) yaw= -88.7 d=6.33 c0=1.69 obs=670 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=670
+t= 20.0 SEEK-T pos=(+1.22,+0.60) yaw= -94.0 d=6.34 c0=1.70 obs=670 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 20.1 SEEK-T pos=(+1.22,+0.61) yaw= -96.2 d=6.34 c0=1.90 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 20.3 SEEK-T pos=(+1.20,+0.64) yaw=-107.1 d=6.32 c0=2.44 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 20.4 SEEK-T pos=(+1.18,+0.66) yaw=-112.7 d=6.29 c0=2.50 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 20.5 SEEK-T pos=(+1.18,+0.69) yaw=-117.2 d=6.27 c0=2.50 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 20.7 SEEK-T pos=(+1.18,+0.71) yaw=-120.0 d=6.27 c0=2.50 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 20.8 SEEK-T pos=(+1.19,+0.71) yaw=-128.5 d=6.28 c0=2.50 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=671
+t= 21.0 SEEK-T pos=(+1.21,+0.71) yaw=-132.1 d=6.29 c0=2.50 obs=671 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=672
+t= 21.1 SEEK-T pos=(+1.23,+0.71) yaw=-142.5 d=6.31 c0=2.50 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=672
+t= 21.2 SEEK-T pos=(+1.23,+0.72) yaw=-147.1 d=6.31 c0=0.83 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=672
+t= 21.4 SEEK-T pos=(+1.24,+0.76) yaw=-158.0 d=6.31 c0=0.85 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=672
+t= 21.5 SEEK-T pos=(+1.26,+0.77) yaw=-161.2 d=6.32 c0=0.86 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=672
+t= 21.7 SEEK-T pos=(+1.27,+0.77) yaw=-168.8 d=6.34 c0=0.87 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.3 obs=672
+t= 21.8 SEEK-T pos=(+1.28,+0.75) yaw=-172.7 d=6.35 c0=0.88 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=672
+t= 21.9 SEEK-T pos=(+1.29,+0.73) yaw=-176.8 d=6.36 c0=0.74 obs=672 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=675
+t= 22.1 SEEK-F pos=(+1.30,+0.72) yaw=+170.9 d=6.38 c0=0.76 obs=675 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=675
+t= 22.2 SEEK-F pos=(+1.31,+0.72) yaw=+165.3 d=6.38 c0=0.76 obs=675 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=675
+t= 22.4 SEEK-F pos=(+1.36,+0.74) yaw=+157.9 d=6.42 c0=0.80 obs=675 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=675
+t= 22.5 SEEK-F pos=(+1.38,+0.75) yaw=+157.7 d=6.44 c0=0.82 obs=675 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=676
+t= 22.6 SEEK-F pos=(+1.38,+0.75) yaw=+157.3 d=6.44 c0=0.82 obs=676 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=676
+t= 22.8 SEEK-F pos=(+1.39,+0.72) yaw=+156.1 d=6.47 c0=0.84 obs=676 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=676
+t= 22.9 SEEK-F pos=(+1.41,+0.71) yaw=+154.5 d=6.48 c0=0.86 obs=676 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=677
+t= 23.1 SEEK-F pos=(+1.41,+0.73) yaw=+154.5 d=6.48 c0=0.86 obs=677 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=677
+t= 23.2 SEEK-F pos=(+1.40,+0.76) yaw=+158.4 d=6.46 c0=0.83 obs=677 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=677
+t= 23.3 SEEK-F pos=(+1.38,+0.77) yaw=+160.2 d=6.44 c0=0.81 obs=677 cmd=(ly=+0.40,rx=+0.00)
+COLISION #2 [odom] pos=(+1.32,+0.77) yaw=+162
+t= 23.5 R-BACK pos=(+1.32,+0.77) yaw=+161.7 d=6.38 c0=0.75 obs=680 cmd=(ly=-0.35,rx=+0.00)
+t= 23.6 R-BACK pos=(+1.28,+0.76) yaw=+162.0 d=6.34 c0=0.28 obs=691 cmd=(ly=-0.35,rx=+0.00)
+t= 23.7 R-BACK pos=(+1.26,+0.74) yaw=+161.2 d=6.33 c0=0.26 obs=691 cmd=(ly=-0.35,rx=+0.00)
+t= 23.9 R-BACK pos=(+1.25,+0.74) yaw=+157.9 d=6.33 c0=0.26 obs=691 cmd=(ly=-0.35,rx=+0.00)
+t= 24.0 R-TURN pos=(+1.25,+0.76) yaw=+157.9 d=6.32 c0=0.25 obs=702 cmd=(ly=+0.00,rx=-0.45)
+t= 24.2 R-TURN pos=(+1.24,+0.76) yaw=+158.9 d=6.31 c0=0.24 obs=702 cmd=(ly=+0.00,rx=-0.45)
+t= 24.3 R-TURN pos=(+1.25,+0.72) yaw=+158.2 d=6.33 c0=0.26 obs=702 cmd=(ly=+0.00,rx=-0.45)
+t= 24.4 R-TURN pos=(+1.26,+0.70) yaw=+158.0 d=6.35 c0=0.28 obs=704 cmd=(ly=+0.00,rx=-0.45)
+t= 24.6 R-TURN pos=(+1.27,+0.70) yaw=+159.0 d=6.36 c0=0.29 obs=704 cmd=(ly=+0.00,rx=-0.45)
+t= 24.7 R-TURN pos=(+1.29,+0.72) yaw=+166.6 d=6.37 c0=0.30 obs=704 cmd=(ly=+0.00,rx=-0.45)
+t= 24.8 R-TURN pos=(+1.29,+0.72) yaw=+173.2 d=6.37 c0=0.30 obs=704 cmd=(ly=+0.00,rx=-0.45)
+t= 25.0 R-TURN pos=(+1.30,+0.71) yaw=+179.1 d=6.38 c0=0.32 obs=704 cmd=(ly=+0.00,rx=-0.45)
+t= 25.1 R-TURN pos=(+1.33,+0.71) yaw=-174.3 d=6.41 c0=0.35 obs=704 cmd=(ly=+0.00,rx=-0.45)
+t= 25.2 R-TURN pos=(+1.34,+0.71) yaw=-170.9 d=6.42 c0=0.35 obs=704 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=705
+t= 25.4 SEEK-T pos=(+1.33,+0.72) yaw=-160.7 d=6.40 c0=0.54 obs=705 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=705
+t= 25.5 SEEK-T pos=(+1.30,+0.73) yaw=-154.0 d=6.38 c0=0.52 obs=705 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=705
+t= 25.6 SEEK-T pos=(+1.29,+0.73) yaw=-147.5 d=6.37 c0=0.51 obs=705 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=705
+t= 25.8 SEEK-T pos=(+1.31,+0.72) yaw=-147.2 d=6.39 c0=0.52 obs=705 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=707
+t= 25.9 SEEK-T pos=(+1.32,+0.73) yaw=-151.0 d=6.40 c0=0.54 obs=707 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=707
+t= 26.1 SEEK-T pos=(+1.33,+0.74) yaw=-156.3 d=6.40 c0=0.55 obs=707 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=707
+t= 26.2 SEEK-T pos=(+1.35,+0.74) yaw=-158.8 d=6.41 c0=0.56 obs=707 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.4 obs=709
+t= 26.4 SEEK-T pos=(+1.37,+0.71) yaw=-165.6 d=6.44 c0=0.57 obs=709 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=709
+t= 26.5 SEEK-S pos=(+1.40,+0.70) yaw=-180.0 d=6.47 c0=0.41 obs=709 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=709
+t= 26.6 SEEK-S pos=(+1.40,+0.71) yaw=+174.3 d=6.48 c0=0.41 obs=709 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=709
+t= 26.8 SEEK-S pos=(+1.42,+0.73) yaw=+169.4 d=6.48 c0=0.42 obs=709 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=710
+t= 26.9 SEEK-S pos=(+1.47,+0.75) yaw=+167.9 d=6.52 c0=0.47 obs=710 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=710
+t= 27.0 SEEK-S pos=(+1.48,+0.75) yaw=+166.7 d=6.54 c0=0.48 obs=710 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=710
+t= 27.2 SEEK-S pos=(+1.48,+0.73) yaw=+164.8 d=6.55 c0=0.49 obs=710 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=710
+t= 27.3 SEEK-S pos=(+1.49,+0.73) yaw=+165.6 d=6.55 c0=0.49 obs=710 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=710
+t= 27.5 SEEK-S pos=(+1.48,+0.74) yaw=+168.7 d=6.54 c0=0.49 obs=710 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=710
+t= 27.6 SEEK-S pos=(+1.50,+0.74) yaw=+166.9 d=6.56 c0=0.50 obs=710 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=711
+t= 27.8 SEEK-S pos=(+1.50,+0.73) yaw=+166.4 d=6.56 c0=0.51 obs=711 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=711
+t= 27.9 SEEK-S pos=(+1.50,+0.72) yaw=+166.5 d=6.57 c0=0.51 obs=711 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=711
+t= 28.0 SEEK-S pos=(+1.50,+0.72) yaw=+166.7 d=6.57 c0=0.51 obs=711 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=713
+t= 28.2 SEEK-S pos=(+1.50,+0.72) yaw=+166.9 d=6.56 c0=0.50 obs=713 cmd=(ly=+0.00,rx=+0.00)
+t= 28.3 BRK-TR pos=(+1.50,+0.72) yaw=+167.1 d=6.56 c0=0.50 obs=713 cmd=(ly=+0.00,rx=-0.45)
+t= 28.4 BRK-TR pos=(+1.50,+0.72) yaw=+166.9 d=6.56 c0=0.50 obs=713 cmd=(ly=+0.00,rx=-0.45)
+t= 28.6 BRK-TR pos=(+1.50,+0.72) yaw=+167.0 d=6.56 c0=0.50 obs=714 cmd=(ly=+0.00,rx=-0.45)
+t= 28.7 BRK-TR pos=(+1.49,+0.71) yaw=+168.4 d=6.56 c0=0.50 obs=714 cmd=(ly=+0.00,rx=-0.45)
+t= 28.9 BRK-TR pos=(+1.49,+0.69) yaw=+173.4 d=6.57 c0=0.50 obs=714 cmd=(ly=+0.00,rx=-0.45)
+t= 29.0 BRK-TR pos=(+1.50,+0.66) yaw=+178.6 d=6.58 c0=0.52 obs=714 cmd=(ly=+0.00,rx=-0.45)
+t= 29.1 BRK-TR pos=(+1.51,+0.63) yaw=-175.0 d=6.60 c0=0.54 obs=714 cmd=(ly=+0.00,rx=-0.45)
+t= 29.3 BRK-TR pos=(+1.50,+0.63) yaw=-170.9 d=6.60 c0=0.70 obs=714 cmd=(ly=+0.00,rx=-0.45)
+t= 29.4 BRK-TR pos=(+1.48,+0.64) yaw=-161.9 d=6.58 c0=0.68 obs=718 cmd=(ly=+0.00,rx=-0.45)
+t= 29.5 BRK-TR pos=(+1.46,+0.65) yaw=-155.8 d=6.55 c0=0.66 obs=718 cmd=(ly=+0.00,rx=-0.45)
+t= 29.7 BRK-TR pos=(+1.43,+0.67) yaw=-149.3 d=6.52 c0=0.64 obs=718 cmd=(ly=+0.00,rx=-0.45)
+t= 29.8 BRK-TR pos=(+1.42,+0.68) yaw=-137.3 d=6.50 c0=2.50 obs=719 cmd=(ly=+0.00,rx=-0.45)
+t= 29.9 BRK-TR pos=(+1.43,+0.67) yaw=-133.2 d=6.51 c0=2.50 obs=719 cmd=(ly=+0.00,rx=-0.45)
+t= 30.1 BRK-TR pos=(+1.45,+0.68) yaw=-128.9 d=6.53 c0=2.50 obs=719 cmd=(ly=+0.00,rx=-0.45)
+t= 30.2 BRK-TR pos=(+1.48,+0.67) yaw=-123.5 d=6.56 c0=2.50 obs=719 cmd=(ly=+0.00,rx=-0.45)
+t= 30.3 BRK-TR pos=(+1.47,+0.66) yaw=-119.6 d=6.56 c0=2.50 obs=721 cmd=(ly=+0.00,rx=-0.45)
+t= 30.5 BRK-TR pos=(+1.46,+0.66) yaw=-113.9 d=6.54 c0=2.46 obs=721 cmd=(ly=+0.00,rx=-0.45)
+t= 30.6 BRK-TR pos=(+1.42,+0.65) yaw=-100.1 d=6.52 c0=1.69 obs=721 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=722
+t= 30.7 SEEK-T pos=(+1.43,+0.64) yaw= -95.0 d=6.53 c0=1.68 obs=722 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=722
+t= 30.9 SEEK-T pos=(+1.45,+0.65) yaw= -90.6 d=6.54 c0=1.36 obs=722 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=722
+t= 31.0 SEEK-T pos=(+1.47,+0.66) yaw= -86.0 d=6.56 c0=1.36 obs=722 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=722
+t= 31.1 SEEK-T pos=(+1.46,+0.66) yaw= -86.4 d=6.55 c0=1.37 obs=722 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=725
+t= 31.3 SEEK-T pos=(+1.44,+0.66) yaw= -86.9 d=6.53 c0=1.38 obs=725 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=725
+t= 31.4 SEEK-T pos=(+1.45,+0.67) yaw= -90.7 d=6.53 c0=1.38 obs=725 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=725
+t= 31.5 SEEK-T pos=(+1.46,+0.66) yaw= -96.5 d=6.55 c0=1.69 obs=725 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=725
+t= 31.7 SEEK-T pos=(+1.45,+0.66) yaw=-111.4 d=6.54 c0=2.46 obs=725 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=725
+t= 31.8 SEEK-T pos=(+1.44,+0.67) yaw=-116.6 d=6.53 c0=2.50 obs=725 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=725
+t= 32.0 SEEK-T pos=(+1.44,+0.69) yaw=-121.0 d=6.51 c0=2.50 obs=725 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=726
+t= 32.1 SEEK-T pos=(+1.45,+0.73) yaw=-126.9 d=6.51 c0=2.50 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=726
+t= 32.3 SEEK-T pos=(+1.46,+0.74) yaw=-130.4 d=6.52 c0=2.50 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.5 obs=726
+t= 32.4 SEEK-T pos=(+1.48,+0.73) yaw=-138.8 d=6.54 c0=2.50 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 32.5 SEEK-T pos=(+1.49,+0.72) yaw=-143.1 d=6.56 c0=2.50 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 32.7 SEEK-T pos=(+1.50,+0.73) yaw=-149.2 d=6.57 c0=0.72 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 32.8 SEEK-T pos=(+1.50,+0.75) yaw=-159.7 d=6.56 c0=0.71 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 33.0 SEEK-T pos=(+1.52,+0.77) yaw=-165.9 d=6.57 c0=0.52 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 33.1 SEEK-T pos=(+1.55,+0.77) yaw=-172.5 d=6.60 c0=0.55 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 33.3 SEEK-T pos=(+1.56,+0.77) yaw=-176.4 d=6.61 c0=0.57 obs=726 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=726
+t= 33.4 SEEK-S pos=(+1.58,+0.76) yaw=+175.6 d=6.63 c0=0.58 obs=726 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.6 obs=727
+t= 33.5 SEEK-S pos=(+1.59,+0.75) yaw=+170.8 d=6.64 c0=0.59 obs=727 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=727
+t= 33.7 SEEK-S pos=(+1.60,+0.75) yaw=+165.2 d=6.65 c0=0.60 obs=727 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=727
+t= 33.8 SEEK-S pos=(+1.62,+0.75) yaw=+168.1 d=6.67 c0=0.62 obs=727 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.0 SEEK-S pos=(+1.63,+0.75) yaw=+168.3 d=6.68 c0=0.64 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.1 SEEK-S pos=(+1.64,+0.75) yaw=+167.7 d=6.69 c0=0.64 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.2 SEEK-S pos=(+1.63,+0.75) yaw=+167.3 d=6.68 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.4 SEEK-S pos=(+1.62,+0.74) yaw=+167.4 d=6.67 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.5 SEEK-S pos=(+1.62,+0.75) yaw=+167.3 d=6.67 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.6 SEEK-S pos=(+1.62,+0.75) yaw=+167.3 d=6.68 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.8 SEEK-S pos=(+1.63,+0.75) yaw=+167.3 d=6.68 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 34.9 SEEK-S pos=(+1.62,+0.75) yaw=+167.5 d=6.67 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=728
+t= 35.1 SEEK-S pos=(+1.62,+0.75) yaw=+167.3 d=6.67 c0=0.63 obs=728 cmd=(ly=+0.00,rx=+0.00)
+t= 35.2 BRK-TR pos=(+1.62,+0.75) yaw=+167.4 d=6.68 c0=0.63 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 35.3 BRK-TR pos=(+1.62,+0.75) yaw=+167.4 d=6.68 c0=0.63 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 35.5 BRK-TR pos=(+1.63,+0.75) yaw=+167.4 d=6.68 c0=0.63 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 35.6 BRK-TR pos=(+1.62,+0.75) yaw=+167.4 d=6.67 c0=0.63 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 35.7 BRK-TR pos=(+1.62,+0.72) yaw=+174.8 d=6.68 c0=0.62 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 35.9 BRK-TR pos=(+1.63,+0.69) yaw=+179.1 d=6.70 c0=0.64 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.0 BRK-TR pos=(+1.64,+0.68) yaw=-178.2 d=6.71 c0=0.65 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.1 BRK-TR pos=(+1.63,+0.66) yaw=-170.0 d=6.71 c0=0.65 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.3 BRK-TR pos=(+1.63,+0.67) yaw=-165.7 d=6.71 c0=0.83 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.4 BRK-TR pos=(+1.60,+0.70) yaw=-154.7 d=6.67 c0=0.81 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.5 BRK-TR pos=(+1.58,+0.71) yaw=-148.6 d=6.64 c0=0.79 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.7 BRK-TR pos=(+1.57,+0.72) yaw=-142.4 d=6.64 c0=2.50 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.8 BRK-TR pos=(+1.58,+0.71) yaw=-132.9 d=6.65 c0=2.50 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 36.9 BRK-TR pos=(+1.61,+0.70) yaw=-128.3 d=6.67 c0=2.50 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 37.1 BRK-TR pos=(+1.62,+0.72) yaw=-123.3 d=6.68 c0=2.50 obs=728 cmd=(ly=+0.00,rx=-0.45)
+t= 37.2 BRK-TR pos=(+1.61,+0.72) yaw=-119.2 d=6.67 c0=2.50 obs=730 cmd=(ly=+0.00,rx=-0.45)
+t= 37.4 BRK-TR pos=(+1.59,+0.72) yaw=-112.5 d=6.65 c0=2.12 obs=730 cmd=(ly=+0.00,rx=-0.45)
+t= 37.5 BRK-TR pos=(+1.57,+0.71) yaw=-105.3 d=6.63 c0=1.72 obs=730 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 37.6 SEEK-T pos=(+1.59,+0.69) yaw= -95.7 d=6.66 c0=1.35 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 37.8 SEEK-T pos=(+1.62,+0.70) yaw= -90.9 d=6.68 c0=1.35 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 37.9 SEEK-T pos=(+1.64,+0.70) yaw= -87.8 d=6.70 c0=1.24 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.0 SEEK-T pos=(+1.63,+0.70) yaw= -87.6 d=6.69 c0=1.35 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.2 SEEK-T pos=(+1.60,+0.70) yaw= -86.5 d=6.67 c0=1.25 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.3 SEEK-T pos=(+1.62,+0.70) yaw= -93.1 d=6.68 c0=1.36 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.5 SEEK-T pos=(+1.63,+0.69) yaw= -98.6 d=6.70 c0=1.34 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.6 SEEK-T pos=(+1.63,+0.68) yaw=-105.9 d=6.70 c0=1.69 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.7 SEEK-T pos=(+1.60,+0.71) yaw=-118.7 d=6.66 c0=2.50 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 38.9 SEEK-T pos=(+1.60,+0.74) yaw=-122.7 d=6.65 c0=2.50 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 39.0 SEEK-T pos=(+1.60,+0.76) yaw=-125.6 d=6.65 c0=2.50 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 39.2 SEEK-T pos=(+1.62,+0.78) yaw=-132.4 d=6.66 c0=2.50 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=730
+t= 39.3 SEEK-T pos=(+1.63,+0.77) yaw=-136.5 d=6.67 c0=2.50 obs=730 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=731
+t= 39.4 SEEK-T pos=(+1.64,+0.75) yaw=-146.9 d=6.69 c0=0.86 obs=731 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=731
+t= 39.6 SEEK-T pos=(+1.65,+0.76) yaw=-152.9 d=6.70 c0=0.87 obs=731 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=731
+t= 39.7 SEEK-T pos=(+1.67,+0.79) yaw=-163.8 d=6.71 c0=0.67 obs=731 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=731
+t= 39.9 SEEK-T pos=(+1.70,+0.80) yaw=-168.2 d=6.73 c0=0.70 obs=731 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=732
+t= 40.0 SEEK-T pos=(+1.72,+0.80) yaw=-170.8 d=6.75 c0=0.72 obs=732 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=732
+t= 40.1 SEEK-F pos=(+1.73,+0.80) yaw=-178.7 d=6.76 c0=0.73 obs=732 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=732
+t= 40.3 SEEK-F pos=(+1.74,+0.78) yaw=+177.2 d=6.77 c0=0.74 obs=732 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=732
+t= 40.4 SEEK-F pos=(+1.77,+0.77) yaw=+169.0 d=6.81 c0=0.77 obs=732 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=732
+t= 40.5 SEEK-F pos=(+1.78,+0.77) yaw=+171.4 d=6.82 c0=0.79 obs=732 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=732
+t= 40.7 SEEK-F pos=(+1.79,+0.77) yaw=+173.2 d=6.82 c0=0.79 obs=732 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=732
+t= 40.8 SEEK-F pos=(+1.78,+0.74) yaw=+173.7 d=6.82 c0=0.78 obs=732 cmd=(ly=+0.40,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=733
+t= 41.0 SEEK-F pos=(+1.77,+0.74) yaw=+170.1 d=6.82 c0=0.78 obs=733 cmd=(ly=+0.40,rx=+0.00)
+COLISION #3 [imu] pos=(+1.76,+0.76) yaw=+168
+t= 41.1 R-TURN pos=(+1.76,+0.76) yaw=+168.3 d=6.80 c0=0.76 obs=733 cmd=(ly=+0.00,rx=-0.45)
+t= 41.2 R-TURN pos=(+1.72,+0.79) yaw=+170.8 d=6.76 c0=0.32 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 41.4 R-TURN pos=(+1.70,+0.79) yaw=+174.7 d=6.73 c0=0.30 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 41.5 R-TURN pos=(+1.69,+0.75) yaw=+177.1 d=6.74 c0=0.30 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 41.7 R-TURN pos=(+1.69,+0.75) yaw=+178.8 d=6.74 c0=0.30 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 41.8 R-TURN pos=(+1.67,+0.76) yaw=-176.1 d=6.72 c0=0.28 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 41.9 R-TURN pos=(+1.65,+0.79) yaw=-168.8 d=6.69 c0=0.25 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 42.1 R-TURN pos=(+1.63,+0.80) yaw=-156.6 d=6.67 c0=0.23 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 42.2 R-TURN pos=(+1.64,+0.79) yaw=-152.1 d=6.67 c0=0.30 obs=742 cmd=(ly=+0.00,rx=-0.45)
+t= 42.3 R-TURN pos=(+1.67,+0.77) yaw=-143.9 d=6.71 c0=0.32 obs=742 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 42.5 SEEK-T pos=(+1.68,+0.76) yaw=-141.7 d=6.73 c0=0.32 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 42.6 SEEK-T pos=(+1.68,+0.75) yaw=-138.2 d=6.73 c0=0.32 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 42.7 SEEK-T pos=(+1.68,+0.75) yaw=-134.1 d=6.72 c0=0.32 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 42.9 SEEK-T pos=(+1.65,+0.78) yaw=-129.2 d=6.68 c0=0.31 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 43.0 SEEK-T pos=(+1.65,+0.78) yaw=-128.3 d=6.69 c0=0.31 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 43.2 SEEK-T pos=(+1.65,+0.78) yaw=-135.2 d=6.69 c0=0.31 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 43.3 SEEK-T pos=(+1.65,+0.77) yaw=-139.5 d=6.69 c0=0.30 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 43.4 SEEK-T pos=(+1.66,+0.76) yaw=-152.8 d=6.71 c0=0.31 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 43.6 SEEK-T pos=(+1.67,+0.76) yaw=-159.1 d=6.71 c0=0.31 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.7 obs=742
+t= 43.7 SEEK-T pos=(+1.68,+0.77) yaw=-164.7 d=6.72 c0=0.28 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=742
+t= 43.8 SEEK-T pos=(+1.73,+0.81) yaw=-172.5 d=6.76 c0=0.33 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=742
+t= 44.0 SEEK-T pos=(+1.75,+0.82) yaw=-175.1 d=6.77 c0=0.35 obs=742 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=744
+t= 44.1 SEEK-S pos=(+1.77,+0.81) yaw=+175.2 d=6.80 c0=0.37 obs=744 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=744
+t= 44.3 SEEK-S pos=(+1.78,+0.81) yaw=+169.8 d=6.81 c0=0.38 obs=744 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=744
+t= 44.4 SEEK-S pos=(+1.81,+0.84) yaw=+166.0 d=6.83 c0=0.41 obs=744 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=745
+t= 44.6 SEEK-S pos=(+1.82,+0.83) yaw=+166.0 d=6.84 c0=0.43 obs=745 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=745
+t= 44.7 SEEK-S pos=(+1.83,+0.84) yaw=+165.2 d=6.85 c0=0.44 obs=745 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=745
+t= 44.8 SEEK-S pos=(+1.84,+0.83) yaw=+164.5 d=6.85 c0=0.44 obs=745 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=747
+t= 45.0 SEEK-S pos=(+1.84,+0.80) yaw=+161.4 d=6.87 c0=0.44 obs=747 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=747
+t= 45.1 SEEK-S pos=(+1.84,+0.79) yaw=+160.9 d=6.87 c0=0.44 obs=747 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=747
+t= 45.2 SEEK-S pos=(+1.84,+0.79) yaw=+160.7 d=6.87 c0=0.44 obs=747 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=747
+t= 45.4 SEEK-S pos=(+1.83,+0.80) yaw=+161.0 d=6.86 c0=0.43 obs=747 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=749
+t= 45.5 SEEK-S pos=(+1.83,+0.80) yaw=+161.2 d=6.85 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.8 obs=749
+t= 45.7 SEEK-S pos=(+1.82,+0.80) yaw=+161.1 d=6.85 c0=0.42 obs=749 cmd=(ly=+0.00,rx=+0.00)
+A*-FAIL goal=(-4.7,+2.8) d=6.9 obs=749
+t= 45.8 SEEK-S pos=(+1.83,+0.80) yaw=+161.0 d=6.85 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.00)
+t= 45.9 BRK-TR pos=(+1.83,+0.80) yaw=+161.1 d=6.85 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.1 BRK-TR pos=(+1.83,+0.80) yaw=+161.2 d=6.85 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.2 BRK-TR pos=(+1.83,+0.80) yaw=+161.2 d=6.85 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.3 BRK-TR pos=(+1.83,+0.79) yaw=+157.8 d=6.86 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.5 BRK-TR pos=(+1.83,+0.77) yaw=+154.6 d=6.87 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.6 BRK-TR pos=(+1.82,+0.75) yaw=+149.8 d=6.87 c0=0.43 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.8 BRK-TR pos=(+1.83,+0.73) yaw=+135.7 d=6.87 c0=0.50 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 46.9 BRK-TR pos=(+1.84,+0.74) yaw=+129.2 d=6.88 c0=0.51 obs=749 cmd=(ly=+0.00,rx=+0.45)
+t= 47.0 BRK-TR pos=(+1.87,+0.74) yaw=+124.2 d=6.91 c0=0.66 obs=751 cmd=(ly=+0.00,rx=+0.45)
+t= 47.2 BRK-TR pos=(+1.92,+0.71) yaw=+118.4 d=6.97 c0=0.72 obs=751 cmd=(ly=+0.00,rx=+0.45)
+t= 47.3 BRK-TR pos=(+1.93,+0.70) yaw=+115.2 d=6.98 c0=0.73 obs=751 cmd=(ly=+0.00,rx=+0.45)
+t= 47.4 BRK-TR pos=(+1.94,+0.69) yaw=+110.5 d=6.99 c0=1.91 obs=752 cmd=(ly=+0.00,rx=+0.45)
+t= 47.6 BRK-TR pos=(+1.96,+0.67) yaw=+100.5 d=7.02 c0=0.33 obs=752 cmd=(ly=+0.00,rx=+0.45)
+t= 47.7 BRK-TR pos=(+1.98,+0.66) yaw= +97.6 d=7.04 c0=0.14 obs=752 cmd=(ly=+0.00,rx=+0.45)
+t= 47.8 BRK-TR pos=(+2.01,+0.65) yaw= +86.4 d=7.07 c0=0.16 obs=754 cmd=(ly=+0.00,rx=+0.45)
+t= 48.0 BRK-TR pos=(+2.02,+0.63) yaw= +83.2 d=7.08 c0=0.17 obs=754 cmd=(ly=+0.00,rx=+0.45)
+t= 48.1 BRK-TR pos=(+2.03,+0.62) yaw= +78.9 d=7.10 c0=0.18 obs=754 cmd=(ly=+0.00,rx=+0.45)
+t= 48.2 BRK-TR pos=(+2.05,+0.60) yaw= +69.9 d=7.12 c0=0.25 obs=757 cmd=(ly=+0.00,rx=+0.45)
+A*-FAIL goal=(-4.7,+2.8) d=7.1 obs=757
+t= 48.4 SEEK-T pos=(+2.06,+0.60) yaw= +66.1 d=7.13 c0=0.24 obs=757 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=7.1 obs=757
+t= 48.5 SEEK-T pos=(+2.06,+0.61) yaw= +62.6 d=7.13 c0=0.24 obs=757 cmd=(ly=+0.00,rx=-0.45)
+A*-FAIL goal=(-4.7,+2.8) d=7.1 obs=757
+t= 48.7 SEEK-T pos=(+2.04,+0.63) yaw= +61.2 d=7.11 c0=0.23 obs=757 cmd=(ly=+0.00,rx=-0.45)
+ABORT B
+FIN
+
+=== GOTO 2026-06-26 09:29:40 ===
+t=  0.0 DWA-F pos=(+1.96,+0.66) yaw= +61.1 d=0.99 c0=1.84 obs=200 cmd=(ly=+0.40,rx=-0.45)
+t=  0.1 DWA-F pos=(+1.96,+0.66) yaw= +61.1 d=0.99 c0=1.84 obs=256 cmd=(ly=+0.40,rx=-0.45)
+t=  0.2 DWA-F pos=(+1.96,+0.66) yaw= +61.2 d=0.99 c0=1.84 obs=256 cmd=(ly=+0.40,rx=-0.45)
+t=  0.4 DWA-F pos=(+1.95,+0.67) yaw= +63.1 d=0.98 c0=2.29 obs=256 cmd=(ly=+0.40,rx=-0.45)
+t=  0.5 DWA-F pos=(+1.93,+0.69) yaw= +66.9 d=0.97 c0=2.28 obs=256 cmd=(ly=+0.40,rx=-0.45)
+t=  0.7 DWA-F pos=(+1.90,+0.73) yaw= +71.6 d=0.94 c0=2.26 obs=286 cmd=(ly=+0.40,rx=-0.45)
+t=  0.8 DWA-F pos=(+1.89,+0.74) yaw= +70.7 d=0.93 c0=2.25 obs=286 cmd=(ly=+0.40,rx=-0.45)
+t=  0.9 DWA-F pos=(+1.89,+0.77) yaw= +69.9 d=0.94 c0=2.23 obs=286 cmd=(ly=+0.40,rx=-0.45)
+t=  1.1 DWA-F pos=(+1.91,+0.79) yaw= +69.8 d=0.96 c0=2.20 obs=286 cmd=(ly=+0.40,rx=-0.45)
+t=  1.2 DWA-F pos=(+1.95,+0.85) yaw= +72.5 d=1.02 c0=1.57 obs=319 cmd=(ly=+0.40,rx=-0.45)
+t=  1.4 DWA-F pos=(+1.98,+0.88) yaw= +76.0 d=1.06 c0=1.54 obs=319 cmd=(ly=+0.40,rx=-0.45)
+t=  1.5 DWA-F pos=(+1.99,+0.96) yaw= +87.3 d=1.09 c0=1.46 obs=319 cmd=(ly=+0.40,rx=-0.45)
+t=  1.6 DWA-F pos=(+1.98,+0.99) yaw= +91.4 d=1.10 c0=1.42 obs=353 cmd=(ly=+0.40,rx=-0.45)
+t=  1.8 DWA-F pos=(+1.97,+1.02) yaw= +94.2 d=1.10 c0=1.40 obs=353 cmd=(ly=+0.40,rx=-0.45)
+t=  1.9 DWA-F pos=(+1.91,+1.04) yaw= +96.2 d=1.06 c0=1.39 obs=353 cmd=(ly=+0.40,rx=-0.45)
+t=  2.0 DWA-F pos=(+1.90,+1.07) yaw= +94.9 d=1.07 c0=1.36 obs=386 cmd=(ly=+0.40,rx=-0.45)
+t=  2.2 DWA-F pos=(+1.91,+1.11) yaw= +93.1 d=1.09 c0=1.33 obs=386 cmd=(ly=+0.40,rx=-0.45)
+t=  2.3 DWA-F pos=(+1.93,+1.19) yaw= +94.7 d=1.15 c0=1.24 obs=386 cmd=(ly=+0.40,rx=-0.45)
+t=  2.4 DWA-F pos=(+1.96,+1.23) yaw= +97.4 d=1.20 c0=1.19 obs=386 cmd=(ly=+0.40,rx=-0.45)
+t=  2.6 DWA-F pos=(+1.97,+1.31) yaw=+107.8 d=1.26 c0=1.89 obs=400 cmd=(ly=+0.40,rx=-0.45)
+t=  2.7 DWA-F pos=(+1.94,+1.34) yaw=+113.0 d=1.25 c0=1.86 obs=400 cmd=(ly=+0.40,rx=-0.45)
+t=  2.9 DWA-F pos=(+1.91,+1.37) yaw=+116.3 d=1.24 c0=2.04 obs=400 cmd=(ly=+0.40,rx=-0.45)
+t=  3.0 DWA-F pos=(+1.83,+1.37) yaw=+120.5 d=1.19 c0=2.04 obs=400 cmd=(ly=+0.40,rx=-0.45)
+t=  3.1 DWA-F pos=(+1.81,+1.39) yaw=+120.4 d=1.19 c0=2.01 obs=415 cmd=(ly=+0.40,rx=-0.45)
+t=  3.3 DWA-F pos=(+1.78,+1.45) yaw=+118.0 d=1.21 c0=2.07 obs=415 cmd=(ly=+0.40,rx=-0.45)
+t=  3.4 DWA-F pos=(+1.77,+1.49) yaw=+118.7 d=1.23 c0=2.04 obs=415 cmd=(ly=+0.40,rx=-0.45)
+t=  3.6 DWA-F pos=(+1.76,+1.53) yaw=+120.3 d=1.26 c0=2.01 obs=423 cmd=(ly=+0.40,rx=-0.45)
+t=  3.7 DWA-F pos=(+1.78,+1.57) yaw=+124.4 d=1.30 c0=1.88 obs=423 cmd=(ly=+0.40,rx=-0.45)
+t=  3.8 DWA-F pos=(+1.77,+1.61) yaw=+129.6 d=1.33 c0=1.86 obs=423 cmd=(ly=+0.40,rx=-0.45)
+t=  4.0 DWA-F pos=(+1.65,+1.67) yaw=+142.3 d=1.31 c0=1.72 obs=431 cmd=(ly=+0.40,rx=-0.45)
+t=  4.1 DWA-F pos=(+1.61,+1.66) yaw=+144.0 d=1.28 c0=1.70 obs=431 cmd=(ly=+0.40,rx=-0.45)
+t=  4.2 DWA-F pos=(+1.59,+1.65) yaw=+145.4 d=1.26 c0=1.69 obs=431 cmd=(ly=+0.40,rx=-0.45)
+t=  4.4 DWA-F pos=(+1.53,+1.68) yaw=+143.0 d=1.26 c0=1.62 obs=431 cmd=(ly=+0.40,rx=-0.45)
+t=  4.5 DWA-F pos=(+1.49,+1.71) yaw=+143.4 d=1.27 c0=1.57 obs=437 cmd=(ly=+0.40,rx=-0.45)
+t=  4.6 DWA-F pos=(+1.46,+1.74) yaw=+144.7 d=1.29 c0=1.52 obs=437 cmd=(ly=+0.40,rx=-0.45)
+t=  4.8 DWA-F pos=(+1.43,+1.82) yaw=+152.1 d=1.36 c0=1.46 obs=437 cmd=(ly=+0.40,rx=-0.45)
+t=  4.9 DWA-F pos=(+1.39,+1.84) yaw=+158.4 d=1.37 c0=1.41 obs=437 cmd=(ly=+0.40,rx=-0.45)
+t=  5.1 DWA-F pos=(+1.35,+1.85) yaw=+163.3 d=1.36 c0=1.37 obs=452 cmd=(ly=+0.40,rx=-0.45)
+t=  5.2 DWA-F pos=(+1.28,+1.82) yaw=+168.1 d=1.32 c0=1.33 obs=452 cmd=(ly=+0.40,rx=-0.45)
+t=  5.3 DWA-F pos=(+1.26,+1.80) yaw=+169.6 d=1.29 c0=1.39 obs=452 cmd=(ly=+0.40,rx=-0.45)
+t=  5.5 DWA-F pos=(+1.23,+1.79) yaw=+169.2 d=1.28 c0=1.37 obs=474 cmd=(ly=+0.40,rx=-0.45)
+t=  5.6 DWA-F pos=(+1.14,+1.81) yaw=+167.3 d=1.28 c0=1.28 obs=474 cmd=(ly=+0.40,rx=-0.45)
+t=  5.8 DWA-F pos=(+1.10,+1.83) yaw=+168.3 d=1.29 c0=1.24 obs=474 cmd=(ly=+0.40,rx=-0.45)
+t=  5.9 DWA-F pos=(+1.05,+1.88) yaw=+174.6 d=1.34 c0=1.17 obs=490 cmd=(ly=+0.40,rx=-0.45)
+t=  6.0 DWA-F pos=(+1.01,+1.89) yaw=-179.9 d=1.35 c0=1.21 obs=490 cmd=(ly=+0.40,rx=-0.45)
+t=  6.2 DWA-F pos=(+0.96,+1.89) yaw=-173.9 d=1.35 c0=1.16 obs=490 cmd=(ly=+0.40,rx=-0.45)
+t=  6.3 DWA-F pos=(+0.89,+1.85) yaw=-166.8 d=1.31 c0=1.10 obs=512 cmd=(ly=+0.40,rx=-0.45)
+t=  6.4 DWA-F pos=(+0.88,+1.82) yaw=-165.8 d=1.28 c0=1.09 obs=512 cmd=(ly=+0.40,rx=-0.45)
+t=  6.6 DWA-F pos=(+0.83,+1.79) yaw=-166.0 d=1.25 c0=1.23 obs=512 cmd=(ly=+0.40,rx=-0.45)
+t=  6.7 DWA-F pos=(+0.80,+1.77) yaw=-167.2 d=1.25 c0=1.20 obs=512 cmd=(ly=+0.40,rx=-0.45)
+t=  6.9 DWA-F pos=(+0.75,+1.77) yaw=-167.1 d=1.25 c0=1.15 obs=529 cmd=(ly=+0.40,rx=-0.45)
+t=  7.0 DWA-F pos=(+0.66,+1.80) yaw=-162.9 d=1.30 c0=1.06 obs=529 cmd=(ly=+0.40,rx=-0.45)
+t=  7.2 DWA-F pos=(+0.63,+1.81) yaw=-158.4 d=1.31 c0=1.03 obs=529 cmd=(ly=+0.40,rx=-0.45)
+t=  7.3 DWA-F pos=(+0.55,+1.77) yaw=-146.9 d=1.30 c0=0.97 obs=545 cmd=(ly=+0.40,rx=-0.45)
+t=  7.4 DWA-F pos=(+0.53,+1.75) yaw=-143.5 d=1.29 c0=0.99 obs=545 cmd=(ly=+0.40,rx=-0.45)
+t=  7.6 DWA-F pos=(+0.51,+1.71) yaw=-141.1 d=1.26 c0=0.97 obs=545 cmd=(ly=+0.40,rx=-0.45)
+t=  7.7 DWA-F pos=(+0.52,+1.65) yaw=-138.8 d=1.20 c0=1.21 obs=545 cmd=(ly=+0.40,rx=-0.45)
+t=  7.9 DWA-F pos=(+0.50,+1.62) yaw=-139.9 d=1.18 c0=1.17 obs=551 cmd=(ly=+0.40,rx=-0.45)
+t=  8.0 DWA-F pos=(+0.43,+1.58) yaw=-141.3 d=1.18 c0=1.10 obs=551 cmd=(ly=+0.40,rx=-0.45)
+t=  8.1 DWA-F pos=(+0.39,+1.56) yaw=-140.1 d=1.18 c0=1.06 obs=551 cmd=(ly=+0.40,rx=-0.45)
+t=  8.3 DWA-F pos=(+0.34,+1.56) yaw=-137.6 d=1.20 c0=1.01 obs=562 cmd=(ly=+0.40,rx=-0.45)
+t=  8.4 DWA-F pos=(+0.27,+1.52) yaw=-127.2 d=1.21 c0=1.01 obs=562 cmd=(ly=+0.40,rx=-0.45)
+t=  8.6 DWA-F pos=(+0.25,+1.49) yaw=-121.7 d=1.19 c0=1.53 obs=562 cmd=(ly=+0.40,rx=-0.45)
+t=  8.7 DWA-F pos=(+0.25,+1.42) yaw=-115.9 d=1.15 c0=2.50 obs=567 cmd=(ly=+0.40,rx=-0.45)
+t=  8.8 DWA-F pos=(+0.27,+1.39) yaw=-114.3 d=1.11 c0=2.50 obs=568 cmd=(ly=+0.40,rx=-0.45)
+t=  9.0 DWA-F pos=(+0.26,+1.34) yaw=-114.9 d=1.07 c0=2.50 obs=568 cmd=(ly=+0.40,rx=-0.45)
+t=  9.1 DWA-F pos=(+0.24,+1.30) yaw=-116.3 d=1.06 c0=2.50 obs=568 cmd=(ly=+0.40,rx=-0.45)
+t=  9.3 DWA-F pos=(+0.22,+1.27) yaw=-115.8 d=1.05 c0=2.50 obs=571 cmd=(ly=+0.40,rx=-0.45)
+t=  9.4 DWA-F pos=(+0.16,+1.23) yaw=-112.0 d=1.07 c0=2.50 obs=571 cmd=(ly=+0.40,rx=-0.45)
+t=  9.5 DWA-F pos=(+0.13,+1.21) yaw=-108.0 d=1.08 c0=2.50 obs=571 cmd=(ly=+0.40,rx=-0.45)
+t=  9.7 DWA-F pos=(+0.11,+1.16) yaw=-101.7 d=1.07 c0=2.50 obs=574 cmd=(ly=+0.40,rx=-0.45)
+t=  9.8 DWA-F pos=(+0.12,+1.08) yaw= -93.4 d=1.01 c0=2.50 obs=574 cmd=(ly=+0.40,rx=-0.45)
+t= 10.0 DWA-F pos=(+0.14,+1.04) yaw= -90.7 d=0.98 c0=2.50 obs=574 cmd=(ly=+0.40,rx=-0.45)
+t= 10.1 DWA-F pos=(+0.18,+1.00) yaw= -88.2 d=0.92 c0=2.50 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 10.2 DWA-F pos=(+0.19,+0.96) yaw= -89.7 d=0.90 c0=2.50 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 10.4 DWA-F pos=(+0.19,+0.87) yaw= -90.6 d=0.86 c0=2.50 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 10.5 DWA-F pos=(+0.17,+0.83) yaw= -89.1 d=0.86 c0=2.50 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 10.7 DWA-F pos=(+0.14,+0.81) yaw= -86.1 d=0.88 c0=2.50 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 10.8 DWA-F pos=(+0.14,+0.73) yaw= -74.8 d=0.86 c0=2.50 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 10.9 DWA-F pos=(+0.15,+0.69) yaw= -70.4 d=0.84 c0=2.36 obs=577 cmd=(ly=+0.40,rx=-0.45)
+t= 11.1 DWA-F pos=(+0.18,+0.66) yaw= -67.5 d=0.81 c0=2.32 obs=590 cmd=(ly=+0.40,rx=-0.45)
+t= 11.2 DWA-F pos=(+0.24,+0.64) yaw= -63.8 d=0.74 c0=2.26 obs=590 cmd=(ly=+0.40,rx=-0.45)
+t= 11.4 DWA-F pos=(+0.26,+0.63) yaw= -63.7 d=0.72 c0=2.24 obs=590 cmd=(ly=+0.40,rx=-0.45)
+t= 11.5 DWA-F pos=(+0.28,+0.58) yaw= -65.9 d=0.69 c0=2.19 obs=602 cmd=(ly=+0.40,rx=-0.45)
+t= 11.6 DWA-F pos=(+0.30,+0.52) yaw= -65.6 d=0.68 c0=2.14 obs=602 cmd=(ly=+0.40,rx=-0.45)
+t= 11.8 DWA-F pos=(+0.29,+0.47) yaw= -63.6 d=0.69 c0=2.11 obs=602 cmd=(ly=+0.40,rx=-0.45)
+t= 11.9 DWA-F pos=(+0.30,+0.38) yaw= -53.3 d=0.70 c0=1.97 obs=602 cmd=(ly=+0.40,rx=-0.45)
+t= 12.1 DWA-F pos=(+0.33,+0.35) yaw= -48.0 d=0.68 c0=1.92 obs=610 cmd=(ly=+0.40,rx=-0.45)
+t= 12.2 DWA-F pos=(+0.36,+0.33) yaw= -44.5 d=0.65 c0=1.88 obs=610 cmd=(ly=+0.40,rx=-0.45)
+t= 12.3 DWA-F pos=(+0.44,+0.34) yaw= -40.0 d=0.57 c0=1.82 obs=610 cmd=(ly=+0.40,rx=-0.45)
+t= 12.5 DWA-F pos=(+0.46,+0.35) yaw= -38.7 d=0.55 c0=1.81 obs=615 cmd=(ly=+0.40,rx=-0.45)
+t= 12.6 DWA-F pos=(+0.48,+0.33) yaw= -40.4 d=0.54 c0=1.78 obs=615 cmd=(ly=+0.40,rx=-0.45)
+t= 12.7 DWA-F pos=(+0.53,+0.26) yaw= -41.8 d=0.53 c0=1.70 obs=615 cmd=(ly=+0.40,rx=-0.45)
+t= 12.9 DWA-F pos=(+0.55,+0.19) yaw= -37.6 d=0.55 c0=1.64 obs=621 cmd=(ly=+0.40,rx=-0.45)
+t= 13.0 DWA-F pos=(+0.57,+0.16) yaw= -32.9 d=0.56 c0=1.62 obs=621 cmd=(ly=+0.40,rx=-0.45)
+t= 13.2 DWA-F pos=(+0.60,+0.14) yaw= -26.5 d=0.55 c0=1.58 obs=621 cmd=(ly=+0.40,rx=-0.45)
+t= 13.3 DWA-F pos=(+0.68,+0.13) yaw= -18.4 d=0.51 c0=1.51 obs=621 cmd=(ly=+0.40,rx=-0.45)
+t= 13.5 DWA-F pos=(+0.71,+0.15) yaw= -16.7 d=0.48 c0=1.49 obs=626 cmd=(ly=+0.40,rx=-0.45)
+t= 13.6 DWA-F pos=(+0.76,+0.16) yaw= -15.6 d=0.44 c0=1.46 obs=626 cmd=(ly=+0.40,rx=-0.45)
+t= 13.7 DWA-F pos=(+0.79,+0.16) yaw= -16.8 d=0.43 c0=1.43 obs=626 cmd=(ly=+0.40,rx=-0.45)
+t= 13.9 DWA-F pos=(+0.83,+0.14) yaw= -17.8 d=0.43 c0=1.38 obs=632 cmd=(ly=+0.40,rx=-0.45)
+t= 14.0 DWA-F pos=(+0.90,+0.09) yaw= -14.4 d=0.46 c0=1.30 obs=632 cmd=(ly=+0.40,rx=-0.45)
+t= 14.2 DWA-F pos=(+0.92,+0.06) yaw= -10.4 d=0.49 c0=1.26 obs=632 cmd=(ly=+0.40,rx=-0.45)
+t= 14.3 DWA-F pos=(+1.01,+0.04) yaw=  +1.5 d=0.51 c0=1.60 obs=635 cmd=(ly=+0.40,rx=-0.45)
+t= 14.5 DWA-F pos=(+1.05,+0.05) yaw=  +5.5 d=0.50 c0=1.57 obs=635 cmd=(ly=+0.40,rx=-0.45)
+t= 14.6 DWA-F pos=(+1.08,+0.07) yaw=  +8.0 d=0.48 c0=1.54 obs=635 cmd=(ly=+0.40,rx=-0.45)
+t= 14.7 DWA-F pos=(+1.11,+0.11) yaw= +10.6 d=0.45 c0=1.52 obs=635 cmd=(ly=+0.40,rx=-0.45)
+t= 14.9 DWA-F pos=(+1.14,+0.12) yaw=  +9.3 d=0.45 c0=1.50 obs=640 cmd=(ly=+0.40,rx=-0.45)
+t= 15.0 DWA-F pos=(+1.21,+0.14) yaw=  +8.0 d=0.47 c0=1.43 obs=640 cmd=(ly=+0.40,rx=-0.45)
+t= 15.2 DWA-F pos=(+1.25,+0.14) yaw=  +9.5 d=0.49 c0=1.39 obs=640 cmd=(ly=+0.40,rx=-0.45)
+t= 15.3 DWA-F pos=(+1.32,+0.11) yaw= +15.9 d=0.55 c0=1.48 obs=643 cmd=(ly=+0.40,rx=-0.45)
+t= 15.4 DWA-F pos=(+1.37,+0.12) yaw= +22.4 d=0.58 c0=1.43 obs=643 cmd=(ly=+0.40,rx=-0.45)
+t= 15.6 DWA-F pos=(+1.41,+0.14) yaw= +28.4 d=0.59 c0=1.99 obs=643 cmd=(ly=+0.40,rx=-0.45)
+t= 15.7 DWA-F pos=(+1.45,+0.19) yaw= +34.0 d=0.58 c0=1.93 obs=646 cmd=(ly=+0.40,rx=-0.45)
+t= 15.9 DWA-F pos=(+1.44,+0.23) yaw= +35.5 d=0.56 c0=1.92 obs=646 cmd=(ly=+0.40,rx=-0.45)
+t= 16.0 DWA-F pos=(+1.48,+0.28) yaw= +34.7 d=0.57 c0=1.86 obs=646 cmd=(ly=+0.40,rx=-0.45)
+t= 16.1 DWA-F pos=(+1.52,+0.30) yaw= +33.8 d=0.59 c0=1.82 obs=647 cmd=(ly=+0.40,rx=-0.45)
+t= 16.3 DWA-F pos=(+1.55,+0.32) yaw= +34.1 d=0.61 c0=1.78 obs=647 cmd=(ly=+0.40,rx=-0.45)
+t= 16.4 DWA-F pos=(+1.59,+0.34) yaw= +35.7 d=0.65 c0=1.74 obs=647 cmd=(ly=+0.40,rx=-0.45)
+t= 16.6 DWA-F pos=(+1.67,+0.35) yaw= +42.9 d=0.72 c0=1.66 obs=647 cmd=(ly=+0.40,rx=-0.45)
+t= 16.7 DWA-F pos=(+1.71,+0.38) yaw= +50.0 d=0.75 c0=1.64 obs=648 cmd=(ly=+0.40,rx=-0.45)
+t= 16.8 DWA-F pos=(+1.73,+0.45) yaw= +58.1 d=0.75 c0=1.57 obs=648 cmd=(ly=+0.40,rx=-0.45)
+t= 17.0 DWA-F pos=(+1.72,+0.49) yaw= +59.4 d=0.75 c0=1.55 obs=648 cmd=(ly=+0.40,rx=-0.45)
+t= 17.1 DWA-F pos=(+1.71,+0.51) yaw= +60.6 d=0.73 c0=1.54 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 17.2 DWA-F pos=(+1.74,+0.58) yaw= +59.0 d=0.76 c0=1.47 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 17.4 DWA-F pos=(+1.76,+0.61) yaw= +58.6 d=0.79 c0=1.43 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 17.5 DWA-F pos=(+1.83,+0.66) yaw= +61.9 d=0.87 c0=1.35 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 17.7 DWA-F pos=(+1.87,+0.67) yaw= +65.7 d=0.90 c0=1.31 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 17.8 DWA-F pos=(+1.90,+0.71) yaw= +71.7 d=0.93 c0=1.42 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 17.9 DWA-F pos=(+1.90,+0.79) yaw= +80.9 d=0.95 c0=1.64 obs=649 cmd=(ly=+0.40,rx=-0.45)
+t= 18.1 DWA-F pos=(+1.88,+0.83) yaw= +83.6 d=0.95 c0=1.60 obs=650 cmd=(ly=+0.40,rx=-0.45)
+t= 18.2 DWA-F pos=(+1.83,+0.87) yaw= +86.3 d=0.92 c0=1.57 obs=650 cmd=(ly=+0.40,rx=-0.45)
+t= 18.4 DWA-F pos=(+1.83,+0.90) yaw= +85.2 d=0.93 c0=1.54 obs=650 cmd=(ly=+0.40,rx=-0.45)
+t= 18.5 DWA-F pos=(+1.85,+0.99) yaw= +83.8 d=0.98 c0=1.46 obs=650 cmd=(ly=+0.40,rx=-0.45)
+t= 18.6 DWA-F pos=(+1.86,+1.03) yaw= +85.2 d=1.01 c0=1.41 obs=653 cmd=(ly=+0.40,rx=-0.45)
+t= 18.8 DWA-F pos=(+1.90,+1.06) yaw= +87.6 d=1.05 c0=1.38 obs=653 cmd=(ly=+0.40,rx=-0.45)
+t= 18.9 DWA-F pos=(+1.92,+1.08) yaw= +91.9 d=1.09 c0=1.35 obs=653 cmd=(ly=+0.40,rx=-0.45)
+t= 19.1 DWA-F pos=(+1.91,+1.17) yaw=+103.3 d=1.12 c0=1.43 obs=656 cmd=(ly=+0.40,rx=-0.45)
+t= 19.2 DWA-F pos=(+1.89,+1.20) yaw=+106.5 d=1.12 c0=1.41 obs=656 cmd=(ly=+0.40,rx=-0.45)
+t= 19.3 DWA-F pos=(+1.81,+1.22) yaw=+110.4 d=1.08 c0=1.98 obs=656 cmd=(ly=+0.40,rx=-0.45)
+t= 19.5 DWA-F pos=(+1.80,+1.24) yaw=+111.5 d=1.07 c0=1.96 obs=656 cmd=(ly=+0.40,rx=-0.45)
+t= 19.6 DWA-F pos=(+1.78,+1.27) yaw=+110.2 d=1.09 c0=1.93 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 19.8 DWA-F pos=(+1.76,+1.35) yaw=+109.2 d=1.13 c0=1.85 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 19.9 DWA-F pos=(+1.76,+1.40) yaw=+110.8 d=1.16 c0=1.80 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.0 DWA-F pos=(+1.78,+1.47) yaw=+118.5 d=1.23 c0=1.74 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.2 DWA-F pos=(+1.76,+1.51) yaw=+124.6 d=1.24 c0=1.91 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.3 DWA-F pos=(+1.74,+1.53) yaw=+129.0 d=1.25 c0=1.87 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.5 DWA-F pos=(+1.66,+1.55) yaw=+134.1 d=1.22 c0=1.78 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.6 DWA-F pos=(+1.63,+1.54) yaw=+135.8 d=1.19 c0=1.76 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.7 DWA-F pos=(+1.57,+1.58) yaw=+133.8 d=1.19 c0=1.69 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 20.9 DWA-F pos=(+1.54,+1.61) yaw=+133.8 d=1.21 c0=1.67 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 21.0 DWA-F pos=(+1.52,+1.65) yaw=+134.7 d=1.23 c0=1.63 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 21.1 DWA-F pos=(+1.52,+1.72) yaw=+140.7 d=1.30 c0=1.58 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 21.3 DWA-F pos=(+1.48,+1.76) yaw=+146.0 d=1.32 c0=1.54 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 21.4 DWA-F pos=(+1.40,+1.79) yaw=+156.3 d=1.32 c0=1.45 obs=658 cmd=(ly=+0.40,rx=-0.45)
+t= 21.6 DWA-F pos=(+1.37,+1.79) yaw=+158.8 d=1.31 c0=1.42 obs=659 cmd=(ly=+0.40,rx=-0.45)
+t= 21.7 DWA-F pos=(+1.33,+1.77) yaw=+160.3 d=1.27 c0=1.40 obs=659 cmd=(ly=+0.40,rx=-0.45)
+t= 21.8 DWA-F pos=(+1.31,+1.76) yaw=+162.0 d=1.26 c0=1.38 obs=659 cmd=(ly=+0.40,rx=-0.45)
+t= 22.0 DWA-F pos=(+1.24,+1.77) yaw=+159.2 d=1.26 c0=1.31 obs=660 cmd=(ly=+0.40,rx=-0.45)
+t= 22.1 DWA-F pos=(+1.21,+1.79) yaw=+159.1 d=1.27 c0=1.28 obs=660 cmd=(ly=+0.40,rx=-0.45)
+t= 22.2 DWA-F pos=(+1.15,+1.84) yaw=+162.8 d=1.31 c0=1.21 obs=660 cmd=(ly=+0.40,rx=-0.45)
+t= 22.4 DWA-F pos=(+1.14,+1.87) yaw=+167.1 d=1.33 c0=1.18 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 22.5 DWA-F pos=(+1.04,+1.88) yaw=+179.4 d=1.34 c0=1.09 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 22.7 DWA-F pos=(+1.01,+1.88) yaw=-177.3 d=1.34 c0=1.06 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 22.8 DWA-F pos=(+0.97,+1.86) yaw=-174.6 d=1.32 c0=1.03 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.0 DWA-F pos=(+0.94,+1.81) yaw=-171.9 d=1.27 c0=1.14 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.1 DWA-F pos=(+0.91,+1.80) yaw=-173.2 d=1.26 c0=1.11 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.2 DWA-F pos=(+0.83,+1.79) yaw=-174.5 d=1.26 c0=1.03 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.4 DWA-F pos=(+0.79,+1.80) yaw=-173.0 d=1.27 c0=0.99 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.5 DWA-F pos=(+0.75,+1.83) yaw=-169.8 d=1.30 c0=0.95 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.7 DWA-F pos=(+0.68,+1.83) yaw=-159.3 d=1.32 c0=0.88 obs=664 cmd=(ly=+0.40,rx=-0.45)
+t= 23.8 DWA-F pos=(+0.64,+1.80) yaw=-154.1 d=1.31 c0=1.06 obs=665 cmd=(ly=+0.40,rx=-0.45)
+t= 23.9 DWA-F pos=(+0.61,+1.78) yaw=-150.5 d=1.29 c0=1.03 obs=665 cmd=(ly=+0.40,rx=-0.45)
+t= 24.1 DWA-F pos=(+0.60,+1.70) yaw=-147.2 d=1.22 c0=1.05 obs=665 cmd=(ly=+0.40,rx=-0.45)
+t= 24.2 DWA-F pos=(+0.60,+1.69) yaw=-146.6 d=1.21 c0=1.04 obs=665 cmd=(ly=+0.40,rx=-0.45)
+t= 24.3 DWA-F pos=(+0.53,+1.65) yaw=-149.1 d=1.19 c0=0.96 obs=666 cmd=(ly=+0.40,rx=-0.45)
+t= 24.5 DWA-F pos=(+0.49,+1.63) yaw=-148.8 d=1.19 c0=0.92 obs=666 cmd=(ly=+0.40,rx=-0.45)
+t= 24.6 DWA-F pos=(+0.44,+1.62) yaw=-147.0 d=1.20 c0=0.87 obs=666 cmd=(ly=+0.40,rx=-0.45)
+t= 24.8 DWA-F pos=(+0.37,+1.61) yaw=-139.1 d=1.24 c0=1.05 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 24.9 DWA-F pos=(+0.33,+1.58) yaw=-132.4 d=1.22 c0=1.09 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.0 DWA-F pos=(+0.31,+1.50) yaw=-124.6 d=1.17 c0=1.31 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.2 DWA-F pos=(+0.32,+1.47) yaw=-123.2 d=1.14 c0=1.58 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.3 DWA-F pos=(+0.32,+1.42) yaw=-122.8 d=1.10 c0=1.83 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.5 DWA-F pos=(+0.30,+1.40) yaw=-124.3 d=1.09 c0=1.52 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.6 DWA-F pos=(+0.27,+1.37) yaw=-124.6 d=1.09 c0=1.49 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.7 DWA-F pos=(+0.19,+1.31) yaw=-121.2 d=1.10 c0=2.50 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 25.9 DWA-F pos=(+0.15,+1.30) yaw=-117.7 d=1.12 c0=2.50 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 26.0 DWA-F pos=(+0.12,+1.22) yaw=-105.9 d=1.10 c0=2.50 obs=668 cmd=(ly=+0.40,rx=-0.45)
+t= 26.2 DWA-F pos=(+0.12,+1.18) yaw=-101.8 d=1.07 c0=2.50 obs=672 cmd=(ly=+0.40,rx=-0.45)
+t= 26.3 DWA-F pos=(+0.13,+1.14) yaw= -99.3 d=1.04 c0=2.50 obs=672 cmd=(ly=+0.40,rx=-0.45)
+t= 26.4 DWA-F pos=(+0.18,+1.10) yaw= -96.7 d=0.98 c0=2.50 obs=672 cmd=(ly=+0.40,rx=-0.45)
+t= 26.6 DWA-F pos=(+0.18,+1.07) yaw= -98.1 d=0.96 c0=2.50 obs=673 cmd=(ly=+0.40,rx=-0.45)
+t= 26.7 DWA-F pos=(+0.16,+0.98) yaw= -99.2 d=0.93 c0=2.50 obs=673 cmd=(ly=+0.40,rx=-0.45)
+t= 26.9 DWA-F pos=(+0.14,+0.94) yaw= -97.7 d=0.93 c0=2.50 obs=673 cmd=(ly=+0.40,rx=-0.45)
+t= 27.0 DWA-F pos=(+0.10,+0.91) yaw= -95.2 d=0.95 c0=2.50 obs=675 cmd=(ly=+0.40,rx=-0.45)
+t= 27.1 DWA-F pos=(+0.07,+0.86) yaw= -84.9 d=0.96 c0=2.50 obs=675 cmd=(ly=+0.40,rx=-0.45)
+t= 27.3 DWA-F pos=(+0.08,+0.82) yaw= -80.0 d=0.94 c0=2.50 obs=675 cmd=(ly=+0.40,rx=-0.45)
+t= 27.4 DWA-F pos=(+0.14,+0.76) yaw= -74.2 d=0.87 c0=2.50 obs=679 cmd=(ly=+0.40,rx=-0.45)
+t= 27.6 DWA-F pos=(+0.18,+0.75) yaw= -72.3 d=0.83 c0=2.50 obs=679 cmd=(ly=+0.40,rx=-0.45)
+t= 27.7 DWA-F pos=(+0.19,+0.74) yaw= -71.2 d=0.81 c0=2.37 obs=679 cmd=(ly=+0.40,rx=-0.45)
+t= 27.8 DWA-F pos=(+0.21,+0.67) yaw= -74.0 d=0.77 c0=2.45 obs=679 cmd=(ly=+0.40,rx=-0.45)
+t= 28.0 DWA-F pos=(+0.21,+0.63) yaw= -74.1 d=0.77 c0=2.42 obs=680 cmd=(ly=+0.40,rx=-0.45)
+t= 28.1 DWA-F pos=(+0.21,+0.59) yaw= -72.7 d=0.77 c0=2.39 obs=680 cmd=(ly=+0.40,rx=-0.45)
+t= 28.3 DWA-F pos=(+0.19,+0.51) yaw= -66.4 d=0.79 c0=2.21 obs=680 cmd=(ly=+0.40,rx=-0.45)
+t= 28.4 DWA-F pos=(+0.20,+0.48) yaw= -60.3 d=0.78 c0=2.18 obs=683 cmd=(ly=+0.40,rx=-0.45)
+t= 28.5 DWA-F pos=(+0.26,+0.43) yaw= -51.8 d=0.73 c0=2.02 obs=683 cmd=(ly=+0.40,rx=-0.45)
+t= 28.7 DWA-F pos=(+0.30,+0.42) yaw= -49.3 d=0.69 c0=1.99 obs=683 cmd=(ly=+0.40,rx=-0.45)
+t= 28.8 DWA-F pos=(+0.33,+0.42) yaw= -47.7 d=0.66 c0=1.96 obs=684 cmd=(ly=+0.40,rx=-0.45)
+t= 29.0 DWA-F pos=(+0.38,+0.38) yaw= -48.9 d=0.62 c0=1.89 obs=684 cmd=(ly=+0.40,rx=-0.45)
+t= 29.1 DWA-F pos=(+0.41,+0.36) yaw= -49.9 d=0.60 c0=1.86 obs=684 cmd=(ly=+0.40,rx=-0.45)
+t= 29.2 DWA-F pos=(+0.43,+0.32) yaw= -49.7 d=0.59 c0=1.82 obs=684 cmd=(ly=+0.40,rx=-0.45)
+t= 29.4 DWA-F pos=(+0.45,+0.25) yaw= -44.1 d=0.61 c0=1.77 obs=687 cmd=(ly=+0.40,rx=-0.45)
+t= 29.5 DWA-F pos=(+0.47,+0.21) yaw= -38.7 d=0.61 c0=1.73 obs=687 cmd=(ly=+0.40,rx=-0.45)
+t= 29.6 DWA-F pos=(+0.50,+0.18) yaw= -32.7 d=0.60 c0=1.69 obs=687 cmd=(ly=+0.40,rx=-0.45)
+t= 29.8 DWA-F pos=(+0.57,+0.17) yaw= -25.5 d=0.55 c0=1.63 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 29.9 DWA-F pos=(+0.62,+0.20) yaw= -22.1 d=0.49 c0=1.60 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 30.1 DWA-F pos=(+0.65,+0.20) yaw= -22.6 d=0.48 c0=1.57 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 30.2 DWA-F pos=(+0.68,+0.19) yaw= -24.2 d=0.46 c0=1.54 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 30.4 DWA-F pos=(+0.75,+0.14) yaw= -23.6 d=0.46 c0=1.45 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 30.5 DWA-F pos=(+0.78,+0.12) yaw= -21.7 d=0.47 c0=1.41 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 30.6 DWA-F pos=(+0.83,+0.06) yaw= -12.8 d=0.50 c0=1.35 obs=688 cmd=(ly=+0.40,rx=-0.45)
+t= 30.8 DWA-F pos=(+0.87,+0.05) yaw=  -6.7 d=0.50 c0=1.30 obs=689 cmd=(ly=+0.40,rx=-0.45)
+t= 30.9 DWA-F pos=(+0.92,+0.05) yaw=  -2.2 d=0.50 c0=1.44 obs=689 cmd=(ly=+0.40,rx=-0.45)
+t= 31.1 DWA-F pos=(+0.98,+0.09) yaw=  +2.4 d=0.45 c0=1.65 obs=690 cmd=(ly=+0.40,rx=-0.45)
+t= 31.2 DWA-F pos=(+0.99,+0.12) yaw=  +3.8 d=0.43 c0=1.64 obs=690 cmd=(ly=+0.40,rx=-0.45)
+t= 31.4 DWA-F pos=(+1.02,+0.12) yaw=  +3.6 d=0.42 c0=1.61 obs=690 cmd=(ly=+0.28,rx=-0.45)
+t= 31.5 DWA-F pos=(+1.09,+0.14) yaw=  +1.8 d=0.42 c0=1.55 obs=690 cmd=(ly=+0.28,rx=-0.45)
+t= 31.6 DWA-F pos=(+1.13,+0.14) yaw=  +2.9 d=0.43 c0=1.51 obs=692 cmd=(ly=+0.28,rx=-0.45)
+t= 31.8 DWA-F pos=(+1.20,+0.08) yaw= +10.2 d=0.51 c0=1.43 obs=692 cmd=(ly=+0.40,rx=-0.45)
+t= 31.9 DWA-F pos=(+1.24,+0.08) yaw= +15.7 d=0.53 c0=1.56 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.1 DWA-F pos=(+1.29,+0.11) yaw= +23.6 d=0.53 c0=1.51 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.2 DWA-F pos=(+1.31,+0.15) yaw= +26.1 d=0.52 c0=1.49 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.3 DWA-F pos=(+1.32,+0.19) yaw= +27.5 d=0.49 c0=1.78 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.5 DWA-F pos=(+1.36,+0.23) yaw= +27.1 d=0.49 c0=1.74 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.6 DWA-F pos=(+1.39,+0.25) yaw= +26.3 d=0.50 c0=1.70 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.8 DWA-F pos=(+1.42,+0.27) yaw= +27.0 d=0.52 c0=1.66 obs=693 cmd=(ly=+0.40,rx=-0.45)
+t= 32.9 DWA-F pos=(+1.50,+0.26) yaw= +32.3 d=0.60 c0=1.59 obs=694 cmd=(ly=+0.40,rx=-0.45)
+t= 33.0 DWA-F pos=(+1.59,+0.30) yaw= +43.4 d=0.65 c0=1.50 obs=694 cmd=(ly=+0.40,rx=-0.45)
+t= 33.2 DWA-F pos=(+1.61,+0.34) yaw= +48.3 d=0.66 c0=1.74 obs=694 cmd=(ly=+0.40,rx=-0.45)
+t= 33.3 DWA-F pos=(+1.62,+0.37) yaw= +51.4 d=0.66 c0=1.70 obs=694 cmd=(ly=+0.40,rx=-0.45)
+t= 33.4 DWA-F pos=(+1.60,+0.44) yaw= +53.7 d=0.63 c0=1.67 obs=694 cmd=(ly=+0.40,rx=-0.45)
+t= 33.6 DWA-F pos=(+1.61,+0.47) yaw= +53.1 d=0.64 c0=1.64 obs=694 cmd=(ly=+0.40,rx=-0.45)
+t= 33.7 DWA-F pos=(+1.66,+0.53) yaw= +51.6 d=0.68 c0=1.57 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 33.9 DWA-F pos=(+1.73,+0.57) yaw= +54.3 d=0.75 c0=1.49 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.1 DWA-F pos=(+1.77,+0.57) yaw= +57.5 d=0.79 c0=1.46 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.2 DWA-F pos=(+1.79,+0.60) yaw= +62.8 d=0.82 c0=1.42 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.4 DWA-F pos=(+1.81,+0.64) yaw= +68.9 d=0.84 c0=1.38 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.5 DWA-F pos=(+1.81,+0.72) yaw= +76.0 d=0.85 c0=1.62 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.6 DWA-F pos=(+1.77,+0.76) yaw= +78.9 d=0.82 c0=1.69 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.8 DWA-F pos=(+1.77,+0.79) yaw= +78.3 d=0.83 c0=1.66 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 34.9 DWA-F pos=(+1.78,+0.83) yaw= +76.9 d=0.85 c0=1.62 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.1 DWA-F pos=(+1.81,+0.91) yaw= +77.5 d=0.91 c0=1.54 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.2 DWA-F pos=(+1.84,+0.94) yaw= +79.8 d=0.95 c0=1.50 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.3 DWA-F pos=(+1.87,+0.97) yaw= +83.8 d=0.98 c0=1.47 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.5 DWA-F pos=(+1.87,+1.06) yaw= +95.0 d=1.03 c0=1.38 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.6 DWA-F pos=(+1.85,+1.09) yaw= +98.6 d=1.03 c0=1.35 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.7 DWA-F pos=(+1.79,+1.12) yaw=+102.7 d=1.00 c0=1.49 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 35.9 DWA-F pos=(+1.78,+1.14) yaw=+103.3 d=1.00 c0=1.48 obs=696 cmd=(ly=+0.40,rx=-0.45)
+t= 36.0 DWA-F pos=(+1.77,+1.18) yaw=+101.5 d=1.01 c0=1.44 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 36.2 DWA-F pos=(+1.76,+1.26) yaw=+100.9 d=1.06 c0=1.36 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 36.3 DWA-F pos=(+1.76,+1.31) yaw=+102.6 d=1.10 c0=1.32 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 36.4 DWA-F pos=(+1.79,+1.34) yaw=+105.7 d=1.14 c0=1.48 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 36.6 DWA-F pos=(+1.78,+1.41) yaw=+116.5 d=1.18 c0=1.79 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 36.7 DWA-F pos=(+1.75,+1.44) yaw=+121.1 d=1.19 c0=1.93 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 36.9 DWA-F pos=(+1.68,+1.48) yaw=+126.2 d=1.17 c0=1.85 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 37.0 DWA-F pos=(+1.65,+1.47) yaw=+128.1 d=1.15 c0=1.84 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 37.2 DWA-F pos=(+1.60,+1.52) yaw=+126.2 d=1.16 c0=1.77 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 37.3 DWA-F pos=(+1.58,+1.55) yaw=+125.6 d=1.17 c0=1.73 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 37.4 DWA-F pos=(+1.56,+1.59) yaw=+126.2 d=1.19 c0=1.69 obs=698 cmd=(ly=+0.40,rx=-0.45)
+t= 37.6 DWA-F pos=(+1.56,+1.66) yaw=+132.1 d=1.26 c0=1.65 obs=699 cmd=(ly=+0.40,rx=-0.45)
+t= 37.7 DWA-F pos=(+1.54,+1.69) yaw=+136.8 d=1.28 c0=1.62 obs=699 cmd=(ly=+0.40,rx=-0.45)
+t= 37.9 DWA-F pos=(+1.51,+1.73) yaw=+142.8 d=1.30 c0=1.58 obs=699 cmd=(ly=+0.40,rx=-0.45)
+t= 38.0 DWA-F pos=(+1.43,+1.75) yaw=+150.1 d=1.29 c0=1.50 obs=699 cmd=(ly=+0.40,rx=-0.45)
+t= 38.1 DWA-F pos=(+1.40,+1.73) yaw=+151.5 d=1.26 c0=1.47 obs=699 cmd=(ly=+0.40,rx=-0.45)
+t= 38.3 DWA-F pos=(+1.37,+1.72) yaw=+153.4 d=1.24 c0=1.45 obs=699 cmd=(ly=+0.40,rx=-0.45)
+t= 38.4 DWA-F pos=(+1.30,+1.74) yaw=+151.5 d=1.24 c0=1.38 obs=700 cmd=(ly=+0.40,rx=-0.45)
+t= 38.6 DWA-F pos=(+1.24,+1.79) yaw=+152.0 d=1.28 c0=1.30 obs=700 cmd=(ly=+0.40,rx=-0.45)
+t= 38.7 DWA-F pos=(+1.21,+1.83) yaw=+153.9 d=1.31 c0=1.27 obs=700 cmd=(ly=+0.40,rx=-0.45)
+t= 38.8 DWA-F pos=(+1.21,+1.87) yaw=+157.5 d=1.35 c0=1.25 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.0 DWA-F pos=(+1.13,+1.89) yaw=+168.8 d=1.36 c0=1.18 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.1 DWA-F pos=(+1.09,+1.89) yaw=+173.6 d=1.35 c0=1.13 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.3 DWA-F pos=(+1.02,+1.85) yaw=+178.0 d=1.30 c0=1.08 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.4 DWA-F pos=(+1.00,+1.83) yaw=+179.6 d=1.28 c0=1.07 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.6 DWA-F pos=(+0.97,+1.83) yaw=+179.0 d=1.29 c0=1.04 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.7 DWA-F pos=(+0.89,+1.82) yaw=+177.3 d=1.28 c0=0.97 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 39.8 DWA-F pos=(+0.81,+1.84) yaw=-179.5 d=1.31 c0=0.89 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.0 DWA-F pos=(+0.79,+1.88) yaw=-175.4 d=1.35 c0=1.00 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.1 DWA-F pos=(+0.75,+1.88) yaw=-170.2 d=1.35 c0=0.96 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.3 DWA-F pos=(+0.67,+1.85) yaw=-160.2 d=1.34 c0=0.87 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.4 DWA-F pos=(+0.65,+1.81) yaw=-157.5 d=1.31 c0=0.85 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.6 DWA-F pos=(+0.63,+1.75) yaw=-155.0 d=1.26 c0=1.04 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.7 DWA-F pos=(+0.60,+1.74) yaw=-156.0 d=1.25 c0=1.01 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 40.8 DWA-F pos=(+0.57,+1.72) yaw=-157.3 d=1.25 c0=0.97 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.0 DWA-F pos=(+0.53,+1.70) yaw=-157.1 d=1.25 c0=0.93 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.1 DWA-F pos=(+0.45,+1.72) yaw=-152.4 d=1.29 c0=0.86 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.2 DWA-F pos=(+0.42,+1.71) yaw=-147.5 d=1.29 c0=0.83 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.4 DWA-F pos=(+0.35,+1.65) yaw=-136.3 d=1.27 c0=1.05 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.5 DWA-F pos=(+0.33,+1.62) yaw=-133.1 d=1.26 c0=1.03 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.7 DWA-F pos=(+0.34,+1.56) yaw=-130.0 d=1.20 c0=1.09 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.8 DWA-F pos=(+0.32,+1.54) yaw=-130.5 d=1.19 c0=1.07 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 41.9 DWA-F pos=(+0.29,+1.50) yaw=-132.1 d=1.18 c0=1.03 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 42.1 DWA-F pos=(+0.23,+1.45) yaw=-131.3 d=1.17 c0=0.95 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 42.2 DWA-F pos=(+0.19,+1.44) yaw=-129.5 d=1.19 c0=0.91 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 42.4 DWA-F pos=(+0.13,+1.42) yaw=-120.8 d=1.22 c0=1.39 obs=701 cmd=(ly=+0.40,rx=-0.45)
+t= 42.5 DWA-F pos=(+0.11,+1.38) yaw=-114.4 d=1.21 c0=2.50 obs=703 cmd=(ly=+0.40,rx=-0.45)
+t= 42.6 DWA-F pos=(+0.10,+1.34) yaw=-110.4 d=1.19 c0=2.50 obs=703 cmd=(ly=+0.40,rx=-0.45)
+t= 42.8 DWA-F pos=(+0.10,+1.30) yaw=-107.5 d=1.16 c0=2.50 obs=703 cmd=(ly=+0.40,rx=-0.45)
+t= 42.9 DWA-F pos=(+0.14,+1.25) yaw=-104.5 d=1.09 c0=2.50 obs=703 cmd=(ly=+0.40,rx=-0.45)
+t= 43.0 DWA-F pos=(+0.14,+1.22) yaw=-104.6 d=1.07 c0=2.50 obs=703 cmd=(ly=+0.40,rx=-0.45)
+t= 43.2 DWA-F pos=(+0.14,+1.18) yaw=-106.4 d=1.05 c0=2.50 obs=703 cmd=(ly=+0.40,rx=-0.45)
+t= 43.3 DWA-F pos=(+0.10,+1.10) yaw=-106.0 d=1.04 c0=2.50 obs=704 cmd=(ly=+0.40,rx=-0.45)
+t= 43.4 DWA-F pos=(+0.07,+1.07) yaw=-103.8 d=1.05 c0=2.50 obs=704 cmd=(ly=+0.40,rx=-0.45)
+t= 43.6 DWA-F pos=(+0.02,+1.01) yaw= -96.4 d=1.06 c0=2.50 obs=704 cmd=(ly=+0.40,rx=-0.45)
+t= 43.7 DWA-F pos=(+0.02,+0.98) yaw= -91.6 d=1.06 c0=2.50 obs=704 cmd=(ly=+0.40,rx=-0.45)
+t= 43.9 DWA-F pos=(+0.02,+0.94) yaw= -87.8 d=1.04 c0=2.50 obs=704 cmd=(ly=+0.40,rx=-0.45)
+t= 44.0 DWA-F pos=(+0.06,+0.89) yaw= -82.1 d=0.98 c0=2.50 obs=704 cmd=(ly=+0.40,rx=-0.45)
+t= 44.2 DWA-F pos=(+0.10,+0.88) yaw= -80.5 d=0.95 c0=2.50 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 44.3 DWA-F pos=(+0.12,+0.83) yaw= -81.3 d=0.90 c0=2.50 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 44.4 DWA-F pos=(+0.13,+0.79) yaw= -82.7 d=0.88 c0=2.50 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 44.6 DWA-F pos=(+0.12,+0.71) yaw= -80.8 d=0.87 c0=2.50 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 44.7 DWA-F pos=(+0.09,+0.69) yaw= -78.1 d=0.90 c0=2.50 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 44.8 DWA-F pos=(+0.08,+0.65) yaw= -73.9 d=0.90 c0=2.50 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 45.0 DWA-F pos=(+0.09,+0.61) yaw= -67.6 d=0.89 c0=2.35 obs=705 cmd=(ly=+0.40,rx=-0.45)
+t= 45.1 DWA-F pos=(+0.13,+0.54) yaw= -59.4 d=0.85 c0=2.27 obs=706 cmd=(ly=+0.40,rx=-0.45)
+t= 45.3 DWA-F pos=(+0.21,+0.53) yaw= -55.7 d=0.77 c0=2.12 obs=706 cmd=(ly=+0.40,rx=-0.45)
+t= 45.4 DWA-F pos=(+0.22,+0.53) yaw= -54.6 d=0.76 c0=2.11 obs=706 cmd=(ly=+0.40,rx=-0.45)
+t= 45.5 DWA-F pos=(+0.25,+0.50) yaw= -56.6 d=0.73 c0=2.07 obs=707 cmd=(ly=+0.40,rx=-0.45)
+t= 45.7 DWA-F pos=(+0.30,+0.44) yaw= -57.0 d=0.69 c0=2.08 obs=707 cmd=(ly=+0.40,rx=-0.45)
+t= 45.8 DWA-F pos=(+0.32,+0.39) yaw= -55.4 d=0.68 c0=1.96 obs=707 cmd=(ly=+0.40,rx=-0.45)
+t= 45.9 DWA-F pos=(+0.31,+0.35) yaw= -52.8 d=0.70 c0=1.94 obs=707 cmd=(ly=+0.40,rx=-0.45)
+t= 46.1 DWA-F pos=(+0.33,+0.28) yaw= -42.1 d=0.69 c0=1.88 obs=708 cmd=(ly=+0.40,rx=-0.45)
+ABORT A
+FIN

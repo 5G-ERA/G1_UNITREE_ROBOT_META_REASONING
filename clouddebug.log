@@ -1,0 +1,4 @@
+=== CLOUDDEBUG 08:58:48 FINAL (n=cuantos, pts=nº puntos) ===
+  n=497    pts=0        tipo='JSON:rt/unitree/slam_relocation/points' campos=[type,topic,data] data=[object:header|is_dense|xmin|xmax|ymin|ymax]
+  n=108    pts=2997     tipo='location' campos=[type,data] data=[points]
+  >>> NUBE: type='location' n=2997 primeros9=[2.1893320083618164, 3.281830072402954, 0.18945099413394928, 2.3773319721221924, 3.1808300018310547, 0.20645099878311157, 2.5673320293426514, 3.0808300971984863, 0.22145099937915802]
