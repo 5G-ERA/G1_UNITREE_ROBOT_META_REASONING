@@ -264,6 +264,80 @@ RELOC_CLOUD_JS = r"""(function(){
 })()"""
 
 
+# Busca el PATH PLANIFICADO del firmware: caza mensajes (worker o JSON-topic) que contengan un array con
+# pinta de ruta (>=3 elementos {x,y} o [x,y]). Si aparece, lo tenemos.
+PATHSNIFF_JS = r"""(function(){
+  if(!window.__pathSniff){ window.__pathSniff=1; window.__pathmsgs={}; window.__pathcand=null;
+    function looksPath(o){ try{
+        if(Array.isArray(o) && o.length>=3){ var a=o[0];
+          if(a && typeof a==='object' && ('x' in a) && ('y' in a)) return o.length;
+          if(Array.isArray(a) && a.length>=2 && typeof a[0]==='number') return o.length;
+        }}catch(e){} return 0; }
+    function scan(d,dep){ if(dep>4||!d||typeof d!=='object') return 0;
+      var n=looksPath(d); if(n){ if(!window.__pathcand) window.__pathcand={where:'root',n:n,sample:JSON.stringify(d).slice(0,400)}; return n; }
+      for(var k in d){ try{ var m=looksPath(d[k]);
+        if(m){ if(!window.__pathcand) window.__pathcand={where:k,n:m,sample:JSON.stringify(d[k]).slice(0,400)}; return m; }
+        var mm=scan(d[k],dep+1); if(mm) return mm; }catch(e){} } return 0; }
+    var seen=new WeakSet(); var o=Worker.prototype.postMessage;
+    Worker.prototype.postMessage=function(m){ try{ if(!seen.has(this)){ seen.add(this);
+      this.addEventListener('message',function(ev){ try{ var d=ev.data; var t=(d&&d.type)?(''+d.type):typeof d;
+        var rec=window.__pathmsgs[t]||{n:0,pathlen:0,keys:''}; rec.n++;
+        if(!rec.keys && d&&typeof d==='object') rec.keys=Object.keys(d).slice(0,8).join(',');
+        var pl=scan(d,0); if(pl>rec.pathlen) rec.pathlen=pl; window.__pathmsgs[t]=rec;
+      }catch(e){} }); } }catch(e){} return o.apply(this,arguments); };
+    var jp=JSON.parse; JSON.parse=function(s){ var v=jp.apply(this,arguments);
+      try{ if(v&&v.topic){ var tp=''+v.topic;
+        if(/path|plan|traj|route|nav|key_info|waypoint|topo/i.test(tp)){
+          var d=(typeof v.data==='string')?jp(v.data):v.data;
+          var rec=window.__pathmsgs['JSON:'+tp]||{n:0,pathlen:0,keys:''}; rec.n++;
+          if(!rec.keys && d && typeof d==='object') rec.keys=Object.keys(d).slice(0,8).join(',');
+          var pl=scan(d,0); if(pl>rec.pathlen) rec.pathlen=pl; window.__pathmsgs['JSON:'+tp]=rec;
+        }
+      }}catch(e){} return v; };
+  } return 1;
+})()"""
+
+
+def cmd_pathsniff(label):
+    """DESCUBRE si el firmware expone su PATH planificado. Envia el goal nativo a <label> y caza durante
+    ~20s cualquier mensaje con pinta de ruta. El robot SE MUEVE (firmware). Mando en mano."""
+    wps = _load_wps()
+    if not label or label not in wps:
+        print(f"uso: python g1_goto.py pathsniff <N>  (waypoints: {list(wps.keys())})"); return
+    w = wps[label]
+    cdp = g.get_cdp()
+    cdp.eval(DISABLE_DRV_JS); cdp.eval(NATIVE_CAP_JS); cdp.eval(RELOC_JS); cdp.eval(PATHSNIFF_JS)
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pathsniff.log")
+    # espera dc
+    for _ in range(30):
+        if cdp.eval("!!window.__dc"):
+            break
+        time.sleep(0.3)
+    cdp.eval(native_avoid_js(True)); r = cdp.eval(native_goal_js(w["x"], w["y"]))
+    print(f">>> PATHSNIFF -> {label} ({w['x']:+.2f},{w['y']:+.2f}). Goal enviado: {r}. El robot se movera.")
+    print(f"    Cazando mensajes con pinta de ruta ~20s. Ctrl+C para parar. Log -> {out}")
+    try:
+        for i in range(40):
+            mm = json.loads(cdp.eval("JSON.stringify(window.__pathmsgs||{})") or "{}")
+            cand = cdp.eval("JSON.stringify(window.__pathcand||null)")
+            lines = [f"=== PATHSNIFF {time.strftime('%H:%M:%S')} (pathlen = nº de puntos tipo ruta) ==="]
+            for t, rec in sorted(mm.items(), key=lambda kv: -kv[1].get("pathlen", 0)):
+                lines.append(f"  n={rec.get('n',0):<5} PATHLEN={rec.get('pathlen',0):<5} tipo='{t}' campos=[{rec.get('keys','')}]")
+            if cand and cand != "null":
+                lines.append(f"  >>> CANDIDATO DE RUTA: {cand}")
+            else:
+                lines.append("  (todavia sin candidato de ruta)")
+            with open(out, "w") as f:
+                f.write("\n".join(lines) + "\n")
+            print("\033[2J\033[H", end=""); print("\n".join(lines))
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        cdp.eval(native_cancel_js())
+        print(f"\nFin pathsniff. Guardado en {out}. Di 'mira el pathsniff' y lo analizo.")
+
+
 def cmd_cloudgrab():
     """Captura una nube 'location' en vivo + la pose, y la guarda en reloc_cloud.json para analizar el frame."""
     cdp = g.get_cdp()
@@ -1762,6 +1836,8 @@ def main():
         cmd_clouddebug()
     elif c == "cloudgrab":
         cmd_cloudgrab()
+    elif c == "pathsniff":
+        cmd_pathsniff(sys.argv[2] if len(sys.argv) > 2 else None)
     elif c == "waypoint":
         cmd_waypoint(sys.argv[2] if len(sys.argv) > 2 else None)
     elif c == "listwp":
