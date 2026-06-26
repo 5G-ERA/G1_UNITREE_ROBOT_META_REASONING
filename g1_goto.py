@@ -1277,26 +1277,35 @@ def _goto_window(vshare, lock, stop_event, label, wps):
             ax.plot([x], [y], "o", c="#2980b9", ms=11)
             ax.arrow(x, y, 0.4 * math.cos(math.radians(yaw)), 0.4 * math.sin(math.radians(yaw)),
                      head_width=0.16, head_length=0.16, fc="#2980b9", ec="#2980b9", length_includes_head=True)
-            ax.set_aspect("equal", adjustable="datalim"); ax.grid(True, alpha=0.2)
+            ax.set_aspect("equal"); ax.grid(True, alpha=0.2)
             ax.set_xlabel("x (m)"); ax.set_ylabel("y (m)")
             ax.set_title(f"{label}  t={t:.0f}s  {ph.strip()}  dist={d:.2f}m  colis={col}")
+            # CENTRA la vista en la accion (robot+waypoints+plan+recorrido), ignora el ruido lejano del mapa
+            vw = [(x, y)] + ([goal] if goal else []) + [(w["x"], w["y"]) for w in wps.values()] + trail + gplan
+            if vw:
+                vx = [p[0] for p in vw]; vy = [p[1] for p in vw]
+                cx = (min(vx) + max(vx)) / 2; cy = (min(vy) + max(vy)) / 2
+                half = max(max(vx) - min(vx), max(vy) - min(vy)) / 2 + 1.5
+                ax.set_xlim(cx - half, cx + half); ax.set_ylim(cy - half, cy + half)
             try:
                 ax.legend(loc="upper right", fontsize=7)
             except Exception:
                 pass
-            # ===================== PANEL DER: laser en vivo (robot-centrico) =====================
+            # ===================== PANEL DER: laser en vivo en FRAME DEL ROBOT (delante = ARRIBA) =====
             axl.clear()
-            if laser:
-                lx = [p[0] - x for p in laser]; ly = [p[1] - y for p in laser]
+            if laser:                                  # rota los puntos para que el rumbo del robot apunte hacia +y
+                a = math.radians(90 - yaw); ca, sa = math.cos(a), math.sin(a)
+                lx = [ca * (p[0] - x) - sa * (p[1] - y) for p in laser]
+                ly = [sa * (p[0] - x) + ca * (p[1] - y) for p in laser]
                 axl.scatter(lx, ly, s=10, c="#16a085", marker="o", linewidths=0)
-            for rr in (1, 2):                         # anillos de distancia
+            for rr in (1, 2):                          # anillos de distancia
                 axl.add_artist(plt.Circle((0, 0), rr, fill=False, color="#445", lw=0.6, alpha=0.6))
             axl.plot(0, 0, "o", c="#2980b9", ms=9)
-            axl.arrow(0, 0, 0.5 * math.cos(math.radians(yaw)), 0.5 * math.sin(math.radians(yaw)),
-                      head_width=0.18, fc="#2980b9", ec="#2980b9")
+            axl.arrow(0, 0, 0, 0.5, head_width=0.18, fc="#2980b9", ec="#2980b9")   # robot mira ARRIBA
+            axl.annotate("delante", (0, 1.0), ha="center", fontsize=8, color="#2980b9")
             axl.set_xlim(-3, 3); axl.set_ylim(-3, 3); axl.set_aspect("equal")
-            axl.grid(True, alpha=0.2); axl.set_title(f"LASER en vivo  ({len(laser)} pts)")
-            axl.set_xlabel("x rel robot (m)"); axl.set_ylabel("y rel robot (m)")
+            axl.grid(True, alpha=0.2); axl.set_title(f"LASER en vivo — frame robot  ({len(laser)} pts)")
+            axl.set_xlabel("izq/dcha (m)"); axl.set_ylabel("delante (m)")
             plt.pause(0.25)
     except KeyboardInterrupt:
         pass
