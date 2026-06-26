@@ -136,6 +136,7 @@ RELOC_JS = r"""(function(){
           window.__relocodom=[pp.position.x,pp.position.y,pp.position.z,
                               pp.orientation.x,pp.orientation.y,pp.orientation.z,pp.orientation.w];
           window.__relocodom_t=Date.now();
+          if(v.data.pose.covariance) window.__reloccov=v.data.pose.covariance;   // 6x6 (xx,yy,..); el G1 la manda a 0
         }
       }}catch(e){}
       return v;
@@ -249,7 +250,10 @@ RELOC_CLOUD_JS = r"""(function(){
     // 1) cada worker al que la app postea
     var o=Worker.prototype.postMessage;
     Worker.prototype.postMessage=function(m){ attach(this); return o.apply(this,arguments); };
-    // 2) cada worker NUEVO (constructor) -> coge el que emite 'location' al arrancar nav
+    // 2) cada worker al que la app ESCUCHA mensajes (engancha aunque ya exista, en cuanto re-escucha)
+    var oae=Worker.prototype.addEventListener;
+    Worker.prototype.addEventListener=function(type,fn,opt){ try{ if(type==='message') attach(this); }catch(e){} return oae.apply(this,arguments); };
+    // 3) cada worker NUEVO (constructor) -> coge el que emite 'location' al arrancar nav
     try{ var OW=window.Worker;
       function W(a,b){ var w=new OW(a,b); attach(w); return w; }
       W.prototype=OW.prototype; window.Worker=W;
@@ -411,7 +415,7 @@ def read_telemetry(cdp):
     """TODO lo util: errorCode reloc + robot_data (bateria/cpu/motores) + IMU (accel/gyro/rpy/par). Dict o {}."""
     try:
         s = cdp.eval("JSON.stringify({err:(window.__poseErr==null?null:window.__poseErr), "
-                     "h:(window.__health||null), imu:(window.__imufull||null)})")
+                     "h:(window.__health||null), imu:(window.__imufull||null), cov:(window.__reloccov||null)})")
         return json.loads(s) if s else {}
     except Exception:
         return {}
@@ -432,6 +436,10 @@ def _telem_row(hh):
     if im:
         row["accel"] = im.get("accel"); row["gyro"] = im.get("gyro")
         row["rpy"] = im.get("rpy"); row["legtau"] = im.get("legtau"); row["quat"] = im.get("quat")
+    cov = hh.get("cov")
+    if cov and len(cov) >= 15:                # covarianza de pose (6x6). traza de posicion xx+yy+zz
+        row["pose_cov"] = cov                 # completa (el G1 la manda a 0)
+        row["pose_cov_trace"] = round(cov[0] + cov[7] + cov[14], 5)
     return {k: v for k, v in row.items() if v is not None}
 
 
@@ -599,7 +607,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     minc0 = 9.9
     rd = RunRecorder("ours", label, (wx, wy))
     refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
-    gplan = []; gplan_t = 0
+    gplan = []; gplan_t = 0; cam_t = 0; cam_jpg = None
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -841,10 +849,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 gplan_t = now
             # --- publica estado para la ventana en vivo ---
             if vshare is not None:
+                if now - cam_t > 0.5:
+                    cam_jpg = grab_cam(cdp); cam_t = now
                 with lock:
                     vshare["x"] = x; vshare["y"] = y; vshare["yaw"] = yaw; vshare["ph"] = ph
                     vshare["d"] = d_goal; vshare["col"] = ncol; vshare["t"] = now - t0
-                    vshare["goal"] = (wx, wy); vshare["carrot"] = carrot
+                    vshare["goal"] = (wx, wy); vshare["carrot"] = carrot; vshare["cam"] = cam_jpg
                     vshare["obs"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset]      # mapa acumulado (m)
                     vshare["laser"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live]    # barrido en vivo (m)
                     vshare["plan"] = list(plan_pts)                                          # ruta A* local (m)
@@ -1263,10 +1273,20 @@ def _goto_window(vshare, lock, stop_event, label, wps):
             time.sleep(0.3)
         return
     refmap = _load_refmap_points()
-    plt.ion()
-    fig, (ax, axl) = plt.subplots(1, 2, figsize=(16, 8), gridspec_kw={"width_ratios": [1.25, 1]})
     try:
-        fig.canvas.manager.set_window_title(f"G1 {label} — mapa+plan | laser")
+        import base64 as _b64, io as _io
+        from PIL import Image as _Image
+        _have_cam = True
+    except Exception:
+        _have_cam = False
+    plt.ion()
+    fig = plt.figure(figsize=(17, 8.5))
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.45, 1], height_ratios=[1, 1])
+    ax = fig.add_subplot(gs[:, 0])      # mapa+plan (izq, alto completo)
+    axl = fig.add_subplot(gs[0, 1])     # laser (arriba dcha)
+    axc = fig.add_subplot(gs[1, 1])     # camara (abajo dcha)
+    try:
+        fig.canvas.manager.set_window_title(f"G1 {label} — mapa+plan | laser | camara")
     except Exception:
         pass
     fig.canvas.mpl_connect("close_event", lambda e: stop_event.set())
@@ -1279,7 +1299,7 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                 goal = vshare.get("goal"); carrot = vshare.get("carrot")
                 obs = list(vshare.get("obs", [])); laser = list(vshare.get("laser", []))
                 plan = list(vshare.get("plan", [])); trail = list(vshare.get("trail", []))
-                gplan = list(vshare.get("gplan", []))
+                gplan = list(vshare.get("gplan", [])); cam = vshare.get("cam")
             # ===================== PANEL IZQ: mapa cargado + plan =====================
             ax.clear()
             if refmap:                               # FONDO = mapa real (Summit en frame G1) = paredes/puerta
@@ -1334,6 +1354,16 @@ def _goto_window(vshare, lock, stop_event, label, wps):
             axl.set_xlim(-3, 3); axl.set_ylim(-3, 3); axl.set_aspect("equal")
             axl.grid(True, alpha=0.2); axl.set_title(f"LASER en vivo — frame robot  ({len(laser)} pts)")
             axl.set_xlabel("izq/dcha (m)"); axl.set_ylabel("delante (m)")
+            # ===================== PANEL CAMARA (abajo dcha) =====================
+            axc.clear(); axc.axis("off")
+            if _have_cam and cam and isinstance(cam, str) and cam.startswith("data:image"):
+                try:
+                    imgc = _Image.open(_io.BytesIO(_b64.b64decode(cam.split(",", 1)[1])))
+                    axc.imshow(imgc); axc.set_title("camara en vivo", fontsize=10)
+                except Exception:
+                    axc.set_title("camara (frame invalido)", fontsize=10)
+            else:
+                axc.set_title("camara (esperando frame...)", fontsize=10)
             plt.pause(0.25)
     except KeyboardInterrupt:
         pass
@@ -1356,7 +1386,7 @@ def cmd_goto_viz(label):
         print(f"'{label}' no existe. Waypoints: {list(wps.keys())}"); return
     w = wps[label]
     vshare = {"x": 0.0, "y": 0.0, "yaw": 0.0, "ph": "", "d": 0.0, "col": 0, "t": 0.0,
-              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "gplan": [], "trail": []}
+              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "gplan": [], "trail": [], "cam": None}
     lk = threading.Lock(); stop_event = threading.Event()
 
     def control():
@@ -1461,6 +1491,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     minc0 = 9.9; stall_t = t0; last_movepos = None; pose_t = time.time()
     health_t = 0; hh = {}; jprev = None; cloud_ok = False; cloud_warned = False
     omap = {}; gplan = []; gplan_t = 0; start_xy = None      # mapa acumulado + plan global (solo viz/comparacion)
+    cam_t = 0; cam_jpg = None
     try:
         while not (stop_event is not None and stop_event.is_set()):
             now = time.time()
@@ -1563,10 +1594,13 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
             if now - tprint > 0.4:
                 print("  " + line); tprint = now
             if vshare is not None:
+                if now - cam_t > 0.5:
+                    cam_jpg = grab_cam(cdp); cam_t = now
                 with lock:
                     vshare["x"] = x; vshare["y"] = y; vshare["yaw"] = yaw; vshare["ph"] = "NATIVO"
                     vshare["d"] = d_goal; vshare["col"] = ncol; vshare["t"] = now - t0
                     vshare["goal"] = (wx, wy); vshare["carrot"] = None; vshare["plan"] = []
+                    vshare["cam"] = cam_jpg
                     vshare["gplan"] = list(gplan)                                     # plan global (nuestro A*, referencia)
                     vshare["obs"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in omap]   # mapa acumulado (m)
                     vshare["laser"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live]
@@ -1610,7 +1644,7 @@ def cmd_benchmark(label, viz=False):
             print(f"\nFin benchmark. Log -> {BENCH_LOG}")
         return
     vshare = {"x": 0.0, "y": 0.0, "yaw": 0.0, "ph": "", "d": 0.0, "col": 0, "t": 0.0,
-              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "gplan": [], "trail": []}
+              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "gplan": [], "trail": [], "cam": None}
     lk = threading.Lock(); stop_event = threading.Event()
 
     def control():
