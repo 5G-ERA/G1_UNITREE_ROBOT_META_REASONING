@@ -1016,33 +1016,36 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
             if cmd is None:
                 if (not plan_pts) or (now - plan_t > g.PLAN_SEC):
-                    # GLOBAL: A* sobre el MAPA DE REFERENCIA limpio (puerta abierta) + colisiones aprendidas,
-                    # SIEMPRE SIN INFLADO (con inflado, a 0.2m, la puerta se cierra y nunca hay ruta -> "mil
-                    # vueltas"). La seguridad la da el DWA (holgura ROBOT_R). El DWA esquiva lo vivo localmente.
-                    plan_obs = (refmap | colmap) if refmap else oset
-                    cm = {c: math.inf for c in plan_obs}
+                    # PLAN: 1) sobre el LASER VIVO (rapido y preciso para ACERCARSE, como antes);
+                    #       2) si falla (puerta sellada/estrecha en el mapa vivo) -> sobre el MAPA DE
+                    #          REFERENCIA limpio SIN inflado (que tiene la puerta abierta). DWA = seguridad.
                     scell = (round(x / g.OCELL), round(y / g.OCELL))
                     gcell = (round(wx / g.OCELL), round(wy / g.OCELL))
+                    cm = ({c: math.inf for c in oset} if aggressive else g.build_costmap(oset))
                     cells_path = g.astar(scell, gcell, cm)
+                    used_ref = False
+                    if not cells_path and refmap:
+                        cells_path = g.astar(scell, gcell, {c: math.inf for c in (refmap | colmap)})
+                        used_ref = bool(cells_path)
                     plan_pts = [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells_path] if cells_path else []
                     plan_t = now
                     if not plan_pts:
-                        lg.write(f"A*-FAIL goal=({wx:+.1f},{wy:+.1f}) d={d_goal:.1f} obs={len(plan_obs)}\n")
+                        lg.write(f"A*-FAIL goal=({wx:+.1f},{wy:+.1f}) d={d_goal:.1f} obs={len(oset)}\n")
                 if plan_pts:
                     carrot = g.path_carrot(plan_pts, x, y)
-                    # --- MANIOBRA DE PUERTA: detecta el CUELLO (punto del plan por delante con menos holgura
-                    #     a obstaculos vivos). Si hay puerta cerca -> alinea el rumbo con su EJE y entra RECTO. ---
+                    # --- MANIOBRA DE PUERTA: SOLO cuando el robot YA esta en zona estrecha (c0 bajo) y hay un
+                    #     cuello MUY cerca por delante. Asi NO se activa al inicio (en abierto va con DWA rapido). ---
                     door = None
-                    if op:
+                    if op and c0 < 0.9:                     # solo si el robot ya esta apretado (no en abierto)
                         bc = 9.9; bi = -1
                         for i, p in enumerate(plan_pts):
                             dd = math.hypot(p[0] - x, p[1] - y)
-                            if dd < 0.1 or dd > 1.7:
+                            if dd < 0.1 or dd > 0.9:        # cuello MUY cerca (no desde lejos)
                                 continue
                             clr = min((p[0] - o[0]) ** 2 + (p[1] - o[1]) ** 2 for o in op) ** 0.5
                             if clr < bc:
                                 bc = clr; bi = i
-                        if bi >= 0 and bc < 0.55:           # hueco estrecho por delante = puerta
+                        if bi >= 0 and bc < 0.42:           # vano estrecho justo delante = puerta
                             door = (bi, plan_pts[bi], bc)
                     if door is not None:
                         bi, dp, bc = door
