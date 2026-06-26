@@ -507,6 +507,14 @@ def clear_dir(x, y, yaw_deg, off_deg, obs_pts, maxd=2.5, cone=25.0):
     return best
 
 
+def global_plan(sx, sy, gx, gy, oset):
+    """A* GLOBAL de (sx,sy) -> (gx,gy) sobre el costmap de 'oset'. Lista de (x,y) en metros, o []."""
+    cm = g.build_costmap(oset)
+    cells = g.astar((round(sx / g.OCELL), round(sy / g.OCELL)),
+                    (round(gx / g.OCELL), round(gy / g.OCELL)), cm, margin=20)
+    return [(c[0] * g.OCELL, c[1] * g.OCELL) for c in cells] if cells else []
+
+
 def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None):
     """NAVEGA A->B sobre el mapa cargado: A* (firmware-like) + DWA local, obstaculos de la nube 'location',
     contacto por IMU/odom y desatasco (reusados del frontier explorer). Para al llegar. Ctrl+C aborta.
@@ -539,6 +547,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     minc0 = 9.9
     rd = RunRecorder("ours", label, (wx, wy))
     refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
+    gplan = []; gplan_t = 0
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -772,6 +781,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             if now - tprint > 0.4:
                 print("  " + line); tprint = now
 
+            # --- PLAN GLOBAL origen->destino (para verlo completo en la ventana) ---
+            if vshare is not None and now - gplan_t > 3.0 and trail:
+                gplan = global_plan(trail[0][0], trail[0][1], wx, wy, oset) if oset else []
+                gplan_t = now
             # --- publica estado para la ventana en vivo ---
             if vshare is not None:
                 with lock:
@@ -780,7 +793,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     vshare["goal"] = (wx, wy); vshare["carrot"] = carrot
                     vshare["obs"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset]      # mapa acumulado (m)
                     vshare["laser"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live]    # barrido en vivo (m)
-                    vshare["plan"] = list(plan_pts)                                          # ruta A* (m)
+                    vshare["plan"] = list(plan_pts)                                          # ruta A* local (m)
+                    vshare["gplan"] = list(gplan)                                            # PLAN GLOBAL origen->destino
                     vshare["trail"] = list(trail)                                            # odometria recorrida
 
             prev_fwd = (cmd[1] > 0.1)
@@ -1205,6 +1219,7 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                 goal = vshare.get("goal"); carrot = vshare.get("carrot")
                 obs = list(vshare.get("obs", [])); laser = list(vshare.get("laser", []))
                 plan = list(vshare.get("plan", [])); trail = list(vshare.get("trail", []))
+                gplan = list(vshare.get("gplan", []))
             ax.clear()
             # todos los waypoints conocidos (referencia tenue)
             for k, w in wps.items():
@@ -1218,8 +1233,11 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                            s=10, c="#16a085", marker="o", linewidths=0, label="laser en vivo")
             if trail and len(trail) > 1:             # odometria recorrida
                 ax.plot([p[0] for p in trail], [p[1] for p in trail], "-", c="#7f8c8d", lw=1.0, alpha=0.7, label="recorrido")
-            if plan and len(plan) > 1:               # ruta A*
-                ax.plot([p[0] for p in plan], [p[1] for p in plan], "-", c="#1565c0", lw=2.4, label="ruta A*")
+            if gplan and len(gplan) > 1:             # PLAN GLOBAL origen->destino (completo)
+                ax.plot([p[0] for p in gplan], [p[1] for p in gplan], "-", c="#9b59b6", lw=3.0, alpha=0.85,
+                        label="PLAN GLOBAL (A* origen->destino)")
+            if plan and len(plan) > 1:               # ruta A* local (la que ejecuta DWA)
+                ax.plot([p[0] for p in plan], [p[1] for p in plan], "-", c="#1565c0", lw=2.0, label="ruta A* local")
             if carrot:
                 ax.plot([carrot[0]], [carrot[1]], "o", c="#00bcd4", ms=9, label="carrot")
             if goal:
@@ -1256,7 +1274,7 @@ def cmd_goto_viz(label):
         print(f"'{label}' no existe. Waypoints: {list(wps.keys())}"); return
     w = wps[label]
     vshare = {"x": 0.0, "y": 0.0, "yaw": 0.0, "ph": "", "d": 0.0, "col": 0, "t": 0.0,
-              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "trail": []}
+              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "gplan": [], "trail": []}
     lk = threading.Lock(); stop_event = threading.Event()
 
     def control():
@@ -1360,6 +1378,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     low_t = 0; last_low = None; lt_base = []; ah_base = []; ncol = 0; last_col_t = -99
     minc0 = 9.9; stall_t = t0; last_movepos = None; pose_t = time.time()
     health_t = 0; hh = {}; jprev = None; cloud_ok = False; cloud_warned = False
+    omap = {}; gplan = []; gplan_t = 0; start_xy = None      # mapa acumulado + plan global (solo viz/comparacion)
     try:
         while not (stop_event is not None and stop_event.is_set()):
             now = time.time()
@@ -1412,6 +1431,16 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
+            # mapa acumulado + PLAN GLOBAL (nuestro A* origen->destino) solo para ver/comparar en la ventana
+            if start_xy is None:
+                start_xy = (x, y)
+            for c in live:
+                omap[c] = now
+            omap = {c: tt for c, tt in omap.items() if now - tt < NAV_OMAP_TTL}
+            if vshare is not None and now - gplan_t > 3.0:
+                oset = set(omap.keys())
+                gplan = global_plan(start_xy[0], start_xy[1], wx, wy, oset) if oset else []
+                gplan_t = now
 
             if now - low_t > 0.2:                  # contacto por IMU/par (mismo detector)
                 lw = g.read_low(cdp)
@@ -1455,8 +1484,10 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
                     vshare["x"] = x; vshare["y"] = y; vshare["yaw"] = yaw; vshare["ph"] = "NATIVO"
                     vshare["d"] = d_goal; vshare["col"] = ncol; vshare["t"] = now - t0
                     vshare["goal"] = (wx, wy); vshare["carrot"] = None; vshare["plan"] = []
-                    vshare["obs"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live]
-                    vshare["laser"] = list(vshare["obs"]); vshare["trail"] = list(trail)
+                    vshare["gplan"] = list(gplan)                                     # plan global (nuestro A*, referencia)
+                    vshare["obs"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in omap]   # mapa acumulado (m)
+                    vshare["laser"] = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in live]
+                    vshare["trail"] = list(trail)
             time.sleep(0.1)
         if "x" in dir():
             rd.save_cloud("end", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
@@ -1496,7 +1527,7 @@ def cmd_benchmark(label, viz=False):
             print(f"\nFin benchmark. Log -> {BENCH_LOG}")
         return
     vshare = {"x": 0.0, "y": 0.0, "yaw": 0.0, "ph": "", "d": 0.0, "col": 0, "t": 0.0,
-              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "trail": []}
+              "goal": (w["x"], w["y"]), "carrot": None, "obs": [], "laser": [], "plan": [], "gplan": [], "trail": []}
     lk = threading.Lock(); stop_event = threading.Event()
 
     def control():
