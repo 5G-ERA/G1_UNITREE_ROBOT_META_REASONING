@@ -36,6 +36,10 @@ GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cerc
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
 AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
 PERC_PERIOD = 0.3                # s entre consultas al servidor de percepcion GPU (depth->scan virtual de la mesa)
+DOOR_CENTER = (os.environ.get("G1_DOOR_CENTER", "1") == "1")   # centrar izq/dcha en la puerta (idea de Renxi): strafe al lado mas libre
+DOOR_BAL_TH = 0.22               # |clear_left - clear_right| (normalizado) para considerar el robot DESCENTRADO
+DOOR_STRAFE = 0.34               # magnitud del strafe lateral (> deadzone ~0.3, si no el robot no se mueve)
+DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "1"))  # +1/-1: si centra al lado EQUIVOCADO, lanza con G1_STRAFE_SIGN=-1
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -1117,9 +1121,14 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         he = (ddir - yaw + 180) % 360 - 180
                         # VISION manda en la puerta (el laser es ruidoso ahi): suelo despejado por delante?
                         vis_ok = (vis_center is not None and vis_center > 0.45 and (vis_nearrun or 0) < 8)
-                        if abs(he) > 12:                    # alinea el rumbo con el eje ANTES de entrar
+                        bal = m_cl - m_cr                   # >0 = mas libre a la IZQ ; <0 = mas libre a la DCHA
+                        if abs(he) > 12:                    # 1) alinea el rumbo con el eje ANTES de entrar
                             cmd = (0, 0, -g.AV_TURN if he > 0 else g.AV_TURN, 0); ph = "DOOR-AL"
-                        elif c0 > AGGR_ROBOT_R or vis_ok:   # entra RECTO si el LASER o la VISION lo ven despejado
+                        elif DOOR_CENTER and abs(bal) > DOOR_BAL_TH and max(cl_left, cl_right) > 0.30:
+                            # 2) DESCENTRADO -> strafe hacia el lado MAS LIBRE para entrar centrado (Renxi)
+                            lx = DOOR_STRAFE_SIGN * (DOOR_STRAFE if bal > 0 else -DOOR_STRAFE)
+                            cmd = (lx, 0, 0, 0); ph = "DOOR-CTR"
+                        elif c0 > AGGR_ROBOT_R or vis_ok:   # 3) entra RECTO si el LASER o la VISION lo ven despejado
                             cmd = (0, 0.28, 0, 0); ph = "DOOR-GO" + ("v" if vis_ok and c0 <= AGGR_ROBOT_R else "")
                         else:
                             cmd = (0, 0, 0, 0); ph = "DOOR-WT"   # ni laser ni vision: espera (no fuerza)
@@ -1189,8 +1198,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 ph = "AGR-" + ph.strip()
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
-                    f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} "
-                    f"obs={len(oset)} plan={len(plan_pts)} cmd=(ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+                    f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} bal={m_cl-m_cr:+.2f} "
+                    f"obs={len(oset)} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now

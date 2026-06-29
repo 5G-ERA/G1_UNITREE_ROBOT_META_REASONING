@@ -19,6 +19,9 @@ Subcommands
   rangecheck HOST:PORT        grab one frame, POST to the perception server, print
                               the central virtual-scan range. Put an object at a
                               measured distance and compare -> validates depth scale.
+  wall                        NO-checkerboard calibration against a flat wall. Grabs a
+                              frame and prints how to compute fx/fy from one tape
+                              measurement (see WALL METHOD below). cx,cy = image centre.
 
 Needs: opencv-python (intrinsics), numpy, pillow; and a live robot link
 (ios_webkit_debug_proxy running, robot relocalised in the app).
@@ -108,10 +111,38 @@ def cmd_rangecheck(endpoint):
     print("  si es consistente pero escalado, corrige la escala del modelo de depth; si es ruidoso, revisa pitch/altura.")
 
 
+def cmd_wall():
+    """No-checkerboard intrinsics: focal length from one tape measurement against a flat wall."""
+    gg, cdp = _cdp_and_grab()
+    cam = gg.grab_cam(cdp)
+    if not cam:
+        print("Sin frame de camara."); return
+    import base64, io
+    from PIL import Image
+    img = Image.open(io.BytesIO(base64.b64decode(cam.split(",", 1)[1]))).convert("RGB")
+    W, H = img.size
+    os.makedirs(CALIB_DIR, exist_ok=True)
+    p = os.path.join(CALIB_DIR, "wall.jpg"); img.save(p)
+    print(f"""
+WALL METHOD (no checkerboard needed) — frame is {W}x{H}px, saved {p}
+1) Stick TWO marks on a flat wall a known real distance apart, e.g. Wm = 1.00 m (use tape).
+2) Put the robot facing the wall at a known camera-to-wall distance D, e.g. D = 2.00 m (measure).
+3) Open {p}, read the pixel column of each mark -> pixel separation wpx.
+4) Focal length:   fx = wpx * D / Wm     (and fy = fx for square pixels)
+   Principal point: cx = {W/2:.0f}, cy = {H/2:.0f}   (image centre is a good assumption)
+
+Then run the server with:   --fx <fx> --fy <fx> --cx {W/2:.0f} --cy {H/2:.0f} --cam-h <H_metres> --cam-pitch <deg>
+Tip: verify with  'python calibrate_cam.py rangecheck 127.0.0.1:8008'  against a tape measure;
+if depth is off by a constant factor, nudge fx; if it slants, fix --cam-pitch / --cam-h.
+""")
+
+
 def main():
     a = sys.argv[1:]
     if not a:
         print(__doc__); return
+    if a[0] == "wall":
+        cmd_wall(); return
     if a[0] == "grab":
         cmd_grab(int(a[1]) if len(a) > 1 else 20)
     elif a[0] == "intrinsics":
