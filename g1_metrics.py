@@ -66,3 +66,70 @@ class SEIMetrics:
     def history(self):
         """List of (t, clearance, progression) for the live strip chart / export."""
         return list(self.hist)
+
+
+import statistics as _st
+
+
+class SensingMonitor:
+    """The robot's feedback on its OWN sensing capacity (Renxi: 'otherwise we are purely guessing').
+
+    From real, live signals it estimates how much to trust perception right now:
+      laser_noise (0..1) — frame-to-frame instability of the LiDAR scan: short-window std of the
+                           forward clearance + variability of the live point count + scan churn.
+      loc_conf    (0..1) — localisation confidence (scan-to-map match; the firmware gives no covariance).
+      reliability (0..1) — combined self-assessed sensing capacity = loc_conf * (1 - laser_noise),
+                           further reduced by recent relocalisation jumps.
+    This is the paper's 'distributed plausibility / sensing reliability' meta-parameter, grounded
+    in measured noise rather than assumed.
+    """
+
+    def __init__(self, win=1.5, c0_ref=0.40, hist_cap=600):
+        self.win = win              # s window for the noise estimate
+        self.c0_ref = c0_ref        # m of clearance std that counts as 'fully noisy'
+        self._c0 = deque(); self._n = deque(); self._jumps = deque()
+        self._prev_cells = None
+        self.hist = deque(maxlen=hist_cap)   # (t, reliability, laser_noise, loc_conf)
+
+    def update(self, now, live_cells, c0_m, loc_match, reloc_jump=False):
+        live_cells = set(live_cells) if live_cells else set()
+        self._c0.append((now, c0_m))
+        while self._c0 and now - self._c0[0][0] > self.win:
+            self._c0.popleft()
+        c0v = [v for _, v in self._c0]
+        c0_std = _st.pstdev(c0v) if len(c0v) >= 2 else 0.0
+
+        self._n.append((now, len(live_cells)))
+        while self._n and now - self._n[0][0] > self.win:
+            self._n.popleft()
+        nv = [v for _, v in self._n]
+        n_mean = (sum(nv) / len(nv)) if nv else 0.0
+        n_std = _st.pstdev(nv) if len(nv) >= 2 else 0.0
+        n_cv = (n_std / n_mean) if n_mean > 0 else 0.0
+
+        churn = 0.0
+        if self._prev_cells is not None and (live_cells or self._prev_cells):
+            uni = len(live_cells | self._prev_cells)
+            inter = len(live_cells & self._prev_cells)
+            churn = 1.0 - (inter / uni if uni else 1.0)
+        self._prev_cells = live_cells
+
+        if reloc_jump:
+            self._jumps.append(now)
+        while self._jumps and now - self._jumps[0] > 10.0:
+            self._jumps.popleft()
+        jrate = len(self._jumps)
+
+        laser_noise = clip01(0.6 * (c0_std / self.c0_ref) + 0.4 * min(1.0, n_cv * 2.0))
+        loc_conf = clip01(loc_match if loc_match is not None else 1.0)
+        reliability = clip01(loc_conf * (1.0 - laser_noise))
+        if jrate > 0:
+            reliability *= max(0.0, 1.0 - 0.3 * jrate)
+
+        self.hist.append((round(now, 2), round(reliability, 3), round(laser_noise, 3), round(loc_conf, 3)))
+        return {"reliability": round(reliability, 3), "laser_noise": round(laser_noise, 3),
+                "loc_conf": round(loc_conf, 3), "c0_std": round(c0_std, 3),
+                "nobs_cv": round(n_cv, 3), "scan_churn": round(churn, 3), "reloc_rate10s": jrate}
+
+    def history(self):
+        return list(self.hist)

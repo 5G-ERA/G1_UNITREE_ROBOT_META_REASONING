@@ -53,9 +53,14 @@ def main():
 
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(12, 9), gridspec_kw={"height_ratios": [1, 1.3]})
 
-    # ---- top: the two metrics together ----
+    rel = [get(r, "reliability") for r in s]
+    if any(v is None for v in rel):                 # fallback: use loc_match if reliability not logged
+        rel = [(r.get("loc_match") if r.get("loc_match") is not None else float("nan")) for r in s]
+
+    # ---- top: the metrics together ----
     a1.plot(t, clr, "-", c="#1565c0", lw=1.8, label="clearance (perception)")
     a1.plot(t, prog, "-", c="#e67e22", lw=1.8, label="progression (performance)")
+    a1.plot(t, rel, "-", c="#2ca02c", lw=1.6, label="sensing reliability (self-capacity)")
     a1.fill_between(t, clr, alpha=0.08, color="#1565c0")
     for (ct, _, _) in cols:
         a1.axvline(ct, color="#c0392b", lw=0.8, alpha=0.5)
@@ -88,7 +93,10 @@ def main():
     print("saved", out)
     # quick numeric summary
     n = len(s) or 1
+    rel_ok = [v for v in rel if v == v]             # drop NaN
+    relm = (sum(rel_ok) / len(rel_ok)) if rel_ok else float("nan")
     print(f"  mean clearance={sum(clr)/n:.2f}  mean progression={sum(prog)/n:.2f}  "
+          f"mean reliability={relm:.2f}  "
           f"ticks blocked(clear<0.2)={sum(1 for c in clr if c<0.2)}  "
           f"ticks stalled(prog<0.1)={sum(1 for p in prog if p<0.1)}")
 

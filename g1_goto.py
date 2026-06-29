@@ -629,10 +629,11 @@ HEALTH_JS = r"""(function(){
         if(d){ if(d.type==='pos_info'){ window.__poseErr=d.errorCode; }
           if(d.type==='robot_data' && d.data){ var m=d.data; var me=0,mm=(m.motorError||[]);
             for(var i=0;i<mm.length;i++){ if(mm[i]) me++; }
-            var mtm=0,mtt=(m.motorTemp||[]); for(var j=0;j<mtt.length;j++){ if(mtt[j]>mtm) mtm=mtt[j]; }
+            var mtm=0,mhi=-1,mtt=(m.motorTemp||[]); for(var j=0;j<mtt.length;j++){ if(mtt[j]>mtm){mtm=mtt[j];mhi=j;} }
             window.__health={bat:m.batteryPower, vol:m.batteryVol, amp:m.batteryAmp, batT:m.batteryTemp,
               cpuT:m.cpuTemp, cpuU:m.cpuUsage, cpuMem:m.cpuMemory, cpuFreq:m.cpuFrequency,
-              motTmax:mtm, merr:me, sport:m.sportMode, gait:m.gaitType, t:Date.now()}; }
+              motTmax:mtm, motThot:mhi, merr:me, motorTemp:mtt, motorError:mm,
+              sport:m.sportMode, gait:m.gaitType, t:Date.now()}; }
         }
       }}catch(e){}
       return v;
@@ -885,7 +886,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     perc = g1_perception.make_client_from_env(g.OCELL) if g1_perception else None
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
-    m_clear = 0.0; m_prog = 0.0
+    sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
+    m_clear = 0.0; m_prog = 0.0; m_rel = 1.0
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -897,8 +899,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     print("\n  POSE PERDIDA (3s). STOP. Relocaliza en la app y reintenta."); return False
                 time.sleep(0.2); continue
             x, y, yaw = p[0], p[1], yaw_of(p)         # yaw en GRADOS
+            reloc_flag = False
             if last_pose is not None and math.hypot(x - last_pose[0], y - last_pose[1]) > 0.5:
                 jd = math.hypot(x - last_pose[0], y - last_pose[1])     # >0.5m en un ciclo (~0.1s) = salto reloc
+                reloc_flag = True
                 rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
                                                         "from": [round(last_pose[0], 2), round(last_pose[1], 2)]})
                 lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
@@ -1178,20 +1182,25 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 ph = "AGR-" + ph.strip()
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
-                    f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} "
+                    f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} "
                     f"obs={len(oset)} plan={len(plan_pts)} cmd=(ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now
                 rd.telem(now - t0, _telem_row(hh))
             loc = match_score(live, refmap)
+            ss2 = sens.update(now - t0, live, c0, loc, reloc_flag)   # auto-evaluacion: ruido/fiabilidad de sensado
+            m_rel = ss2["reliability"]
             h = hh.get("h") or {}
             rd.sample(now - t0, x, y, yaw, d_goal, math.hypot(x - prog_pos[0], y - prog_pos[1]) if prog_pos else 0.0,
                       c0, len(oset), cmd=cmd, phase=ph.strip(),
                       extra={"err": hh.get("err"), "bat": h.get("bat"), "cpuT": h.get("cpuT"),
                              "merr": h.get("merr"), "loc_match": loc,
                              "clearance": mm["clearance"], "clearance_m": mm["clearance_m"],
-                             "progression": mm["progression"], "progress_rate": mm["progress_rate"]})
+                             "progression": mm["progression"], "progress_rate": mm["progress_rate"],
+                             "reliability": ss2["reliability"], "laser_noise": ss2["laser_noise"],
+                             "loc_conf": ss2["loc_conf"], "c0_std": ss2["c0_std"],
+                             "scan_churn": ss2["scan_churn"], "reloc_rate10s": ss2["reloc_rate10s"]})
             rd.maybe_laser(now - t0, op)
             if now - tprint > 0.4:
                 print("  " + line); tprint = now
@@ -1213,8 +1222,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     vshare["plan"] = list(plan_pts)                                          # ruta A* local (m)
                     vshare["gplan"] = list(gplan)                                            # PLAN GLOBAL origen->destino
                     vshare["trail"] = list(trail)                                            # odometria recorrida
-                    vshare["clear"] = m_clear; vshare["prog"] = m_prog                       # 2 metricas (valor actual)
+                    vshare["clear"] = m_clear; vshare["prog"] = m_prog; vshare["rel"] = m_rel  # 3 metricas (valor actual)
                     vshare["mhist"] = sei.history()                                          # historia (t,clearance,progression)
+                    vshare["shist"] = sens.history()                                         # historia (t,reliability,noise,loc_conf)
 
             prev_fwd = (cmd[1] > 0.1)
             cdp.eval(g.set_cmd_js(*cmd))
@@ -1662,6 +1672,7 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                 plan = list(vshare.get("plan", [])); trail = list(vshare.get("trail", []))
                 gplan = list(vshare.get("gplan", [])); cam = vshare.get("cam")
                 mhist = list(vshare.get("mhist", [])); m_clear = vshare.get("clear", 0); m_prog = vshare.get("prog", 0)
+                shist = list(vshare.get("shist", [])); m_rel = vshare.get("rel", 1.0)
             # ===================== PANEL IZQ: mapa cargado + plan =====================
             ax.clear()
             if refmap:                               # FONDO = mapa real (Summit en frame G1) = paredes/puerta
@@ -1737,10 +1748,16 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                 axm.fill_between(tt, cc, alpha=0.08, color="#1565c0")
                 if tt[-1] - tt[0] > 40:                # ventana movil de ~40s
                     axm.set_xlim(tt[-1] - 40, tt[-1])
-                axm.legend(loc="upper left", fontsize=7, ncol=2)
+            if shist:                                  # fiabilidad de sensado (auto-evaluacion)
+                st_t = [h[0] for h in shist]; st_r = [h[1] for h in shist]
+                axm.plot(st_t, st_r, "-", c="#2ca02c", lw=1.6, label="sensing reliab.")
+                if st_t[-1] - st_t[0] > 40:
+                    axm.set_xlim(st_t[-1] - 40, st_t[-1])
+            if mhist or shist:
+                axm.legend(loc="upper left", fontsize=7, ncol=3)
             axm.set_ylim(-0.02, 1.05); axm.grid(True, alpha=0.3)
             axm.set_xlabel("t (s)")
-            axm.set_title(f"metricas:  clearance={m_clear:.2f}  progression={m_prog:.2f}", fontsize=10)
+            axm.set_title(f"clearance={m_clear:.2f}  progression={m_prog:.2f}  sensing={m_rel:.2f}", fontsize=10)
             plt.pause(0.25)
     except KeyboardInterrupt:
         pass
@@ -2115,6 +2132,88 @@ def cmd_listwp():
         print(f"  {k}: x={v['x']:+.2f} y={v['y']:+.2f} yaw={v.get('yaw', 0):+.0f}  ({v.get('src')}, {v.get('pcd', '')})")
 
 
+def cmd_noisecheck(secs=20):
+    """Mide el RUIDO REAL de los sensores con el robot QUIETO (sin conducir): jitter del laser, deriva de
+    pose, confianza de localizacion + bateria/temperatura/salud de motor por-junta. Es el 'feedback del
+    robot sobre su propia capacidad' (Renxi). Guarda dataset/<ts>_noise.json + .png."""
+    cdp = get_live_cdp()
+    if not cdp:
+        print("No hay pagina viva del WebView. ¿proxy + app + relocalizado?"); return
+    cdp.eval(g.LOWSTATE_JS); cdp.eval(HEALTH_JS)
+    print("Esperando pose + nube...", end="", flush=True)
+    for _ in range(30):
+        src, p, _ = read_pose(cdp); n = int(cdp.eval("(window.__relocbuf||[]).length") or 0)
+        if p and n > 30:
+            break
+        time.sleep(0.3)
+    else:
+        print(" sin datos. ¿Mapa cargado y robot RELOCALIZADO?"); return
+    print(" ok.")
+    print(f"\n>>> MANTÉN EL ROBOT QUIETO {secs}s (de pie, sin conducir). Midiendo ruido de sensores...")
+    refmap = load_ref_map(); t0 = time.time(); rows = []
+    sens = g1_metrics.SensingMonitor()
+    while time.time() - t0 < secs:
+        src, p, _ = read_pose(cdp)
+        if not p:
+            time.sleep(0.1); continue
+        x, y, yaw = p[0], p[1], yaw_of(p)
+        live = reloc_cells(cdp)
+        op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in set(live)]
+        c0 = clear_dir(x, y, yaw, 0, op)
+        loc = match_score(live, refmap) if refmap else None
+        sv = sens.update(time.time() - t0, live, c0, loc, False)
+        rows.append({"t": round(time.time() - t0, 2), "x": round(x, 4), "y": round(y, 4), "yaw": round(yaw, 2),
+                     "n": len(live), "c0": round(c0, 3), "loc": loc,
+                     "reliability": sv["reliability"], "laser_noise": sv["laser_noise"],
+                     "c0_std": sv["c0_std"], "scan_churn": sv["scan_churn"]})
+        time.sleep(0.1)
+    hh = read_telemetry(cdp); H = hh.get("h") or {}
+    import statistics as _st
+    xs = [r["x"] for r in rows]; ys = [r["y"] for r in rows]; ns = [r["n"] for r in rows]
+    c0s = [r["c0"] for r in rows]; locs = [r["loc"] for r in rows if r["loc"] is not None]
+    drift = (_st.pstdev(xs) ** 2 + _st.pstdev(ys) ** 2) ** 0.5 if len(xs) > 1 else 0.0
+    summary = {"secs": secs, "ticks": len(rows), "pose_drift_cm": round(drift * 100, 2),
+               "count_mean": round(_st.mean(ns), 1) if ns else 0,
+               "count_std": round(_st.pstdev(ns), 1) if len(ns) > 1 else 0,
+               "c0_mean": round(_st.mean(c0s), 3) if c0s else 0,
+               "c0_std_m": round(_st.pstdev(c0s), 3) if len(c0s) > 1 else 0,
+               "loc_mean": round(_st.mean(locs), 3) if locs else None,
+               "loc_std": round(_st.pstdev(locs), 3) if len(locs) > 1 else None,
+               "battery_pct": H.get("bat"), "batT": H.get("batT"), "cpuT": H.get("cpuT"),
+               "motTmax": H.get("motTmax"), "motThot_idx": H.get("motThot"), "merr": H.get("merr")}
+    os.makedirs(DATASET_DIR, exist_ok=True)
+    base = os.path.join(DATASET_DIR, time.strftime("%Y%m%d_%H%M%S") + "_noise")
+    json.dump({"schema": "g1_noise/v1", "summary": summary, "rows": rows,
+               "motorTemp": H.get("motorTemp"), "motorError": H.get("motorError")}, open(base + ".json", "w"))
+    print("\n=== RUIDO DE SENSORES (robot quieto) = capacidad de sensado del robot ===")
+    for k, v in summary.items():
+        print(f"  {k}: {v}")
+    print(f"  -> {base}.json")
+    try:
+        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+        t = [r["t"] for r in rows]
+        loc_al = [(r["loc"] if r["loc"] is not None else float("nan")) for r in rows]
+        rel_al = [r["reliability"] for r in rows]
+        fig, ax = plt.subplots(2, 2, figsize=(12, 8))
+        ax[0, 0].plot(t, ns, c="#16a085"); ax[0, 0].set_title(f"laser point count (std={summary['count_std']})")
+        ax[0, 0].set_xlabel("s")
+        ax[0, 1].plot(t, c0s, c="#1565c0"); ax[0, 1].set_title(f"forward clearance c0 (noise std={summary['c0_std_m']} m)")
+        ax[0, 1].set_xlabel("s")
+        sc = ax[1, 0].scatter(xs, ys, s=10, c=t, cmap="viridis")
+        ax[1, 0].set_title(f"pose drift while still (std={summary['pose_drift_cm']} cm)")
+        ax[1, 0].set_aspect("equal"); ax[1, 0].set_xlabel("x (m)"); ax[1, 0].set_ylabel("y (m)")
+        ax[1, 1].plot(t, loc_al, c="#8e44ad", label="loc_match")
+        ax[1, 1].plot(t, rel_al, c="#2ca02c", label="reliability")
+        ax[1, 1].set_ylim(0, 1.05); ax[1, 1].set_title("localisation conf. / sensing reliability")
+        ax[1, 1].set_xlabel("s"); ax[1, 1].legend(fontsize=8)
+        fig.suptitle(f"G1 sensor self-capacity (still {secs}s)   battery={summary['battery_pct']}%   "
+                     f"motTmax={summary['motTmax']}C   drift={summary['pose_drift_cm']}cm")
+        fig.tight_layout(); fig.savefig(base + ".png", dpi=100)
+        print(f"  -> {base}.png")
+    except Exception as e:
+        print("  (grafica omitida:", e, ")")
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__); return
@@ -2133,6 +2232,8 @@ def main():
         cmd_waypoint(sys.argv[2] if len(sys.argv) > 2 else None)
     elif c == "listwp":
         cmd_listwp()
+    elif c == "noisecheck":
+        cmd_noisecheck(int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 20)
     elif c == "turntest":
         cmd_turntest()
     elif c == "tablecheck":

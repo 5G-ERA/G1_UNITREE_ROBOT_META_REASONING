@@ -49,6 +49,50 @@ visible at a glance instead of guessed. That is the baseline the GPU-vision upgr
 meant to improve: with the table seen by depth, the red/stalled band at the door should
 shrink (higher mean clearance and progression, fewer blocked/stalled ticks).
 
+## Sensing reliability — the robot's feedback on its own capacity
+
+Renxi: *"get some feedback from the robot on its own capacity, otherwise we are
+purely guessing."* `SensingMonitor` (in `g1_metrics.py`) estimates this from real
+live signals, every tick:
+
+| Signal | Meaning | Source |
+|---|---|---|
+| **laser_noise** | frame-to-frame LiDAR instability (0..1) | short-window std of forward clearance + point-count variability + scan churn |
+| **loc_conf** | localisation confidence (0..1) | scan-to-map match (the firmware gives no covariance) |
+| **reliability** | self-assessed sensing capacity (0..1) | `loc_conf · (1 − laser_noise)`, reduced by recent relocalisation jumps |
+
+These are logged per sample (`reliability`, `laser_noise`, `loc_conf`, `c0_std`,
+`scan_churn`, `reloc_rate10s`), shown as `rel=` on the console, drawn as a third
+(green) line in the live window panel, and added to `plot_metrics.py`.
+
+### Capture the real sensor noise directly (robot still)
+
+```bash
+python g1_goto.py noisecheck 20     # keep the robot standing still for 20 s
+```
+
+With the robot stationary, any change in the readings IS noise. It saves
+`dataset/<ts>_noise.json` + `.png` showing: laser point-count jitter, forward-
+clearance noise (m), pose drift while still (cm), and loc_match/reliability — plus
+a battery/temperature/motor snapshot. This is the clean "real sensor noise" number
+to show Renxi, measured rather than guessed.
+
+## Hardware health: battery, temperatures, per-joint motors
+
+Also logged (Adrian) in each run's `telemetry` stream (~1 Hz): `bat` (%), `vol`,
+`amp`, `batT`, `cpuT`, `cpuU`, `motTmax`, `motThot` (hottest joint index), `merr`
+(error count), and the **full per-joint arrays** `motorTemp[]` and `motorError[]`.
+
+Visualize a run's hardware health:
+
+```bash
+python plot_health.py dataset/<run>.json
+```
+
+Produces battery %, battery/CPU temperature, max motor temperature, motor-error
+count, and a **per-joint motor-temperature heatmap** (joint × time) that makes a
+single overheating joint obvious at a glance.
+
 ## Tuning (if needed)
 
 In `g1_metrics.py`, `SEIMetrics(clear_full=1.5, prog_ref=0.30, prog_win=2.0)`:
