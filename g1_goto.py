@@ -22,6 +22,7 @@ try:
     import g1_perception                    # cliente del servidor GPU offboard (opcional; via G1_PERC=host:port)
 except Exception:
     g1_perception = None
+import g1_metrics                            # metricas SEI: clearance (percepcion) + progression (rendimiento)
 
 WP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "waypoints.json")
 MAP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nav_map.json")
@@ -883,6 +884,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     # --- PERCEPCION GPU offboard (opcional): depth -> scan virtual que VE la mesa invisible al LiDAR ---
     perc = g1_perception.make_client_from_env(g.OCELL) if g1_perception else None
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
+    sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
+    m_clear = 0.0; m_prog = 0.0
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -955,6 +958,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
+            mm = sei.update(now - t0, d_goal, c0)            # 2 metricas SEI: clearance (espacio libre) + progression (avance a B)
+            m_clear, m_prog = mm["clearance"], mm["progression"]
             # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado.
             # Si hay servidor de percepcion GPU, ya rellena vis_* arriba; esto es el FALLBACK heuristico (sin GPU).
             if perc is None and c0 < 1.1 and now - vis_t > 0.5:
@@ -1173,7 +1178,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 ph = "AGR-" + ph.strip()
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
-                    f"c0={c0:.2f} obs={len(oset)} plan={len(plan_pts)} cmd=(ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+                    f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} "
+                    f"obs={len(oset)} plan={len(plan_pts)} cmd=(ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now
@@ -1183,7 +1189,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             rd.sample(now - t0, x, y, yaw, d_goal, math.hypot(x - prog_pos[0], y - prog_pos[1]) if prog_pos else 0.0,
                       c0, len(oset), cmd=cmd, phase=ph.strip(),
                       extra={"err": hh.get("err"), "bat": h.get("bat"), "cpuT": h.get("cpuT"),
-                             "merr": h.get("merr"), "loc_match": loc})
+                             "merr": h.get("merr"), "loc_match": loc,
+                             "clearance": mm["clearance"], "clearance_m": mm["clearance_m"],
+                             "progression": mm["progression"], "progress_rate": mm["progress_rate"]})
             rd.maybe_laser(now - t0, op)
             if now - tprint > 0.4:
                 print("  " + line); tprint = now
@@ -1205,6 +1213,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     vshare["plan"] = list(plan_pts)                                          # ruta A* local (m)
                     vshare["gplan"] = list(gplan)                                            # PLAN GLOBAL origen->destino
                     vshare["trail"] = list(trail)                                            # odometria recorrida
+                    vshare["clear"] = m_clear; vshare["prog"] = m_prog                       # 2 metricas (valor actual)
+                    vshare["mhist"] = sei.history()                                          # historia (t,clearance,progression)
 
             prev_fwd = (cmd[1] > 0.1)
             cdp.eval(g.set_cmd_js(*cmd))
@@ -1626,13 +1636,14 @@ def _goto_window(vshare, lock, stop_event, label, wps):
     except Exception:
         _have_cam = False
     plt.ion()
-    fig = plt.figure(figsize=(17, 8.5))
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.45, 1], height_ratios=[1, 1])
+    fig = plt.figure(figsize=(17, 9.2))
+    gs = fig.add_gridspec(3, 2, width_ratios=[1.45, 1], height_ratios=[1, 1, 0.7])
     ax = fig.add_subplot(gs[:, 0])      # mapa+plan (izq, alto completo)
     axl = fig.add_subplot(gs[0, 1])     # laser (arriba dcha)
-    axc = fig.add_subplot(gs[1, 1])     # camara (abajo dcha)
+    axc = fig.add_subplot(gs[1, 1])     # camara (medio dcha)
+    axm = fig.add_subplot(gs[2, 1])     # METRICAS clearance+progression (abajo dcha)
     try:
-        fig.canvas.manager.set_window_title(f"G1 {label} — mapa+plan | laser | camara")
+        fig.canvas.manager.set_window_title(f"G1 {label} — mapa+plan | laser | camara | metricas")
     except Exception:
         pass
     closed = {"v": False}
@@ -1650,6 +1661,7 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                 obs = list(vshare.get("obs", [])); laser = list(vshare.get("laser", []))
                 plan = list(vshare.get("plan", [])); trail = list(vshare.get("trail", []))
                 gplan = list(vshare.get("gplan", [])); cam = vshare.get("cam")
+                mhist = list(vshare.get("mhist", [])); m_clear = vshare.get("clear", 0); m_prog = vshare.get("prog", 0)
             # ===================== PANEL IZQ: mapa cargado + plan =====================
             ax.clear()
             if refmap:                               # FONDO = mapa real (Summit en frame G1) = paredes/puerta
@@ -1716,6 +1728,19 @@ def _goto_window(vshare, lock, stop_event, label, wps):
                     axc.set_title("camara (frame invalido)", fontsize=10)
             else:
                 axc.set_title("camara (esperando frame...)", fontsize=10)
+            # ===================== PANEL METRICAS: clearance + progression (las 2 del tutor) =====================
+            axm.clear()
+            if mhist:
+                tt = [h[0] for h in mhist]; cc = [h[1] for h in mhist]; pp = [h[2] for h in mhist]
+                axm.plot(tt, cc, "-", c="#1565c0", lw=1.6, label="clearance")
+                axm.plot(tt, pp, "-", c="#e67e22", lw=1.6, label="progression")
+                axm.fill_between(tt, cc, alpha=0.08, color="#1565c0")
+                if tt[-1] - tt[0] > 40:                # ventana movil de ~40s
+                    axm.set_xlim(tt[-1] - 40, tt[-1])
+                axm.legend(loc="upper left", fontsize=7, ncol=2)
+            axm.set_ylim(-0.02, 1.05); axm.grid(True, alpha=0.3)
+            axm.set_xlabel("t (s)")
+            axm.set_title(f"metricas:  clearance={m_clear:.2f}  progression={m_prog:.2f}", fontsize=10)
             plt.pause(0.25)
     except KeyboardInterrupt:
         pass
