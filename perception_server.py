@@ -307,23 +307,62 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, {"ok": True, "mode": "stub" if ARGS.stub else "gpu",
                              "models": {"depth": ARGS.depth, "seg": ARGS.seg, "det": ARGS.det},
                              "gpus": _gpu_info()})
-        elif self.path.startswith("/debug"):        # /debug.jpg -> latest annotated frame (view in a browser)
+        elif self.path.startswith("/debug.mjpg"):   # live MJPEG stream (no refresh needed)
+            self._stream_mjpg()
+        elif self.path.startswith("/debug.jpg"):     # single latest annotated frame
             self._send_debug_jpg()
+        elif self.path in ("/", "/view", "/debug"):  # auto-refreshing viewer page
+            self._send_view()
         else:
             self._send(404, {"error": "not found"})
 
+    def _send_view(self):
+        html = (b"<!doctype html><meta charset=utf-8><title>G1 perception</title>"
+                b"<body style='margin:0;background:#111;text-align:center'>"
+                b"<img src='/debug.mjpg' style='max-width:100%;height:auto'>"
+                b"<noscript>open /debug.jpg</noscript></body>")
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(html)))
+            self.end_headers()
+            self.wfile.write(html)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+
+    def _frame_jpg(self):
+        import cv2, numpy as np
+        img = _LAST_VIZ
+        if img is None:
+            img = np.full((360, 640, 3), 40, np.uint8)
+            cv2.putText(img, "no frame yet - run g1_goto with G1_PERC set", (20, 180),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2)
+        ok, buf = cv2.imencode(".jpg", img)
+        return buf.tobytes() if ok else None
+
+    def _stream_mjpg(self):
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            while True:
+                b = self._frame_jpg()
+                if b:
+                    self.wfile.write(b"--frame\r\nContent-Type: image/jpeg\r\n")
+                    self.wfile.write(f"Content-Length: {len(b)}\r\n\r\n".encode())
+                    self.wfile.write(b); self.wfile.write(b"\r\n")
+                time.sleep(0.07)                      # ~14 fps
+        except (BrokenPipeError, ConnectionResetError):
+            pass                                      # browser tab closed — fine
+        except Exception:
+            pass
+
     def _send_debug_jpg(self):
         try:
-            import cv2, numpy as np
-            img = _LAST_VIZ
-            if img is None:
-                img = np.full((360, 640, 3), 40, np.uint8)
-                cv2.putText(img, "no frame yet — run g1_goto with G1_PERC set", (20, 180),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2)
-            ok, buf = cv2.imencode(".jpg", img)
-            if not ok:
+            b = self._frame_jpg()
+            if not b:
                 raise RuntimeError("encode failed")
-            b = buf.tobytes()
             self.send_response(200)
             self.send_header("Content-Type", "image/jpeg")
             self.send_header("Cache-Control", "no-store")
@@ -403,8 +442,9 @@ def main():
         import threading
         srv = ThreadingHTTPServer((ARGS.host, ARGS.port), Handler)
         threading.Thread(target=srv.serve_forever, daemon=True).start()
-        url = f"http://{ARGS.host}:{ARGS.port}/debug.jpg"
-        print(f"[perception] debug ON. View it in a BROWSER: {url}  (refresh to update).")
+        url = f"http://{ARGS.host}:{ARGS.port}/"
+        print(f"[perception] debug ON. LIVE VIDEO in a browser (no refresh): {url}")
+        print(f"[perception] single frame: {url}debug.jpg   ·   raw stream: {url}debug.mjpg")
         print("[perception] a local OpenCV window will also open IF this machine has a display (X11).")
         try:
             import cv2, numpy as np

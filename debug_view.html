@@ -1,0 +1,8 @@
+<!doctype html><meta charset=utf-8><title>G1 perception</title>
+<body style="margin:0;background:#111;text-align:center">
+<img id=v style="max-width:100%;height:auto">
+<script>
+const ep = (location.search.slice(1) || "127.0.0.1:8008");
+function tick(){ document.getElementById("v").src = "http://"+ep+"/debug.jpg?"+Date.now(); }
+setInterval(tick, 200); tick();
+</script>
