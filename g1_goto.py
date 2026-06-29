@@ -891,7 +891,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
-    m_clear = 0.0; m_prog = 0.0; m_rel = 1.0
+    m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -969,6 +969,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
             mm = sei.update(now - t0, d_goal, c0)            # 2 metricas SEI: clearance (espacio libre) + progression (avance a B)
             m_clear, m_prog = mm["clearance"], mm["progression"]
+            cl_left = clear_dir(x, y, yaw, +60, op); cl_right = clear_dir(x, y, yaw, -60, op)   # clearance IZQ/DCHA (Renxi: balancear)
+            m_cl = min(1.0, cl_left / 1.5); m_cr = min(1.0, cl_right / 1.5)
             # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado.
             # Si hay servidor de percepcion GPU, ya rellena vis_* arriba; esto es el FALLBACK heuristico (sin GPU).
             if perc is None and c0 < 1.1 and now - vis_t > 0.5:
@@ -1207,6 +1209,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "loc_conf": ss2["loc_conf"], "c0_std": ss2["c0_std"],
                              "scan_churn": ss2["scan_churn"], "reloc_rate10s": ss2["reloc_rate10s"],
                              "perc_n": len(perc_cells),                       # nº de celdas-obstaculo que aporto la VISION este tick
+                             "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
+                             "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
+                             "balance": round(m_cl - m_cr, 3),                # +izq libre / -dcha libre (0 = centrado)
                              "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
                                         d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)

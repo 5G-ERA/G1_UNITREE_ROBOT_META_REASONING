@@ -145,6 +145,8 @@ def run_det(rgb, fx, cx):
         lab = res.names[int(b.cls)].lower()
         if DET_KEEP and lab not in DET_KEEP:
             continue
+        if float(b.conf) < ARGS.det_conf:         # drop low-confidence false positives (e.g. wall-frame -> "refrigerator")
+            continue
         x1, y1, x2, y2 = b.xyxy[0].tolist()
         u = 0.5 * (x1 + x2)
         bearing = -math.degrees(math.atan2(u - cx, fx))   # +left
@@ -415,6 +417,8 @@ def main():
     ap.add_argument("--seg", default="segformer", help="'segformer' or 'off'")
     ap.add_argument("--det", default="yolo", help="'yolo' or 'off'")
     ap.add_argument("--det-weights", default="yolo11x.pt")
+    ap.add_argument("--det-conf", type=float, default=0.45,
+                    help="min YOLO confidence to keep a detection (raise to cut false positives)")
     ap.add_argument("--depth-device", default="cuda:0")
     ap.add_argument("--seg-device", default="cuda:1")
     ap.add_argument("--det-device", default="cuda:1")
