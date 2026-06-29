@@ -307,8 +307,33 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, {"ok": True, "mode": "stub" if ARGS.stub else "gpu",
                              "models": {"depth": ARGS.depth, "seg": ARGS.seg, "det": ARGS.det},
                              "gpus": _gpu_info()})
+        elif self.path.startswith("/debug"):        # /debug.jpg -> latest annotated frame (view in a browser)
+            self._send_debug_jpg()
         else:
             self._send(404, {"error": "not found"})
+
+    def _send_debug_jpg(self):
+        try:
+            import cv2, numpy as np
+            img = _LAST_VIZ
+            if img is None:
+                img = np.full((360, 640, 3), 40, np.uint8)
+                cv2.putText(img, "no frame yet — run g1_goto with G1_PERC set", (20, 180),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2)
+            ok, buf = cv2.imencode(".jpg", img)
+            if not ok:
+                raise RuntimeError("encode failed")
+            b = buf.tobytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(b)))
+            self.end_headers()
+            self.wfile.write(b)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        except Exception as e:
+            self._send(503, {"error": f"debug image unavailable: {e}. Start the server with --debug."})
 
     def do_POST(self):
         if self.path != "/perceive":
@@ -378,16 +403,30 @@ def main():
         import threading
         srv = ThreadingHTTPServer((ARGS.host, ARGS.port), Handler)
         threading.Thread(target=srv.serve_forever, daemon=True).start()
-        print("[perception] debug window ON — needs a desktop (X11). Press q in the window to quit.")
+        url = f"http://{ARGS.host}:{ARGS.port}/debug.jpg"
+        print(f"[perception] debug ON. View it in a BROWSER: {url}  (refresh to update).")
+        print("[perception] a local OpenCV window will also open IF this machine has a display (X11).")
         try:
             import cv2, numpy as np
             blank = np.zeros((360, 640, 3), np.uint8)
             cv2.putText(blank, "waiting for frames from g1_goto...", (20, 180),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 2)
+            have_window = False
             while True:
-                cv2.imshow("G1 perception debug", _LAST_VIZ if _LAST_VIZ is not None else blank)
-                if (cv2.waitKey(30) & 0xFF) == ord("q"):
+                try:
+                    cv2.imshow("G1 perception debug", _LAST_VIZ if _LAST_VIZ is not None else blank)
+                    have_window = True
+                    if (cv2.waitKey(30) & 0xFF) == ord("q"):
+                        break
+                except Exception as e:
+                    if not have_window:           # no display (SSH/headless): keep serving the browser endpoint
+                        print(f"[perception] no local window available ({e}).")
+                        print(f"[perception] OPEN THIS IN A BROWSER instead: {url}   (Ctrl+C to stop)")
+                        while True:
+                            time.sleep(1.0)
                     break
+        except KeyboardInterrupt:
+            pass
         finally:
             srv.shutdown()
             try:
