@@ -1205,7 +1205,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "progression": mm["progression"], "progress_rate": mm["progress_rate"],
                              "reliability": ss2["reliability"], "laser_noise": ss2["laser_noise"],
                              "loc_conf": ss2["loc_conf"], "c0_std": ss2["c0_std"],
-                             "scan_churn": ss2["scan_churn"], "reloc_rate10s": ss2["reloc_rate10s"]})
+                             "scan_churn": ss2["scan_churn"], "reloc_rate10s": ss2["reloc_rate10s"],
+                             "perc_n": len(perc_cells),                       # nº de celdas-obstaculo que aporto la VISION este tick
+                             "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
+                                        d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)
             if now - tprint > 0.4:
                 print("  " + line); tprint = now
