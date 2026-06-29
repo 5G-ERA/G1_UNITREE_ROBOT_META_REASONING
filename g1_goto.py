@@ -18,6 +18,10 @@ import json
 import math
 import threading
 import g1_nav_v2 as g                      # reusa conexion + A* + DWA + costmap + camara + helpers
+try:
+    import g1_perception                    # cliente del servidor GPU offboard (opcional; via G1_PERC=host:port)
+except Exception:
+    g1_perception = None
 
 WP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "waypoints.json")
 MAP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nav_map.json")
@@ -30,6 +34,7 @@ NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obsta
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
 AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
+PERC_PERIOD = 0.3                # s entre consultas al servidor de percepcion GPU (depth->scan virtual de la mesa)
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -875,6 +880,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
     best_d = 1e9; best_d_t = t0; ROBOT_R0 = g.ROBOT_R        # progreso hacia B + holgura normal (para restaurar)
     vis_center = None; vis_nearrun = None; vis_t = 0         # VISION (suelo despejado) para la puerta (laser ruidoso ahi)
+    # --- PERCEPCION GPU offboard (opcional): depth -> scan virtual que VE la mesa invisible al LiDAR ---
+    perc = g1_perception.make_client_from_env(g.OCELL) if g1_perception else None
+    perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -910,6 +918,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                                       "straight_m": round(straight, 2),
                                       "efficiency": round(straight / plen, 2) if plen > 0 else 0.0,
                                       "collisions": ncol, "c0min": round(minc0, 2),
+                                      "perc_queries": nperc,
                                       "start": {"x": round(trail[0][0], 3), "y": round(trail[0][1], 3)} if trail else None})
                 if vshare is not None:                # marca llegada en la ventana antes de salir
                     with lock:
@@ -928,13 +937,27 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
+            # --- PERCEPCION GPU: depth -> scan virtual (la MESA que el LiDAR no ve) + suelo despejado por VISION ---
+            if perc is not None and now - perc_t > PERC_PERIOD:
+                res = perc.query(grab_cam(cdp), x, y, yaw)
+                perc_t = now
+                if res is not None:
+                    nperc += 1
+                    perc_cells = res.cells
+                    perc_dets = res.detections or []
+                    if res.free_center is not None:   # VISION basada en depth/seg (mejor que la heuristica)
+                        vis_center, vis_nearrun = res.free_center, (res.near_run or 0); vis_t = now
+            for c in perc_cells:                      # inyecta obstaculos de vision con TTL (como el laser)
+                if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND:
+                    omap[c] = now
             omap = {c: t for c, t in omap.items() if now - t < NAV_OMAP_TTL}
             oset = set(omap.keys()) | colmap
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
-            # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado
-            if c0 < 1.1 and now - vis_t > 0.5:
+            # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado.
+            # Si hay servidor de percepcion GPU, ya rellena vis_* arriba; esto es el FALLBACK heuristico (sin GPU).
+            if perc is None and c0 < 1.1 and now - vis_t > 0.5:
                 vis_center, vis_nearrun = cam_floor_clear(grab_cam(cdp)); vis_t = now
             cmd = None; ph = ""
 
