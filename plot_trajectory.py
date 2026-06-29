@@ -64,7 +64,7 @@ def main():
         laser_pts += snap.get("pts", [])
     if laser_pts:
         L = np.array(laser_pts)
-        ax.scatter(L[:, 0], L[:, 1], s=3, c="#b8c0c8", marker="s", linewidths=0, alpha=0.5,
+        ax.scatter(L[:, 0], L[:, 1], s=16, c="#5a6675", marker="o", linewidths=0, alpha=0.6,
                    label=f"LiDAR seen ({len(L)} pts)", zorder=1)
 
     # --- detected objects (project to world from pose + bearing/range), cluster repeats ---
@@ -77,10 +77,10 @@ def main():
             a = math.radians(r["yaw"] + bearing)
             wx = r["x"] + rng * math.cos(a); wy = r["y"] + rng * math.sin(a)
             raw.append((lab, conf or 0, wx, wy))
-    clusters = []                          # (label, conf_max, x, y, n)  merge same-label within 0.4 m
+    clusters = []                          # (label, conf_max, x, y, n)  merge same-label within 0.7 m
     for lab, conf, wx, wy in raw:
         for c in clusters:
-            if c[0] == lab and math.hypot(c[2] - wx, c[3] - wy) < 0.4:
+            if c[0] == lab and math.hypot(c[2] - wx, c[3] - wy) < 0.7:
                 c[1] = max(c[1], conf); c[2] = (c[2] * c[4] + wx) / (c[4] + 1)
                 c[3] = (c[3] * c[4] + wy) / (c[4] + 1); c[4] += 1
                 break
