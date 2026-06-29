@@ -844,6 +844,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     contacto por IMU/odom y desatasco (reusados del frontier explorer). Para al llegar. Ctrl+C aborta.
     Si se pasan vshare/lock/stop_event, publica el estado para la ventana en vivo (modo viz)."""
     print(f"\n>>> GOTO '{label}' -> ({wx:+.2f},{wy:+.2f}). Mando en mano (L2+B). Ctrl+C aborta.")
+    lg.write(f"\n=== RUN ours '{label}' -> ({wx:+.2f},{wy:+.2f})  {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n"); lg.flush()
     cdp.eval(g.LOWSTATE_JS)                       # contacto rapido por par/accel
     # espera pose + primera nube
     print("  Esperando pose localizada y primera nube...", end="", flush=True)
@@ -917,7 +918,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             if d_goal < NAV_REACH:                    # --- LLEGADA ---
                 cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
                 print(f"\n  LLEGADO a '{label}' ({wx:+.2f},{wy:+.2f}); error={d_goal:.2f} m, colisiones={ncol}.")
-                lg.write(f"REACHED {label} err={d_goal:.2f} ncol={ncol}\n"); lg.flush()
+                lg.write(f"REACHED {label} err={d_goal:.2f} ncol={ncol} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
                 T = now - t0; plen = _path_len(trail)
                 straight = math.hypot(wx - trail[0][0], wy - trail[0][1]) if trail else 0.0
                 rd.save_cloud("end", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
@@ -1233,7 +1234,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                               "collisions": ncol, "c0min": round(minc0, 2)})
         return False                                  # salida por cierre de ventana (stop_event)
     except KeyboardInterrupt:
-        print(f"\n  [ABORTADO '{label}']"); lg.write(f"ABORT {label}\n"); lg.flush()
+        print(f"\n  [ABORTADO '{label}']"); lg.write(f"ABORT {label} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
                               "collisions": ncol, "c0min": round(minc0, 2)})
         return False
