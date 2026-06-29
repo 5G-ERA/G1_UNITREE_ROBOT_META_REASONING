@@ -17,7 +17,7 @@ Design rules:
     client transforms the virtual scan into MAP cells using the live pose.
 """
 from __future__ import annotations
-import json, math, time, urllib.request
+import json, math, time, threading, urllib.request
 
 
 class PerceptionResult:
@@ -35,7 +35,7 @@ class PerceptionResult:
 class PerceptionClient:
     """Talks to perception_server.py. endpoint e.g. 'http://192.168.1.50:8008'."""
 
-    def __init__(self, endpoint, ocell=0.2, hband=(0.10, 1.30), max_range=3.0, timeout=0.25):
+    def __init__(self, endpoint, ocell=0.2, hband=(0.10, 1.30), max_range=3.0, timeout=2.0):
         self.endpoint = endpoint.rstrip("/")
         self.ocell = ocell
         self.hband = hband                 # obstacle height band (m) the server should keep
@@ -99,6 +99,44 @@ class PerceptionClient:
 
     def nearest_person(self):
         return None  # convenience hook; detections are on the result object
+
+
+class PerceptionWorker(threading.Thread):
+    """Runs perception OFF the control thread so a slow GPU inference never freezes the robot.
+
+    The control loop calls submit(cam, x, y, yaw) (non-blocking, with a frame it already grabbed)
+    and reads .latest (the most recent PerceptionResult, or None). Only this thread does the HTTP
+    call; it never touches the robot/cdp.
+    """
+
+    def __init__(self, client):
+        super().__init__(daemon=True)
+        self.client = client
+        self._in = None
+        self._lock = threading.Lock()
+        self.latest = None
+        self.n_ok = 0
+        self.n_fail = 0
+        self._stop = False
+
+    def submit(self, cam, x, y, yaw):
+        with self._lock:
+            self._in = (cam, x, y, yaw)
+
+    def run(self):
+        while not self._stop:
+            with self._lock:
+                job = self._in; self._in = None
+            if job is None:
+                time.sleep(0.02); continue
+            res = self.client.query(*job)
+            if res is not None:
+                self.latest = res; self.n_ok += 1
+            else:
+                self.n_fail += 1; time.sleep(0.05)
+
+    def stop(self):
+        self._stop = True
 
 
 def make_client_from_env(ocell=0.2):

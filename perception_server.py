@@ -289,11 +289,15 @@ def perceive(payload):
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, obj):
         b = json.dumps(obj).encode()
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(b)))
-        self.end_headers()
-        self.wfile.write(b)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(b)))
+            self.end_headers()
+            self.wfile.write(b)
+        except (BrokenPipeError, ConnectionResetError):
+            # the client (g1_goto) gave up waiting and closed the socket — harmless, ignore
+            pass
 
     def log_message(self, *a):
         pass
@@ -316,6 +320,8 @@ class Handler(BaseHTTPRequestHandler):
             out = perceive(payload)
             out["dt_ms"] = round((time.time() - t0) * 1000.0, 1)
             self._send(200, out)
+        except (BrokenPipeError, ConnectionResetError):
+            pass                                  # client closed early; ignore quietly
         except Exception as e:
             import traceback; traceback.print_exc()
             self._send(500, {"error": str(e)})
@@ -357,6 +363,17 @@ def main():
     print(f"[perception] {'STUB' if ARGS.stub else 'GPU'} on {ARGS.host}:{ARGS.port} "
           f"depth={ARGS.depth} seg={ARGS.seg} det={ARGS.det} gpus={_gpu_info()}"
           f"{' [DEBUG WINDOW]' if ARGS.debug else ''}")
+    if not ARGS.stub:                              # warm up the models so the FIRST real request is fast
+        try:
+            import base64, io
+            from PIL import Image
+            buf = io.BytesIO(); Image.new("RGB", (640, 480), (120, 120, 120)).save(buf, format="JPEG")
+            uri = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+            print("[perception] warming up models (first inference loads weights)...", flush=True)
+            t0 = time.time(); perceive({"image": uri, "pose": [0, 0, 0]})
+            print(f"[perception] warm-up done in {time.time()-t0:.1f}s — ready.", flush=True)
+        except Exception as e:
+            print(f"[perception] warm-up skipped/failed: {e}", flush=True)
     if ARGS.debug:
         import threading
         srv = ThreadingHTTPServer((ARGS.host, ARGS.port), Handler)

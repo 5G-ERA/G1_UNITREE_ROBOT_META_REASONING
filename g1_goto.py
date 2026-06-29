@@ -885,6 +885,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     vis_center = None; vis_nearrun = None; vis_t = 0         # VISION (suelo despejado) para la puerta (laser ruidoso ahi)
     # --- PERCEPCION GPU offboard (opcional): depth -> scan virtual que VE la mesa invisible al LiDAR ---
     perc = g1_perception.make_client_from_env(g.OCELL) if g1_perception else None
+    perc_worker = g1_perception.PerceptionWorker(perc) if perc else None       # consulta GPU en HILO APARTE (no congela el control)
+    if perc_worker:
+        perc_worker.start()
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
@@ -945,16 +948,17 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
-            # --- PERCEPCION GPU: depth -> scan virtual (la MESA que el LiDAR no ve) + suelo despejado por VISION ---
-            if perc is not None and now - perc_t > PERC_PERIOD:
-                res = perc.query(grab_cam(cdp), x, y, yaw)
+            # --- PERCEPCION GPU (HILO APARTE): depth -> scan virtual (la MESA que el LiDAR no ve) + suelo despejado ---
+            if perc_worker is not None and now - perc_t > PERC_PERIOD:
+                perc_worker.submit(grab_cam(cdp), x, y, yaw)   # no bloquea: el hilo hace la consulta GPU
                 perc_t = now
-                if res is not None:
-                    nperc += 1
-                    perc_cells = res.cells
-                    perc_dets = res.detections or []
-                    if res.free_center is not None:   # VISION basada en depth/seg (mejor que la heuristica)
-                        vis_center, vis_nearrun = res.free_center, (res.near_run or 0); vis_t = now
+            if perc_worker is not None and perc_worker.latest is not None:
+                res = perc_worker.latest                       # ultimo resultado disponible (puede ir 1-2 ticks por detras)
+                nperc = perc_worker.n_ok
+                perc_cells = res.cells
+                perc_dets = res.detections or []
+                if res.free_center is not None:                # VISION basada en depth/seg (mejor que la heuristica)
+                    vis_center, vis_nearrun = res.free_center, (res.near_run or 0); vis_t = now
             for c in perc_cells:                      # inyecta obstaculos de vision con TTL (como el laser)
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND:
                     omap[c] = now
