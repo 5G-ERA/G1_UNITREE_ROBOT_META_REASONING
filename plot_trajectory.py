@@ -68,11 +68,33 @@ def main():
                    label=f"LiDAR seen ({len(L)} pts)", zorder=1)
 
     # --- detected objects (project to world from pose + bearing/range), cluster repeats ---
-    raw = []
+    snaps = sorted(d.get("laser_snapshots", []), key=lambda z: z.get("t", 0))
+
+    def lidar_range(t, x, y, aim_deg):
+        """estimate distance to the nearest LiDAR point in the detection's bearing (for runs whose
+        detections were logged without a range, e.g. uncalibrated depth)."""
+        if not snaps:
+            return None
+        snap = min(snaps, key=lambda z: abs(z.get("t", 0) - t))
+        best = None
+        for px, py in snap.get("pts", []):
+            dx = px - x; dy = py - y; dist = math.hypot(dx, dy)
+            if dist < 0.1 or dist > 4.0:
+                continue
+            ang = abs((math.degrees(math.atan2(dy, dx)) - aim_deg + 180) % 360 - 180)
+            if ang < 12 and (best is None or dist < best):
+                best = dist
+        return best
+
+    raw = []; approx = 0
     for r in s:
         for dct in (r.get("dets") or []):
             lab, conf, bearing, rng = (dct + [None] * 4)[:4]
-            if bearing is None or rng is None:
+            if bearing is None:
+                continue
+            if rng is None:                      # no range logged -> estimate from LiDAR in that bearing
+                rng = lidar_range(r["t"], r["x"], r["y"], r["yaw"] + bearing); approx += 1
+            if rng is None:
                 continue
             a = math.radians(r["yaw"] + bearing)
             wx = r["x"] + rng * math.cos(a); wy = r["y"] + rng * math.sin(a)
@@ -116,10 +138,11 @@ def main():
     ax.set_xlabel("x (m)"); ax.set_ylabel("y (m)")
     sm = d.get("summary", {})
     nper = sm.get("perc_queries", 0)
+    approx_note = "  (object range est. from LiDAR — calibrate camera for exact)" if approx and clusters else ""
     ax.set_title(f"{d.get('mode','')} → {d.get('label','')}: full traversal reconstruction\n"
                  f"{'REACHED' if d.get('result')=='reached' else d.get('result','?')}  ·  "
                  f"{sm.get('time_s','?')}s  ·  {sm.get('collisions','?')} collisions  ·  "
-                 f"{len(clusters)} objects detected  ·  vision queries={nper}", fontsize=11)
+                 f"{len(clusters)} objects detected (YOLO)  ·  vision queries={nper}{approx_note}", fontsize=10.5)
     ax.legend(loc="best", fontsize=9)
     fig.savefig(out, dpi=110, bbox_inches="tight")
     print("saved", out)

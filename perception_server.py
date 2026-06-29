@@ -270,10 +270,16 @@ def perceive(payload):
             scan, _, _ = depth_to_scan(depth, floor, hband, max_range)
             free_center, near_run = free_center_from_scan(scan)
             dets = run_det(rgb, ARGS.fx, ARGS.cx) if ARGS.det != "off" else []
-            for dct in dets:                      # nearest scan bin -> distance per detection
-                if scan:
-                    b0 = dct["bearing_deg"]
-                    dct["range_m"] = min(scan, key=lambda s: abs(s[0] - b0))[1]
+            for dct in dets:                      # range each detection from the DEPTH at its box (robust),
+                b = dct.get("box")                # falling back to the virtual scan bin if needed
+                if b is not None:
+                    x1, y1, x2, y2 = [int(max(0, v)) for v in b]
+                    patch = depth[y1:y2, x1:x2]
+                    valid = patch[np.isfinite(patch) & (patch > 0.2) & (patch < ARGS.max_range * 4)]
+                    if valid.size:
+                        dct["range_m"] = round(float(np.median(valid)), 2)
+                if dct.get("range_m") is None and scan:
+                    dct["range_m"] = min(scan, key=lambda s: abs(s[0] - dct["bearing_deg"]))[1]
             out = {"scan": scan, "free_center": free_center, "near_run": near_run,
                    "detections": dets, "mode": "gpu"}
     if ARGS.debug:
