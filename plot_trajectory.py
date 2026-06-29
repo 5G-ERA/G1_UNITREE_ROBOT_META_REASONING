@@ -64,8 +64,15 @@ def main():
         laser_pts += snap.get("pts", [])
     if laser_pts:
         L = np.array(laser_pts)
-        ax.scatter(L[:, 0], L[:, 1], s=16, c="#5a6675", marker="o", linewidths=0, alpha=0.6,
-                   label=f"LiDAR seen ({len(L)} pts)", zorder=1)
+        nfull = len(L)
+        if nfull > 4000:                          # de-clutter: drop duplicates onto a grid, then cap
+            keys = np.round(L / 0.12).astype(int)
+            _, idx = np.unique(keys, axis=0, return_index=True)
+            L = L[np.sort(idx)]
+        if len(L) > 3500:
+            L = L[np.random.default_rng(0).choice(len(L), 3500, replace=False)]
+        ax.scatter(L[:, 0], L[:, 1], s=14, c="#7a8694", marker="o", linewidths=0, alpha=0.45,
+                   label=f"LiDAR seen ({nfull} pts)", zorder=1)
 
     # --- detected objects (project to world from pose + bearing/range), cluster repeats ---
     snaps = sorted(d.get("laser_snapshots", []), key=lambda z: z.get("t", 0))
