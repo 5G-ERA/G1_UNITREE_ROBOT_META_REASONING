@@ -1,0 +1,17 @@
+# GPU perception server (perception_server.py) — install ONLY on the Ubuntu/GPU box.
+# Heavy. Needs CUDA-capable NVIDIA GPU(s).
+#
+#   source ~/g1env/bin/activate
+#   # 1) PyTorch matching your CUDA (pick the right index-url from https://pytorch.org):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+#   # 2) the rest:
+#   pip install -r requirements-perception.txt
+
+transformers          # Depth Anything V2 (metric depth) + SegFormer (segmentation)
+ultralytics           # YOLO (person / table / door detection)
+opencv-python
+pillow
+numpy
+
+# NOTE: torch + torchvision are intentionally NOT pinned here — install them first
+# with the CUDA-matched index-url above, then run this file.
