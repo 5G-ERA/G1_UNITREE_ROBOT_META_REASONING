@@ -22,6 +22,9 @@ Run:
              --depth depth_anything_v2 --seg segformer --det yolo \
              --fx 600 --fy 600 --cx 320 --cy 240 --cam-h 1.10 --cam-pitch -10
   Stub:  python perception_server.py --stub        # no GPU, brightness-based free-space, empty scan
+  Debug: add --debug to ANY of the above -> opens a live window (needs a desktop/X11) showing the
+         camera with detection boxes + distance, the free_center value, and a mini-radar of the
+         virtual scan (red points = obstacle < 1 m, e.g. the doorway table). Press q to quit.
 
 Camera calibration: --fx/--fy/--cx/--cy (pixels), --cam-h (camera height, m),
 --cam-pitch (deg, negative=looking down). These default to rough G1 values and
@@ -34,6 +37,7 @@ import numpy as np
 
 ARGS = None
 _MODELS = {}          # lazy cache
+_LAST_VIZ = None      # latest annotated frame for the --debug window
 
 
 # ----------------------------------------------------------------------------- image
@@ -219,27 +223,66 @@ def stub_perceive(rgb):
 
 
 # ----------------------------------------------------------------------------- pipeline
+def _annotate(rgb, scan, dets, free_center):
+    """Debug overlay: detection boxes + label/distance, free_center, and a mini-radar of the virtual scan."""
+    import cv2
+    img = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR).copy()
+    H, W = img.shape[:2]
+    for d in dets:
+        b = d.get("box")
+        if not b:
+            continue
+        x1, y1, x2, y2 = [int(v) for v in b]
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        rng = d.get("range_m")
+        lab = f"{d['label']} {d.get('conf', 0):.2f}" + (f" {rng:.2f}m" if rng else "")
+        cv2.putText(img, lab, (x1, max(15, y1 - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    if free_center is not None:
+        cv2.putText(img, f"free_center={free_center:.2f}", (8, 22),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 255), 2, cv2.LINE_AA)
+    # mini-radar (virtual scan): 0 deg = forward = up, +bearing = left
+    R = min(140, H // 3); cx, cy = R + 10, H - R - 10; maxr = ARGS.max_range
+    cv2.circle(img, (cx, cy), R, (70, 70, 70), 1); cv2.circle(img, (cx, cy), R // 2, (70, 70, 70), 1)
+    cv2.line(img, (cx, cy), (cx, cy - R), (70, 70, 70), 1)
+    for (b, rng) in scan:
+        rr = min(rng, maxr) / maxr * R
+        ang = math.radians(b)
+        px = int(cx - rr * math.sin(ang)); py = int(cy - rr * math.cos(ang))
+        col = (0, 0, 255) if rng < 1.0 else (0, 255, 255) if rng < 2.0 else (0, 255, 0)
+        cv2.circle(img, (px, py), 2, col, -1)
+    cv2.putText(img, f"scan {len(scan)}pts (red<1m)", (cx - R, cy - R - 6),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1, cv2.LINE_AA)
+    return img
+
+
 def perceive(payload):
     rgb = decode_image(payload["image"])
     hband = payload.get("hband", [0.10, 1.30])
     max_range = float(payload.get("max_range", ARGS.max_range))
     if ARGS.stub:
-        return stub_perceive(rgb)
-    depth = run_depth(rgb)
-    if depth is None:
-        return stub_perceive(rgb)
-    floor = run_seg_floor_mask(rgb) if ARGS.seg != "off" else None
-    scan, _, _ = depth_to_scan(depth, floor, hband, max_range)
-    free_center, near_run = free_center_from_scan(scan)
-    dets = run_det(rgb, ARGS.fx, ARGS.cx) if ARGS.det != "off" else []
-    # attach range to detections from the scan (nearest bin to the detection bearing)
-    for dct in dets:
-        if scan:
-            b0 = dct["bearing_deg"]
-            nearest = min(scan, key=lambda s: abs(s[0] - b0))
-            dct["range_m"] = nearest[1]
-    return {"scan": scan, "free_center": free_center, "near_run": near_run,
-            "detections": dets, "mode": "gpu"}
+        out = stub_perceive(rgb)
+    else:
+        depth = run_depth(rgb)
+        if depth is None:
+            out = stub_perceive(rgb)
+        else:
+            floor = run_seg_floor_mask(rgb) if ARGS.seg != "off" else None
+            scan, _, _ = depth_to_scan(depth, floor, hband, max_range)
+            free_center, near_run = free_center_from_scan(scan)
+            dets = run_det(rgb, ARGS.fx, ARGS.cx) if ARGS.det != "off" else []
+            for dct in dets:                      # nearest scan bin -> distance per detection
+                if scan:
+                    b0 = dct["bearing_deg"]
+                    dct["range_m"] = min(scan, key=lambda s: abs(s[0] - b0))[1]
+            out = {"scan": scan, "free_center": free_center, "near_run": near_run,
+                   "detections": dets, "mode": "gpu"}
+    if ARGS.debug:
+        try:
+            global _LAST_VIZ
+            _LAST_VIZ = _annotate(rgb, out.get("scan", []), out.get("detections", []), out.get("free_center"))
+        except Exception:
+            pass
+    return out
 
 
 # ----------------------------------------------------------------------------- http
@@ -308,10 +351,34 @@ def main():
     ap.add_argument("--cam-pitch", type=float, default=-10.0, help="camera pitch deg (neg=down)")
     ap.add_argument("--scan-bins", type=int, default=72)
     ap.add_argument("--max-range", type=float, default=3.0)
+    ap.add_argument("--debug", action="store_true",
+                    help="open a live window: detection boxes + distance, free_center, and a scan radar")
     ARGS = ap.parse_args()
     print(f"[perception] {'STUB' if ARGS.stub else 'GPU'} on {ARGS.host}:{ARGS.port} "
-          f"depth={ARGS.depth} seg={ARGS.seg} det={ARGS.det} gpus={_gpu_info()}")
-    ThreadingHTTPServer((ARGS.host, ARGS.port), Handler).serve_forever()
+          f"depth={ARGS.depth} seg={ARGS.seg} det={ARGS.det} gpus={_gpu_info()}"
+          f"{' [DEBUG WINDOW]' if ARGS.debug else ''}")
+    if ARGS.debug:
+        import threading
+        srv = ThreadingHTTPServer((ARGS.host, ARGS.port), Handler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        print("[perception] debug window ON — needs a desktop (X11). Press q in the window to quit.")
+        try:
+            import cv2, numpy as np
+            blank = np.zeros((360, 640, 3), np.uint8)
+            cv2.putText(blank, "waiting for frames from g1_goto...", (20, 180),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 2)
+            while True:
+                cv2.imshow("G1 perception debug", _LAST_VIZ if _LAST_VIZ is not None else blank)
+                if (cv2.waitKey(30) & 0xFF) == ord("q"):
+                    break
+        finally:
+            srv.shutdown()
+            try:
+                import cv2; cv2.destroyAllWindows()
+            except Exception:
+                pass
+    else:
+        ThreadingHTTPServer((ARGS.host, ARGS.port), Handler).serve_forever()
 
 
 if __name__ == "__main__":
