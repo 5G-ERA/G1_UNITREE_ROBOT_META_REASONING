@@ -36,7 +36,6 @@ NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obsta
 LOC_TRUST = 0.55                # loc_match minimo para FIARSE del laser vivo y dejarlo tocar el mapa (si no, el mapa bueno manda)
 PERSIST_N = 3                   # ventana de frames para el filtro de persistencia (anti-ruido del laser)
 PERSIST_K = 2                   # una celda es OBSTACULO solo si se ve en >=K de los ultimos N frames (el ruido parpadea -> fuera)
-MAP_TRUST = (os.environ.get("G1_MAP_TRUST", "1") != "0")   # el mapa estatico cargado es la VERDAD para paredes; el laser solo anade (desactiva con G1_MAP_TRUST=0)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
 AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
@@ -1019,9 +1018,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND:
                     omap[c] = now
             omap = {c: t for c, t in omap.items() if now - t < NAV_OMAP_TTL}
-            # MAPA AUTORITARIO: el mapa estatico cargado es la VERDAD para paredes (no cambia, no tiene ruido).
-            # El laser ruidoso solo AÑADE encima (ya filtrado por persistencia + localizacion) -> obstaculos dinamicos.
-            oset = set(omap.keys()) | colmap | ((refmap or set()) if MAP_TRUST else set())
+            oset = set(omap.keys()) | colmap
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
