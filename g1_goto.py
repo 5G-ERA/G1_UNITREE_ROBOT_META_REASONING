@@ -847,8 +847,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     """NAVEGA A->B sobre el mapa cargado: A* (firmware-like) + DWA local, obstaculos de la nube 'location',
     contacto por IMU/odom y desatasco (reusados del frontier explorer). Para al llegar. Ctrl+C aborta.
     Si se pasan vshare/lock/stop_event, publica el estado para la ventana en vivo (modo viz)."""
-    print(f"\n>>> GOTO '{label}' -> ({wx:+.2f},{wy:+.2f}). Mando en mano (L2+B). Ctrl+C aborta.")
-    lg.write(f"\n=== RUN ours '{label}' -> ({wx:+.2f},{wy:+.2f})  {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n"); lg.flush()
+    GOV = "default"   # main: navegacion normal (sin DCE ni FSM). Queda en log + dataset.
+    print(f"\n>>> GOTO '{label}' -> ({wx:+.2f},{wy:+.2f}). Gobernanza: {GOV}. Mando en mano (L2+B). Ctrl+C aborta.")
+    lg.write(f"\n=== RUN ours '{label}' GOV={GOV} -> ({wx:+.2f},{wy:+.2f})  {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n"); lg.flush()
     cdp.eval(g.LOWSTATE_JS)                       # contacto rapido por par/accel
     # espera pose + primera nube
     print("  Esperando pose localizada y primera nube...", end="", flush=True)
@@ -881,7 +882,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     prev_yaw = None; prev_cmd = (0, 0, 0, 0); prev_lt = None
     spin_acc = 0.0; prog_pos = None; prog_t = t0; turncal = []; phcount = {}
     minc0 = 9.9
-    rd = RunRecorder("ours", label, (wx, wy))
+    rd = RunRecorder("ours", label, (wx, wy)); rd.rec["governance"] = GOV   # default
     refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
     gplan = []; gplan_t = 0; cam_t = 0; cam_jpg = None
     aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
