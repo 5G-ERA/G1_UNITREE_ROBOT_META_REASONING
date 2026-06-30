@@ -116,6 +116,9 @@ def main():
             ax.axvline(ct, color="#c0392b", lw=1.2)
         if agg_t is not None:
             ax.axvline(agg_t, color="#6a0dad", lw=1.6, ls="--")
+        for e in d.get("events", []):                # human-marked spills
+            if e.get("kind") == "spill":
+                ax.axvline(e["t"], color="#0aa3c2", lw=1.4, ls=":")
     if spans:
         a_c.text(spans[0][0], 1.06, "grey = robot paused", fontsize=8, color="#555")
     if agg_t is not None:

@@ -896,6 +896,20 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
+    # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
+    nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
+
+    def _spill_listener():
+        while not (stop_event is not None and stop_event.is_set()):
+            try:
+                line = sys.stdin.readline()
+            except Exception:
+                break
+            if line == "":                       # EOF (terminal cerrada)
+                break
+            spill_q.append((annot["t"], annot["x"], annot["y"]))   # marca con el estado ACTUAL del robot
+    threading.Thread(target=_spill_listener, daemon=True).start()
+    print("  >>> ANOTACION SPILL: pulsa ENTER en ESTA terminal cada vez que veas caer agua del vaso (queda logueado).")
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -907,6 +921,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     print("\n  POSE PERDIDA (3s). STOP. Relocaliza en la app y reintenta."); return False
                 time.sleep(0.2); continue
             x, y, yaw = p[0], p[1], yaw_of(p)         # yaw en GRADOS
+            annot["t"] = now - t0; annot["x"] = x; annot["y"] = y    # estado para la anotacion humana de spill
+            spill_now = False
+            while spill_q:                            # vuelca los ENTER del revisor -> eventos de spill
+                st, sx, sy = spill_q.pop(0); nspill += 1; spill_now = True
+                rd.event("spill", st, sx, sy, {"by": "human", "n": nspill})
+                lg.write(f"SPILL #{nspill} (humano) t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})\n"); lg.flush()
+                print(f"\n  >>> SPILL #{nspill} marcado por el revisor en t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})")
             reloc_flag = False
             if last_pose is not None and math.hypot(x - last_pose[0], y - last_pose[1]) > 0.5:
                 jd = math.hypot(x - last_pose[0], y - last_pose[1])     # >0.5m en un ciclo (~0.1s) = salto reloc
@@ -933,7 +954,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                                       "straight_m": round(straight, 2),
                                       "efficiency": round(straight / plen, 2) if plen > 0 else 0.0,
                                       "collisions": ncol, "c0min": round(minc0, 2),
-                                      "perc_queries": nperc,
+                                      "perc_queries": nperc, "spills_human": nspill,
                                       "start": {"x": round(trail[0][0], 3), "y": round(trail[0][1], 3)} if trail else None})
                 if vshare is not None:                # marca llegada en la ventana antes de salir
                     with lock:
@@ -1224,6 +1245,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
                              "balance": round(m_cl - m_cr, 3),                # +izq libre / -dcha libre (0 = centrado)
                              "aggressive": bool(aggressive),                  # modo: False=precavido, True=agresivo (switch de capacidad)
+                             "spill": True if spill_now else None,            # el revisor marco un derrame en este tick (ground-truth)
                              "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
                                         d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)
@@ -1255,12 +1277,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             cdp.eval(g.set_cmd_js(*cmd))
             time.sleep(0.1)
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2)})
+                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
         return False                                  # salida por cierre de ventana (stop_event)
     except KeyboardInterrupt:
         print(f"\n  [ABORTADO '{label}']"); lg.write(f"ABORT {label} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2)})
+                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
         return False
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
@@ -1912,7 +1934,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     r = cdp.eval(native_goal_js(wx, wy))          # GOAL nativo (1102)
     print(f"  Goal nativo (1102) enviado: {r}.  Mando en mano (L2+B) por seguridad.")
     lg.write(f"NATIVE-GOAL {label} ({wx:+.3f},{wy:+.3f}) send={r}\n")
-    rd = RunRecorder("native", label, (wx, wy))
+    rd = RunRecorder("native", label, (wx, wy)); nspill = 0   # el benchmark no anota spill, pero el summary lo referencia
     rd.rec["frame_check"] = fc
 
     t0 = time.time(); tprint = 0; trail = []; poshist = []
@@ -2037,14 +2059,14 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
         if "x" in dir():
             rd.save_cloud("end", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2)})
+                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
         return False
     except KeyboardInterrupt:
         print(f"\n  [ABORTADO benchmark '{label}']"); lg.write(f"NATIVE-ABORT {label}\n")
         if "x" in dir():
             rd.save_cloud("end", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2)})
+                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
         return False
     finally:
         cdp.eval(native_cancel_js()); time.sleep(0.2); cdp.eval(native_cancel_js())
