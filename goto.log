@@ -8265,3 +8265,87 @@ t= 27.9 AGR-BRK-TR pos=(+1.35,-1.10) yaw=-148.5 d=7.35 goal_err=-66 carrot_err= 
 TURN-CAL-RESUMEN rx>0 -> medido~-16.695845192048655deg/s (modelo<0) ; rx<0 -> medido~29.659036550063316deg/s (modelo>0) :: OK (modelo correcto)
 FASES {'DWA-F': 13, 'DOOR-AL': 33, 'DOOR-CTR': 30, 'DOOR-GO': 6, 'BRK-BK': 2, 'BRK-TR': 3}
 FIN
+
+=== GOTOVIZ B 2026-06-30 11:43:45 ===
+
+=== RUN ours 'B' GOV=default -> (-4.73,+3.04)  2026-06-30 11:43:45 ===
+FRAME-CHECK start=(+1.06,+0.69) wp_mas_cercano=A(+0.99,+0.57) offset=0.13m
+t=  0.0 DWA-F pos=(+1.05,+0.69) yaw=-124.7 d=6.24 goal_err=-77 carrot_err= -63 c0=2.50 clear=1.00 prog=0.00 rel=1.00 bal=+0.00 obs=0 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  0.4 DWA-F pos=(+1.06,+0.68) yaw=-124.8 d=6.25 goal_err=-77 carrot_err= -63 c0=0.92 clear=0.61 prog=0.00 rel=0.99 bal=+0.00 obs=161 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  0.7 DWA-F pos=(+1.06,+0.68) yaw=-127.5 d=6.26 goal_err=-75 carrot_err= -61 c0=0.91 clear=0.61 prog=0.00 rel=0.00 bal=+0.00 obs=206 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  1.1 DWA-F pos=(+1.08,+0.63) yaw=-135.1 d=6.29 goal_err=-67 carrot_err= -56 c0=0.93 clear=0.62 prog=0.00 rel=0.00 bal=-0.31 obs=236 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  1.4 DWA-F pos=(+0.98,+0.62) yaw=-151.2 d=6.20 goal_err=-52 carrot_err= -41 c0=0.82 clear=0.54 prog=0.10 rel=0.00 bal=-0.36 obs=239 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  1.8 DWA-F pos=(+0.90,+0.62) yaw=-148.9 d=6.12 goal_err=-54 carrot_err= -30 c0=0.73 clear=0.49 prog=0.23 rel=0.02 bal=-0.33 obs=267 plan=32 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  2.1 DWA-F pos=(+0.83,+0.59) yaw=-153.8 d=6.08 goal_err=-50 carrot_err= -27 c0=0.66 clear=0.44 prog=0.35 rel=0.86 bal=-0.26 obs=306 plan=32 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  2.5 DWA-F pos=(+0.76,+0.48) yaw=-163.4 d=6.05 goal_err=-42 carrot_err= -25 c0=0.57 clear=0.38 prog=0.39 rel=0.82 bal=-0.43 obs=310 plan=32 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  2.8 DWA-F pos=(+0.68,+0.50) yaw=-174.7 d=5.97 goal_err=-30 carrot_err= -12 c0=0.49 clear=0.33 prog=0.62 rel=0.78 bal=-0.42 obs=328 plan=32 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  3.0 DWA-F pos=(+0.61,+0.50) yaw=-173.6 d=5.91 goal_err=-32 carrot_err= -14 c0=0.42 clear=0.28 prog=0.63 rel=0.78 bal=-0.42 obs=354 plan=32 cmd=(lx=+0.00,ly=+0.40,rx=+0.45)
+t=  3.3 DWA-T pos=(+0.52,+0.46) yaw=-177.8 d=5.85 goal_err=-28 carrot_err=  +3 c0=0.33 clear=0.22 prog=0.61 rel=0.79 bal=-0.51 obs=354 plan=31 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  3.7 DWA-T pos=(+0.47,+0.45) yaw=+167.3 d=5.81 goal_err=-14 carrot_err= +16 c0=0.27 clear=0.18 prog=0.55 rel=0.78 bal=-0.55 obs=355 plan=31 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  4.0 DWA-T pos=(+0.45,+0.51) yaw=+167.0 d=5.77 goal_err=-13 carrot_err= +21 c0=0.46 clear=0.31 prog=0.55 rel=0.80 bal=-0.56 obs=374 plan=31 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  4.3 DWA-T pos=(+0.45,+0.49) yaw=+163.9 d=5.77 goal_err=-10 carrot_err= +22 c0=0.46 clear=0.31 prog=0.53 rel=0.81 bal=-0.59 obs=374 plan=31 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  4.6 DWA-T pos=(+0.42,+0.47) yaw=+162.1 d=5.76 goal_err=-9 carrot_err= +23 c0=0.44 clear=0.29 prog=0.40 rel=0.83 bal=-0.62 obs=383 plan=31 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  4.9 STOP  pos=(+0.41,+0.47) yaw=+162.0 d=5.74 goal_err=-9 carrot_err= +23 c0=0.43 clear=0.28 prog=0.31 rel=0.84 bal=-0.62 obs=401 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  5.2 DWA-T pos=(+0.41,+0.47) yaw=+161.9 d=5.74 goal_err=-8 carrot_err= +23 c0=0.43 clear=0.28 prog=0.19 rel=0.85 bal=-0.62 obs=401 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  5.5 DWA-T pos=(+0.41,+0.48) yaw=+162.0 d=5.74 goal_err=-8 carrot_err= +23 c0=0.43 clear=0.28 prog=0.13 rel=0.92 bal=-0.61 obs=414 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  5.8 DWA-T pos=(+0.41,+0.48) yaw=+161.9 d=5.74 goal_err=-8 carrot_err= +24 c0=0.42 clear=0.28 prog=0.05 rel=0.92 bal=-0.61 obs=414 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  6.1 DWA-T pos=(+0.41,+0.48) yaw=+161.9 d=5.74 goal_err=-8 carrot_err= +23 c0=0.43 clear=0.28 prog=0.05 rel=0.93 bal=-0.61 obs=415 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  6.4 STOP  pos=(+0.41,+0.47) yaw=+161.9 d=5.74 goal_err=-8 carrot_err= +23 c0=0.43 clear=0.28 prog=0.03 rel=0.95 bal=-0.62 obs=421 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  6.7 STOP  pos=(+0.41,+0.48) yaw=+161.9 d=5.74 goal_err=-8 carrot_err= +23 c0=0.43 clear=0.28 prog=0.00 rel=0.95 bal=-0.62 obs=421 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  7.0 STOP  pos=(+0.41,+0.47) yaw=+162.0 d=5.74 goal_err=-9 carrot_err= +23 c0=0.42 clear=0.28 prog=0.00 rel=0.96 bal=-0.62 obs=422 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t=  7.4 BRK-BK pos=(+0.41,+0.47) yaw=+162.1 d=5.74 goal_err=-9 carrot_err= +23 c0=0.43 clear=0.28 prog=0.00 rel=0.96 bal=-0.62 obs=426 plan=0 cmd=(lx=+0.00,ly=-0.35,rx=+0.00)
+t=  7.7 BRK-TR pos=(+0.41,+0.48) yaw=+162.0 d=5.74 goal_err=-9 carrot_err= +23 c0=0.43 clear=0.28 prog=0.00 rel=0.95 bal=-0.61 obs=429 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-1deg/s OK
+t=  8.0 BRK-TR pos=(+0.41,+0.48) yaw=+161.8 d=5.74 goal_err=-8 carrot_err= +24 c0=0.42 clear=0.28 prog=0.01 rel=0.95 bal=-0.61 obs=429 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-11deg/s OK
+t=  8.3 BRK-TR pos=(+0.42,+0.46) yaw=+158.1 d=5.76 goal_err=-5 carrot_err= +26 c0=0.44 clear=0.29 prog=0.00 rel=0.93 bal=-0.62 obs=436 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-59deg/s OK
+t=  8.7 BRK-TR pos=(+0.43,+0.43) yaw=+135.7 d=5.79 goal_err=+17 carrot_err= +46 c0=0.47 clear=0.31 prog=0.00 rel=0.93 bal=-0.77 obs=437 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-43deg/s OK
+t=  9.0 BRK-TR pos=(+0.50,+0.41) yaw=+123.3 d=5.86 goal_err=+30 carrot_err= +58 c0=1.06 clear=0.70 prog=0.00 rel=0.93 bal=-0.80 obs=454 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-39deg/s OK
+t=  9.3 BRK-TR pos=(+0.54,+0.39) yaw=+111.9 d=5.90 goal_err=+41 carrot_err= +67 c0=1.10 clear=0.73 prog=0.00 rel=0.59 bal=-0.77 obs=454 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-43deg/s OK
+t=  9.6 BRK-TR pos=(+0.55,+0.36) yaw= +99.4 d=5.93 goal_err=+54 carrot_err= +78 c0=1.29 clear=0.86 prog=0.00 rel=0.51 bal=-0.76 obs=469 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-40deg/s OK
+t=  9.9 BRK-TR pos=(+0.62,+0.32) yaw= +86.3 d=6.00 goal_err=+67 carrot_err= +89 c0=1.35 clear=0.90 prog=0.00 rel=0.45 bal=-0.72 obs=491 plan=0 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-44deg/s OK
+t= 10.2 DWA-F pos=(+0.64,+0.31) yaw= +73.4 d=6.03 goal_err=+80 carrot_err=+100 c0=2.50 clear=1.00 prog=0.00 rel=0.50 bal=-0.53 obs=491 plan=31 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 10.5 DWA-F pos=(+0.62,+0.32) yaw= +66.1 d=6.00 goal_err=+87 carrot_err=+108 c0=2.50 clear=1.00 prog=0.00 rel=0.07 bal=-0.20 obs=507 plan=31 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 10.8 DWA-F pos=(+0.55,+0.36) yaw= +66.6 d=5.92 goal_err=+87 carrot_err=+110 c0=0.91 clear=0.61 prog=0.00 rel=0.05 bal=-0.25 obs=515 plan=31 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 11.1 DWA-F pos=(+0.57,+0.41) yaw= +71.9 d=5.91 goal_err=+82 carrot_err=+109 c0=1.01 clear=0.67 prog=0.00 rel=0.00 bal=+0.05 obs=521 plan=31 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 11.4 DWA-F pos=(+0.53,+0.49) yaw= +82.3 d=5.84 goal_err=+72 carrot_err=+105 c0=0.91 clear=0.61 prog=0.14 rel=0.00 bal=+0.12 obs=536 plan=31 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 11.8 DWA-F pos=(+0.50,+0.55) yaw= +81.7 d=5.79 goal_err=+73 carrot_err= +95 c0=0.86 clear=0.57 prog=0.36 rel=0.00 bal=+0.08 obs=546 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 12.1 DWA-F pos=(+0.58,+0.64) yaw= +84.1 d=5.83 goal_err=+72 carrot_err= +98 c0=0.76 clear=0.51 prog=0.35 rel=0.03 bal=+0.16 obs=546 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 12.5 DWA-F pos=(+0.59,+0.78) yaw=+103.4 d=5.78 goal_err=+54 carrot_err= +87 c0=0.62 clear=0.41 prog=0.37 rel=0.84 bal=+0.20 obs=549 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 12.8 DWA-F pos=(+0.50,+0.84) yaw=+109.8 d=5.67 goal_err=+47 carrot_err= +85 c0=0.57 clear=0.38 prog=0.41 rel=0.75 bal=+0.11 obs=549 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 13.1 DWA-F pos=(+0.47,+0.93) yaw=+106.8 d=5.61 goal_err=+51 carrot_err= +94 c0=0.47 clear=0.32 prog=0.52 rel=0.75 bal=+0.10 obs=553 plan=30 cmd=(lx=+0.00,ly=+0.28,rx=-0.45)
+t= 13.4 DWA-F pos=(+0.49,+1.03) yaw=+114.2 d=5.60 goal_err=+45 carrot_err= +92 c0=0.38 clear=0.25 prog=0.42 rel=0.74 bal=+0.22 obs=553 plan=30 cmd=(lx=+0.00,ly=+0.28,rx=-0.45)
+t= 13.8 DOOR-AL pos=(+0.41,+1.14) yaw=+130.5 d=5.48 goal_err=+29 carrot_err= +83 c0=0.33 clear=0.22 prog=0.52 rel=0.75 bal=+0.24 obs=554 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+5deg/s OK
+t= 14.1 DOOR-AL pos=(+0.35,+1.14) yaw=+131.8 d=5.43 goal_err=+28 carrot_err= +84 c0=0.30 clear=0.20 prog=0.68 rel=0.79 bal=+0.19 obs=556 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+49deg/s OK
+t= 14.4 DOOR-AL pos=(+0.33,+1.21) yaw=+145.8 d=5.38 goal_err=+14 carrot_err= +74 c0=0.23 clear=0.15 prog=0.70 rel=0.81 bal=+0.22 obs=556 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+63deg/s OK
+t= 14.7 STOP  pos=(+0.31,+1.23) yaw=+164.6 d=5.36 goal_err=-4 carrot_err= +57 c0=0.51 clear=0.34 prog=0.56 rel=0.84 bal=+0.33 obs=557 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t= 15.0 DOOR-AL pos=(+0.32,+1.19) yaw=+177.6 d=5.37 goal_err=-18 carrot_err= +51 c0=0.52 clear=0.34 prog=0.40 rel=0.83 bal=+0.29 obs=557 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+19deg/s OK
+t= 15.3 STOP  pos=(+0.31,+1.25) yaw=-176.7 d=5.35 goal_err=-23 carrot_err= +49 c0=0.52 clear=0.34 prog=0.42 rel=0.78 bal=+0.36 obs=557 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t= 15.6 STOP  pos=(+0.30,+1.25) yaw=-172.5 d=5.34 goal_err=-27 carrot_err= +45 c0=0.51 clear=0.34 prog=0.25 rel=0.77 bal=+0.35 obs=559 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t= 15.9 DOOR-AL pos=(+0.32,+1.20) yaw=-171.6 d=5.37 goal_err=-28 carrot_err= +41 c0=0.52 clear=0.34 prog=0.10 rel=0.80 bal=+0.30 obs=562 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=-9deg/s >>> SIGNO INVERTIDO <<<
+t= 16.3 DOOR-AL pos=(+0.33,+1.18) yaw=-174.7 d=5.39 goal_err=-25 carrot_err= +42 c0=0.53 clear=0.35 prog=0.00 rel=0.96 bal=+0.27 obs=562 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+16deg/s OK
+t= 16.6 DOOR-AL pos=(+0.31,+1.20) yaw=-169.7 d=5.37 goal_err=-30 carrot_err= +39 c0=0.51 clear=0.34 prog=0.00 rel=0.96 bal=+0.29 obs=564 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=-0.45)
+  TURN-CAL rx=-0.45 esperado=+46deg/s medido=+40deg/s OK
+t= 16.9 DWA-F pos=(+0.36,+1.18) yaw=-154.6 d=5.42 goal_err=-45 carrot_err= +21 c0=0.78 clear=0.52 prog=0.00 rel=0.95 bal=+0.35 obs=569 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=+0.00)
+t= 17.3 DWA-F pos=(+0.31,+1.21) yaw=-137.3 d=5.36 goal_err=-63 carrot_err=  +8 c0=0.68 clear=0.46 prog=0.00 rel=0.78 bal=+0.21 obs=574 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 17.6 DWA-F pos=(+0.28,+1.21) yaw=-132.7 d=5.33 goal_err=-67 carrot_err=  +5 c0=0.67 clear=0.45 prog=0.02 rel=0.77 bal=+0.22 obs=574 plan=30 cmd=(lx=+0.00,ly=+0.40,rx=-0.45)
+t= 17.9 DWA-T pos=(+0.30,+1.15) yaw=-133.3 d=5.37 goal_err=-67 carrot_err=  +1 c0=0.63 clear=0.42 prog=0.01 rel=0.78 bal=+0.17 obs=578 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t= 18.2 DWA-T pos=(+0.22,+1.12) yaw=-133.0 d=5.31 goal_err=-68 carrot_err=  -7 c0=0.56 clear=0.38 prog=0.13 rel=0.82 bal=+0.19 obs=585 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.00)
+t= 18.6 DOOR-AL pos=(+0.19,+1.08) yaw=-125.2 d=5.29 goal_err=-77 carrot_err= -16 c0=0.52 clear=0.34 prog=0.12 rel=0.85 bal=+0.18 obs=585 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+  TURN-CAL rx=+0.45 esperado=-46deg/s medido=-2deg/s OK
+t= 18.9 DOOR-AL pos=(+0.16,+1.07) yaw=-125.9 d=5.28 goal_err=-76 carrot_err= -14 c0=0.50 clear=0.33 prog=0.24 rel=0.87 bal=+0.19 obs=587 plan=30 cmd=(lx=+0.00,ly=+0.00,rx=+0.45)
+TURN-CAL-RESUMEN rx>0 -> medido~-40.0321932369117deg/s (modelo<0) ; rx<0 -> medido~19.111222502047017deg/s (modelo>0) :: OK (modelo correcto)
+FASES {'DWA-F': 24, 'DWA-T': 11, 'STOP': 7, 'BRK-BK': 1, 'BRK-TR': 8, 'DOOR-AL': 9}
+FIN
