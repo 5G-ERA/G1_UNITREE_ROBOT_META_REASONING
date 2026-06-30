@@ -1175,17 +1175,20 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         a = plan_pts[max(0, bi - 2)]; b = plan_pts[min(len(plan_pts) - 1, bi + 2)]
                         ddir = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))   # eje de la puerta
                         he = (ddir - yaw + 180) % 360 - 180
+                        if abs(he) > 90:                    # el eje es una LINEA (2 sentidos): coge el mas cercano al rumbo (sin esto, gira ~180 = bandazos)
+                            he -= math.copysign(180, he)
                         # VISION manda en la puerta (el laser es ruidoso ahi): suelo despejado por delante?
                         vis_ok = (vis_center is not None and vis_center > 0.45 and (vis_nearrun or 0) < 8)
                         bal = m_cl - m_cr                   # >0 = mas libre a la IZQ ; <0 = mas libre a la DCHA
-                        if abs(he) > 12:                    # 1) alinea el rumbo con el eje ANTES de entrar
+                        if abs(he) > 25:                    # 1) MUY desviado -> alinea (umbral ancho: antes 12 -> giraba sin parar)
                             cmd = (0, 0, -g.AV_TURN if he > 0 else g.AV_TURN, 0); ph = "DOOR-AL"
                         elif DOOR_CENTER and abs(bal) > DOOR_BAL_TH and max(cl_left, cl_right) > 0.30:
                             # 2) DESCENTRADO -> strafe hacia el lado MAS LIBRE para entrar centrado (Renxi)
                             lx = DOOR_STRAFE_SIGN * (DOOR_STRAFE if bal > 0 else -DOOR_STRAFE)
                             cmd = (lx, 0, 0, 0); ph = "DOOR-CTR"
-                        elif c0 > AGGR_ROBOT_R or vis_ok:   # 3) entra RECTO si el LASER o la VISION lo ven despejado
-                            cmd = (0, 0.28, 0, 0); ph = "DOOR-GO" + ("v" if vis_ok and c0 <= AGGR_ROBOT_R else "")
+                        elif c0 > AGGR_ROBOT_R or vis_ok:   # 3) EMPUJA corrigiendo el rumbo SUAVE a la vez (no para a girar)
+                            rx_corr = max(-g.AV_TURN, min(g.AV_TURN, -0.025 * he))
+                            cmd = (0, 0.28, rx_corr, 0); ph = "DOOR-GO" + ("v" if vis_ok and c0 <= AGGR_ROBOT_R else "")
                         else:
                             cmd = (0, 0, 0, 0); ph = "DOOR-WT"   # ni laser ni vision: espera (no fuerza)
                         nstop = 0
