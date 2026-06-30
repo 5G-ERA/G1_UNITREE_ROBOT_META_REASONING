@@ -17,6 +17,7 @@ import time
 import json
 import math
 import threading
+from collections import deque
 import g1_nav_v2 as g                      # reusa conexion + A* + DWA + costmap + camara + helpers
 try:
     import g1_perception                    # cliente del servidor GPU offboard (opcional; via G1_PERC=host:port)
@@ -33,6 +34,8 @@ HBAND_LO, HBAND_HI = -0.9, 0.6   # banda de altura (m) para OBSTACULOS: excluye 
 NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
 LOC_TRUST = 0.55                # loc_match minimo para FIARSE del laser vivo y dejarlo tocar el mapa (si no, el mapa bueno manda)
+PERSIST_N = 3                   # ventana de frames para el filtro de persistencia (anti-ruido del laser)
+PERSIST_K = 2                   # una celda es OBSTACULO solo si se ve en >=K de los ultimos N frames (el ruido parpadea -> fuera)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
 AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
@@ -899,6 +902,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
     reloc_bad = 0                                            # saltos de relocalizacion seguidos (divergencia de la SLAM)
+    livehist = deque(maxlen=PERSIST_N)                       # ultimos N barridos del laser (frame mapa) para el filtro de persistencia
     # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
     nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
 
@@ -980,13 +984,21 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             # SOLO confiamos en el laser vivo para tocar el mapa si la localizacion es BUENA y no hay salto.
             # Si la localizacion falla, el mapa (paredes/mesas) es bueno -> NO lo corrompemos con laser loco.
             loc_ok = (not reloc_flag) and (loc is None or loc >= LOC_TRUST)
+            # FILTRO DE PERSISTENCIA: el ruido del laser PARPADEA (celda distinta cada frame); una pared real
+            # sale en el MISMO sitio frame tras frame. Solo es obstaculo lo visto en >=PERSIST_K de los ultimos N.
+            livehist.append(set(live))
+            _cnt = {}
+            for _fr in livehist:
+                for _c in _fr:
+                    _cnt[_c] = _cnt.get(_c, 0) + 1
+            confirmed = [c for c, k in _cnt.items() if k >= PERSIST_K]
             if live:
                 cloud_ok = True
             elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
                 print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
                 print("          ¿se ven los PUNTITOS del laser en la app?")
                 lg.write("NO-CLOUD warning\n"); cloud_warned = True
-            for c in (live if loc_ok else []):        # localizacion mala -> NO estampes el laser (crearia fantasmas)
+            for c in (confirmed if loc_ok else []):   # solo celdas PERSISTENTES, y solo si la localizacion es buena
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
