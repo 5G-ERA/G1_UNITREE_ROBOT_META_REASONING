@@ -903,7 +903,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
     nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
     # --- META-RAZONAMIENTO Cap.5 (opt-in G1_META=1): un spill -> cambia de analogia -> mas lento/suave ---
-    meta = g1_meta.MetaController() if (g1_meta and os.environ.get("G1_META") == "1") else None
+    meta = g1_meta.MetaController(ablation=(os.environ.get("G1_META_ABLATE") or None)) \
+        if (g1_meta and os.environ.get("G1_META") == "1") else None
     meta_t = 0.0; meta_active = ""; meta_action = ""; FWD0 = g.FWD_SPEED; last_spill_t = -99.0
     if meta:
         print("  >>> META-RAZONAMIENTO ON (ESCMR Cap.5): la analogia de navegacion se gobierna por la experiencia.")

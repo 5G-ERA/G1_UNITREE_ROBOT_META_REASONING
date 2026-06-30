@@ -44,7 +44,7 @@ def _cal(exp, adp, dng):
     return FourSemanticRegionCalibration(exp, adp, dng)
 
 
-def build_reasoner():
+def build_reasoner(ablation=None):
     # region calibration boundaries are on the 0..1 signal (higher = better experience)
     efficient = AnalogyQoESpecification(
         "efficient_nav", META,
@@ -64,22 +64,29 @@ def build_reasoner():
          "payload": _cal(0.30, 0.12, 0.02)},                       # LENIENT payload -> survives a spill (no alert)
         {"safety": 0.35, "progression": 0.15, "payload": 0.50},
         {"safety": 1.0, "progression": 0.0, "payload": 1.0})       # payload non-compensable here
+    # --- ablation knobs (paper Sec. VII.I diagnostic variants) ---
+    mem = 0.001 if ablation == "instantaneous" else 1.0       # tiny memory window = no temporal persistence (1 tick)
+    hyst = 0.0 if ablation == "no_hysteresis" else 0.05        # remove the dynamic switching margin
+    ss = 0.0 if ablation == "no_plausibility" else None        # 0 reliability-sensitivity = no distributed plausibility
+    sc = {"safety": SensorCalibration(0.95, 0.10 if ss is None else ss),
+          "progression": SensorCalibration(1.0, 0.08 if ss is None else ss),
+          "payload": SensorCalibration(0.9, 0.15 if ss is None else ss)}
     cal = ReasonerCalibration(
-        (efficient, cautious, payload),
-        {"safety": SensorCalibration(0.95, 0.10), "progression": SensorCalibration(1.0, 0.08),
-         "payload": SensorCalibration(0.9, 0.15)},
+        (efficient, cautious, payload), sc,
         {"efficient_nav": 0.6, "cautious_nav": 0.25, "payload_sensitive": 0.15},
         initial_active_analogy="efficient_nav",
-        runtime_config=ReasonerRuntimeConfig(frequency_hz=1.0, memory_duration_minutes=1.0,
-                                             hysteresis_margin=0.05))
+        runtime_config=ReasonerRuntimeConfig(frequency_hz=1.0, memory_duration_minutes=mem,
+                                             hysteresis_margin=hyst))
     return ExperienceScopedCapabilityMetaReasoner.from_calibration(cal)
 
 
 class MetaController:
     """Thin wrapper: feed it the live experience, it returns the governing analogy + control params."""
 
-    def __init__(self):
-        self.r = build_reasoner()
+    # ablation: None (full DCE) | "instantaneous" | "no_hysteresis" | "no_plausibility" | "no_insufficiency"
+    def __init__(self, ablation=None):
+        self.ablation = ablation
+        self.r = build_reasoner(ablation)
         self.active = self.r.active_analogy
         self.action = "KEEP_CURRENT_ANALOGY"
         self.explanation = ""
@@ -93,14 +100,20 @@ class MetaController:
         fb = self.r.evaluate_latest_reading(
             {"safety": float(safety), "progression": float(progression), "payload": payload},
             task_attention=task_attention, timestamp=timestamp)
-        self.active = fb.active_after
-        self.action = fb.recommended_action.value if hasattr(fb.recommended_action, "value") else str(fb.recommended_action)
-        self.explanation = fb.explanation
+        active = fb.active_after
+        action = fb.recommended_action.value if hasattr(fb.recommended_action, "value") else str(fb.recommended_action)
+        switched = fb.recommended_action == ReasonerFeedbackAction.SWITCH_ANALOGY
+        if self.ablation == "no_insufficiency" and fb.terminate:
+            # ablation: never declare insufficiency/fallback -> FORCE the highest-comfort analogy
+            best = max(fb.analogy_evaluations.values(), key=lambda e: e.comfort_score)
+            if best.analogy_name != active:
+                switched = True
+            active = best.analogy_name; action = "FORCED_SELECT"; self.r.active_analogy = active
+        self.active = active; self.action = action; self.explanation = fb.explanation
         ctl = CONTROL.get(self.active, CONTROL["cautious_nav"])
         return {"active": self.active, "action": self.action,
-                "fwd": ctl["fwd"], "robot_r": ctl["robot_r"],
-                "switched": fb.recommended_action == ReasonerFeedbackAction.SWITCH_ANALOGY,
-                "terminate": fb.terminate, "explanation": fb.explanation}
+                "fwd": ctl["fwd"], "robot_r": ctl["robot_r"], "switched": switched,
+                "terminate": (fb.terminate and self.ablation != "no_insufficiency"), "explanation": fb.explanation}
 
 
 # --------- self-test: spill should switch efficient_nav -> payload_sensitive ---------
