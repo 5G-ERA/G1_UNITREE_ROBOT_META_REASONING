@@ -17,7 +17,6 @@ import time
 import json
 import math
 import threading
-from collections import deque
 import g1_nav_v2 as g                      # reusa conexion + A* + DWA + costmap + camara + helpers
 try:
     import g1_perception                    # cliente del servidor GPU offboard (opcional; via G1_PERC=host:port)
@@ -33,9 +32,6 @@ GOTO_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goto.log")
 HBAND_LO, HBAND_HI = -0.9, 0.6   # banda de altura (m) para OBSTACULOS: excluye suelo (~-1.3/-1.0) y techo (~+1.3)
 NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
-LOC_TRUST = 0.55                # loc_match minimo para FIARSE del laser vivo y dejarlo tocar el mapa (si no, el mapa bueno manda)
-PERSIST_N = 3                   # ventana de frames para el filtro de persistencia (anti-ruido del laser)
-PERSIST_K = 2                   # una celda es OBSTACULO solo si se ve en >=K de los ultimos N frames (el ruido parpadea -> fuera)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
 AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
@@ -44,7 +40,6 @@ DOOR_CENTER = (os.environ.get("G1_DOOR_CENTER", "1") == "1")   # centrar izq/dch
 DOOR_BAL_TH = 0.22               # |clear_left - clear_right| (normalizado) para considerar el robot DESCENTRADO
 DOOR_STRAFE = 0.34               # magnitud del strafe lateral (> deadzone ~0.3, si no el robot no se mueve)
 DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "1"))  # +1/-1: si centra al lado EQUIVOCADO, lanza con G1_STRAFE_SIGN=-1
-DOOR_SIDE = 0.7                  # m: una PUERTA real tiene pared a ambos lados (clearance izq Y dcha < esto). Si no, no es puerta
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -852,9 +847,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     """NAVEGA A->B sobre el mapa cargado: A* (firmware-like) + DWA local, obstaculos de la nube 'location',
     contacto por IMU/odom y desatasco (reusados del frontier explorer). Para al llegar. Ctrl+C aborta.
     Si se pasan vshare/lock/stop_event, publica el estado para la ventana en vivo (modo viz)."""
-    GOV = "default"   # main: navegacion normal (sin DCE ni FSM). Queda en log + dataset.
-    print(f"\n>>> GOTO '{label}' -> ({wx:+.2f},{wy:+.2f}). Gobernanza: {GOV}. Mando en mano (L2+B). Ctrl+C aborta.")
-    lg.write(f"\n=== RUN ours '{label}' GOV={GOV} -> ({wx:+.2f},{wy:+.2f})  {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n"); lg.flush()
+    print(f"\n>>> GOTO '{label}' -> ({wx:+.2f},{wy:+.2f}). Mando en mano (L2+B). Ctrl+C aborta.")
+    lg.write(f"\n=== RUN ours '{label}' -> ({wx:+.2f},{wy:+.2f})  {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n"); lg.flush()
     cdp.eval(g.LOWSTATE_JS)                       # contacto rapido por par/accel
     # espera pose + primera nube
     print("  Esperando pose localizada y primera nube...", end="", flush=True)
@@ -887,7 +881,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     prev_yaw = None; prev_cmd = (0, 0, 0, 0); prev_lt = None
     spin_acc = 0.0; prog_pos = None; prog_t = t0; turncal = []; phcount = {}
     minc0 = 9.9
-    rd = RunRecorder("ours", label, (wx, wy)); rd.rec["governance"] = GOV   # default
+    rd = RunRecorder("ours", label, (wx, wy))
     refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
     gplan = []; gplan_t = 0; cam_t = 0; cam_jpg = None
     aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
@@ -902,22 +896,6 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
-    reloc_bad = 0                                            # saltos de relocalizacion seguidos (divergencia de la SLAM)
-    livehist = deque(maxlen=PERSIST_N)                       # ultimos N barridos del laser (frame mapa) para el filtro de persistencia
-    # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
-    nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
-
-    def _spill_listener():
-        while not (stop_event is not None and stop_event.is_set()):
-            try:
-                line = sys.stdin.readline()
-            except Exception:
-                break
-            if line == "":                       # EOF (terminal cerrada)
-                break
-            spill_q.append((annot["t"], annot["x"], annot["y"]))   # marca con el estado ACTUAL del robot
-    threading.Thread(target=_spill_listener, daemon=True).start()
-    print("  >>> ANOTACION SPILL: pulsa ENTER en ESTA terminal cada vez que veas caer agua del vaso (queda logueado).")
     print(f"  mapa de referencia: {len(refmap)} celdas" + (" (sin mapa -> confianza N/A)" if not refmap else ""))
     try:
         while not (stop_event is not None and stop_event.is_set()):
@@ -929,30 +907,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     print("\n  POSE PERDIDA (3s). STOP. Relocaliza en la app y reintenta."); return False
                 time.sleep(0.2); continue
             x, y, yaw = p[0], p[1], yaw_of(p)         # yaw en GRADOS
-            annot["t"] = now - t0; annot["x"] = x; annot["y"] = y    # estado para la anotacion humana de spill
-            spill_now = False
-            while spill_q:                            # vuelca los ENTER del revisor -> eventos de spill
-                st, sx, sy = spill_q.pop(0); nspill += 1; spill_now = True
-                rd.event("spill", st, sx, sy, {"by": "human", "n": nspill})
-                lg.write(f"SPILL #{nspill} (humano) t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})\n"); lg.flush()
-                print(f"\n  >>> SPILL #{nspill} marcado por el revisor en t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})")
             reloc_flag = False
             if last_pose is not None and math.hypot(x - last_pose[0], y - last_pose[1]) > 0.5:
                 jd = math.hypot(x - last_pose[0], y - last_pose[1])     # >0.5m en un ciclo (~0.1s) = salto reloc
-                reloc_flag = True; reloc_bad += 1
+                reloc_flag = True
                 rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
                                                         "from": [round(last_pose[0], 2), round(last_pose[1], 2)]})
                 lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
-                if reloc_bad >= 5:                # divergencia persistente: la pose se escapa -> el laser crearia fantasmas
-                    cdp.eval(g.STOP_JS)
-                    print("\n  >>> RELOCALIZACION DIVERGIENDO (saltos grandes seguidos). STOP. Re-relocaliza en la app y reintenta.")
-                    lg.write("RELOC-DIVERGE abort\n"); lg.flush()
-                    rd.event("reloc_diverge", now - t0, x, y, {"jumps": reloc_bad})
-                    rd.finish("aborted", {"time_s": round(now - t0, 2), "reason": "reloc_diverge",
-                                          "collisions": ncol, "spills_human": nspill})
-                    return False
-            else:
-                reloc_bad = 0                    # tick limpio -> resetea el contador
             if last_pose is None or abs(x - last_pose[0]) > 1e-4 or abs(y - last_pose[1]) > 1e-4:
                 pose_t = now; last_pose = (x, y)
             if not trail:
@@ -972,7 +933,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                                       "straight_m": round(straight, 2),
                                       "efficiency": round(straight / plen, 2) if plen > 0 else 0.0,
                                       "collisions": ncol, "c0min": round(minc0, 2),
-                                      "perc_queries": nperc, "spills_human": nspill,
+                                      "perc_queries": nperc,
                                       "start": {"x": round(trail[0][0], 3), "y": round(trail[0][1], 3)} if trail else None})
                 if vshare is not None:                # marca llegada en la ventana antes de salir
                     with lock:
@@ -981,25 +942,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
 
             # --- OBSTACULOS de la nube 'location' (frame mapa) -> mapa persistente con TTL ---
             live = reloc_cells(cdp)                   # celdas del barrido ACTUAL (laser en vivo)
-            loc = match_score(live, refmap)           # confianza de localizacion (laser vivo vs mapa conocido)
-            # SOLO confiamos en el laser vivo para tocar el mapa si la localizacion es BUENA y no hay salto.
-            # Si la localizacion falla, el mapa (paredes/mesas) es bueno -> NO lo corrompemos con laser loco.
-            loc_ok = (not reloc_flag) and (loc is None or loc >= LOC_TRUST)
-            # FILTRO DE PERSISTENCIA: el ruido del laser PARPADEA (celda distinta cada frame); una pared real
-            # sale en el MISMO sitio frame tras frame. Solo es obstaculo lo visto en >=PERSIST_K de los ultimos N.
-            livehist.append(set(live))
-            _cnt = {}
-            for _fr in livehist:
-                for _c in _fr:
-                    _cnt[_c] = _cnt.get(_c, 0) + 1
-            confirmed = [c for c, k in _cnt.items() if k >= PERSIST_K]
             if live:
                 cloud_ok = True
             elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
                 print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
                 print("          ¿se ven los PUNTITOS del laser en la app?")
                 lg.write("NO-CLOUD warning\n"); cloud_warned = True
-            for c in (confirmed if loc_ok else []):   # solo celdas PERSISTENTES, y solo si la localizacion es buena
+            for c in live:
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
@@ -1125,8 +1074,6 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 print(f"\n  >>> MODO AGRESIVO ON ({AGGR_AFTER:.0f}s sin acercarse a B): reduzco inflado y holgura "
                       f"(min seguridad {AGGR_ROBOT_R}m) para cruzar la puerta.")
                 lg.write(f"AGGRESSIVE-ON t={now-t0:.0f}s d={d_goal:.2f}\n")
-                rd.event("mode_switch", now - t0, x, y, {"from": "cautious", "to": "aggressive",
-                                                          "d": round(d_goal, 2)})   # switch de capacidad (keep/switch del paper)
             g.ROBOT_R = AGGR_ROBOT_R if aggressive else ROBOT_R0   # holgura del DWA (min seguridad en agresivo)
 
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
@@ -1156,10 +1103,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     # --- MANIOBRA DE PUERTA: SOLO cuando el robot YA esta en zona estrecha (c0 bajo) y hay un
                     #     cuello MUY cerca por delante. Asi NO se activa al inicio (en abierto va con DWA rapido). ---
                     door = None
-                    # PUERTA REAL = pared a AMBOS lados (izq Y dcha tight). Si un lado esta abierto, NO es puerta:
-                    # es el robot girando junto a una pared al inicio -> deja que el DWA oriente y avance.
-                    boxed = (max(cl_left, cl_right) < DOOR_SIDE)
-                    if op and c0 < 0.9 and boxed:           # apretado por delante Y encajonado a los lados = puerta
+                    if op and c0 < 0.9:                     # solo si el robot ya esta apretado (no en abierto)
                         bc = 9.9; bi = -1
                         for i, p in enumerate(plan_pts):
                             dd = math.hypot(p[0] - x, p[1] - y)
@@ -1175,32 +1119,24 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         a = plan_pts[max(0, bi - 2)]; b = plan_pts[min(len(plan_pts) - 1, bi + 2)]
                         ddir = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))   # eje de la puerta
                         he = (ddir - yaw + 180) % 360 - 180
-                        if abs(he) > 90:                    # el eje es una LINEA (2 sentidos): coge el mas cercano al rumbo (sin esto, gira ~180 = bandazos)
-                            he -= math.copysign(180, he)
                         # VISION manda en la puerta (el laser es ruidoso ahi): suelo despejado por delante?
                         vis_ok = (vis_center is not None and vis_center > 0.45 and (vis_nearrun or 0) < 8)
                         bal = m_cl - m_cr                   # >0 = mas libre a la IZQ ; <0 = mas libre a la DCHA
-                        if abs(he) > 25:                    # 1) MUY desviado -> alinea (umbral ancho: antes 12 -> giraba sin parar)
+                        if abs(he) > 12:                    # 1) alinea el rumbo con el eje ANTES de entrar
                             cmd = (0, 0, -g.AV_TURN if he > 0 else g.AV_TURN, 0); ph = "DOOR-AL"
                         elif DOOR_CENTER and abs(bal) > DOOR_BAL_TH and max(cl_left, cl_right) > 0.30:
                             # 2) DESCENTRADO -> strafe hacia el lado MAS LIBRE para entrar centrado (Renxi)
                             lx = DOOR_STRAFE_SIGN * (DOOR_STRAFE if bal > 0 else -DOOR_STRAFE)
                             cmd = (lx, 0, 0, 0); ph = "DOOR-CTR"
-                        elif c0 > AGGR_ROBOT_R or vis_ok:   # 3) EMPUJA corrigiendo el rumbo SUAVE a la vez (no para a girar)
-                            rx_corr = max(-g.AV_TURN, min(g.AV_TURN, -0.025 * he))
-                            cmd = (0, 0.28, rx_corr, 0); ph = "DOOR-GO" + ("v" if vis_ok and c0 <= AGGR_ROBOT_R else "")
+                        elif c0 > AGGR_ROBOT_R or vis_ok:   # 3) entra RECTO si el LASER o la VISION lo ven despejado
+                            cmd = (0, 0.28, 0, 0); ph = "DOOR-GO" + ("v" if vis_ok and c0 <= AGGR_ROBOT_R else "")
                         else:
                             cmd = (0, 0, 0, 0); ph = "DOOR-WT"   # ni laser ni vision: espera (no fuerza)
                         nstop = 0
                     else:
                         _, lyc, rxc, _, lbl = g.dwa_step(x, y, yaw, carrot, op)
                         cmd = (0, lyc, rxc, 0); ph = lbl
-                        # SALIDA DE MINIMO LOCAL: bloqueado de frente pero un lado claramente ABIERTO ->
-                        # gira hacia el lado libre para RODEAR (en vez de pararse y oscilar).
-                        if c0 < 0.6 and lyc < 0.15 and abs(m_cl - m_cr) > 0.30:
-                            cmd = (0, 0.0, (-g.AV_TURN if m_cl > m_cr else g.AV_TURN), 0); ph = "AROUND"
-                            nstop = 0
-                        elif lyc == 0 and rxc == 0:
+                        if lyc == 0 and rxc == 0:
                             nstop += 1
                             if nstop > 12:                  # ~1.2s encajonado -> desatasco
                                 cl = clear_dir(x, y, yaw, +55, op); cr = clear_dir(x, y, yaw, -55, op)
@@ -1285,8 +1221,6 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
                              "balance": round(m_cl - m_cr, 3),                # +izq libre / -dcha libre (0 = centrado)
-                             "aggressive": bool(aggressive),                  # modo: False=precavido, True=agresivo (switch de capacidad)
-                             "spill": True if spill_now else None,            # el revisor marco un derrame en este tick (ground-truth)
                              "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
                                         d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)
@@ -1318,12 +1252,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             cdp.eval(g.set_cmd_js(*cmd))
             time.sleep(0.1)
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
+                              "collisions": ncol, "c0min": round(minc0, 2)})
         return False                                  # salida por cierre de ventana (stop_event)
     except KeyboardInterrupt:
         print(f"\n  [ABORTADO '{label}']"); lg.write(f"ABORT {label} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
+                              "collisions": ncol, "c0min": round(minc0, 2)})
         return False
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
@@ -1975,7 +1909,7 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
     r = cdp.eval(native_goal_js(wx, wy))          # GOAL nativo (1102)
     print(f"  Goal nativo (1102) enviado: {r}.  Mando en mano (L2+B) por seguridad.")
     lg.write(f"NATIVE-GOAL {label} ({wx:+.3f},{wy:+.3f}) send={r}\n")
-    rd = RunRecorder("native", label, (wx, wy)); nspill = 0   # el benchmark no anota spill, pero el summary lo referencia
+    rd = RunRecorder("native", label, (wx, wy))
     rd.rec["frame_check"] = fc
 
     t0 = time.time(); tprint = 0; trail = []; poshist = []
@@ -2100,14 +2034,14 @@ def benchmark_run(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=Non
         if "x" in dir():
             rd.save_cloud("end", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
+                              "collisions": ncol, "c0min": round(minc0, 2)})
         return False
     except KeyboardInterrupt:
         print(f"\n  [ABORTADO benchmark '{label}']"); lg.write(f"NATIVE-ABORT {label}\n")
         if "x" in dir():
             rd.save_cloud("end", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2), "spills_human": nspill})
+                              "collisions": ncol, "c0min": round(minc0, 2)})
         return False
     finally:
         cdp.eval(native_cancel_js()); time.sleep(0.2); cdp.eval(native_cancel_js())
