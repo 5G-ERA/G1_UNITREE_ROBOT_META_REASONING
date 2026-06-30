@@ -1012,7 +1012,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 if now - last_col_t < 3.0:           # colision reciente -> seguridad baja
                     safety_sig = min(safety_sig, 0.15)
                 payload_sig = 0.08 if (now - last_spill_t < 8.0) else 0.9   # spill humano -> payload colapsa 8s
-                md = meta.step(safety_sig, m_prog, payload_sig, now - t0)
+                pr = [dd.get("range_m") for dd in perc_dets if dd.get("label") == "person" and dd.get("range_m")]
+                human_sig = min(1.0, min(pr) / 2.0) if pr else 1.0          # persona cerca (YOLO) -> human baja (0=contacto,1=>=2m)
+                md = meta.step(safety_sig, m_prog, payload_sig, human=human_sig, timestamp=now - t0)
                 meta_active = md["active"]; meta_action = md["action"]
                 g.FWD_SPEED = md["fwd"]               # la analogia activa fija la velocidad (efficient rapido / payload lento)
                 if md["switched"]:
