@@ -1122,7 +1122,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         # VISION manda en la puerta (el laser es ruidoso ahi): suelo despejado por delante?
                         vis_ok = (vis_center is not None and vis_center > 0.45 and (vis_nearrun or 0) < 8)
                         bal = m_cl - m_cr                   # >0 = mas libre a la IZQ ; <0 = mas libre a la DCHA
-                        if abs(he) > 12:                    # 1) alinea el rumbo con el eje ANTES de entrar
+                        if abs(he) > 25:                    # 1) alinea el rumbo con el eje ANTES de entrar.
+                            # Banda ANCHA (25, no 12): el eje de puerta 'ddir' tiembla porque el A* replanifica
+                            # cada tick con el laser ruidoso; con banda estrecha + giro fijo 0.45 (no se puede
+                            # bajar: hay deadzone ~0.3) el robot oscilaba sin parar (thrash). 25 lo tolera y deja
+                            # de cazar el ruido; el centrado fino lo hace DOOR-CTR (strafe).
                             cmd = (0, 0, -g.AV_TURN if he > 0 else g.AV_TURN, 0); ph = "DOOR-AL"
                         elif DOOR_CENTER and abs(bal) > DOOR_BAL_TH and max(cl_left, cl_right) > 0.30:
                             # 2) DESCENTRADO -> strafe hacia el lado MAS LIBRE para entrar centrado (Renxi)
