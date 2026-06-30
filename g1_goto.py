@@ -1192,7 +1192,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     else:
                         _, lyc, rxc, _, lbl = g.dwa_step(x, y, yaw, carrot, op)
                         cmd = (0, lyc, rxc, 0); ph = lbl
-                        if lyc == 0 and rxc == 0:
+                        # SALIDA DE MINIMO LOCAL: bloqueado de frente pero un lado claramente ABIERTO ->
+                        # gira hacia el lado libre para RODEAR (en vez de pararse y oscilar).
+                        if c0 < 0.6 and lyc < 0.15 and abs(m_cl - m_cr) > 0.30:
+                            cmd = (0, 0.0, (-g.AV_TURN if m_cl > m_cr else g.AV_TURN), 0); ph = "AROUND"
+                            nstop = 0
+                        elif lyc == 0 and rxc == 0:
                             nstop += 1
                             if nstop > 12:                  # ~1.2s encajonado -> desatasco
                                 cl = clear_dir(x, y, yaw, +55, op); cr = clear_dir(x, y, yaw, -55, op)
