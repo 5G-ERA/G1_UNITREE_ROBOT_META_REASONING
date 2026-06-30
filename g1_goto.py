@@ -23,6 +23,10 @@ try:
 except Exception:
     g1_perception = None
 import g1_metrics                            # metricas SEI: clearance (percepcion) + progression (rendimiento)
+try:
+    import g1_meta                            # meta-razonamiento Cap.5 (ESCMR): cambia de analogia segun la experiencia (opt-in G1_META=1)
+except Exception:
+    g1_meta = None
 
 WP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "waypoints.json")
 MAP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nav_map.json")
@@ -898,6 +902,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
     # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
     nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
+    # --- META-RAZONAMIENTO Cap.5 (opt-in G1_META=1): un spill -> cambia de analogia -> mas lento/suave ---
+    meta = g1_meta.MetaController() if (g1_meta and os.environ.get("G1_META") == "1") else None
+    meta_t = 0.0; meta_active = ""; meta_action = ""; FWD0 = g.FWD_SPEED; last_spill_t = -99.0
+    if meta:
+        print("  >>> META-RAZONAMIENTO ON (ESCMR Cap.5): la analogia de navegacion se gobierna por la experiencia.")
 
     def _spill_listener():
         while not (stop_event is not None and stop_event.is_set()):
@@ -924,7 +933,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             annot["t"] = now - t0; annot["x"] = x; annot["y"] = y    # estado para la anotacion humana de spill
             spill_now = False
             while spill_q:                            # vuelca los ENTER del revisor -> eventos de spill
-                st, sx, sy = spill_q.pop(0); nspill += 1; spill_now = True
+                st, sx, sy = spill_q.pop(0); nspill += 1; spill_now = True; last_spill_t = now
                 rd.event("spill", st, sx, sy, {"by": "human", "n": nspill})
                 lg.write(f"SPILL #{nspill} (humano) t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})\n"); lg.flush()
                 print(f"\n  >>> SPILL #{nspill} marcado por el revisor en t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})")
@@ -996,6 +1005,20 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             m_clear, m_prog = mm["clearance"], mm["progression"]
             cl_left = clear_dir(x, y, yaw, +60, op); cl_right = clear_dir(x, y, yaw, -60, op)   # clearance IZQ/DCHA (Renxi: balancear)
             m_cl = min(1.0, cl_left / 1.5); m_cr = min(1.0, cl_right / 1.5)
+            # --- META-RAZONAMIENTO (Cap.5): gobierna la analogia de navegacion segun la experiencia ---
+            if meta and now - meta_t > 1.0:
+                safety_sig = m_clear
+                if now - last_col_t < 3.0:           # colision reciente -> seguridad baja
+                    safety_sig = min(safety_sig, 0.15)
+                payload_sig = 0.08 if (now - last_spill_t < 8.0) else 0.9   # spill humano -> payload colapsa 8s
+                md = meta.step(safety_sig, m_prog, payload_sig, now - t0)
+                meta_active = md["active"]; meta_action = md["action"]
+                g.FWD_SPEED = md["fwd"]               # la analogia activa fija la velocidad (efficient rapido / payload lento)
+                if md["switched"]:
+                    rd.event("meta_switch", now - t0, x, y, {"to": meta_active, "payload": round(payload_sig, 2)})
+                    lg.write(f"META-SWITCH -> {meta_active} t={now-t0:.0f}s payload={payload_sig:.2f}\n"); lg.flush()
+                    print(f"\n  >>> META: analogia -> {meta_active} (fwd={md['fwd']}, payload={payload_sig:.2f})")
+                meta_t = now
             # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado.
             # Si hay servidor de percepcion GPU, ya rellena vis_* arriba; esto es el FALLBACK heuristico (sin GPU).
             if perc is None and c0 < 1.1 and now - vis_t > 0.5:
@@ -1246,6 +1269,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "balance": round(m_cl - m_cr, 3),                # +izq libre / -dcha libre (0 = centrado)
                              "aggressive": bool(aggressive),                  # modo: False=precavido, True=agresivo (switch de capacidad)
                              "spill": True if spill_now else None,            # el revisor marco un derrame en este tick (ground-truth)
+                             "meta_analogy": meta_active or None,             # analogia activa del meta-razonador (Cap.5)
+                             "meta_action": meta_action or None,
                              "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
                                         d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)
@@ -1287,6 +1312,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
         g.ROBOT_R = locals().get("ROBOT_R0", g.ROBOT_R)    # restaura la holgura normal del DWA
+        g.FWD_SPEED = locals().get("FWD0", g.FWD_SPEED)     # restaura la velocidad normal (si la cambio el meta-razonador)
         # resumen de la calibracion de giro: ¿el robot gira en el sentido que el modelo cree?
         tc = locals().get("turncal", [])
         if tc:
