@@ -703,11 +703,11 @@ def _telem_row(hh):
 
 def ref_points():
     """Puntos de pared 2D (frame G1) del mapa de referencia elegido por env G1_REFMAP:
-       'g1' (DEFECTO)  = mapa PROPIO del G1 (dataset/map_full.json), el que se carga al relocalizar;
-       'summit'        = mapa del Summit ALINEADO a A/B -> summit/ref_map_g1.json (alternativa)."""
-    choice = os.environ.get("G1_REFMAP", "g1").lower()
+       'summit' (DEFECTO) = mapa del Summit ALINEADO a A/B (bien orientado) -> summit/ref_map_g1.json;
+       'g1'               = mapa propio del G1 (dataset/map_full.json) — OJO: puede salir rotado/desalineado."""
+    choice = os.environ.get("G1_REFMAP", "summit").lower()
     here = os.path.dirname(os.path.abspath(__file__))
-    if choice == "summit":                      # alternativa: mapa Summit alineado
+    if choice != "g1":                          # por defecto, el mapa Summit alineado (orientacion correcta)
         p = os.path.join(here, "summit", "ref_map_g1.json")
         try:
             if os.path.exists(p):
@@ -716,7 +716,7 @@ def ref_points():
                     return pts
         except Exception:
             pass
-    # 'g1' (DEFECTO): mapa PROPIO del G1 (el que se carga al relocalizar en la app)
+    # 'g1': mapa propio del G1 (puede estar rotado/desalineado)
     def _clip(pts):
         return [(a, b) for (a, b) in pts if -15 <= a <= 15 and -15 <= b <= 15]   # quita outliers de reloc
     p3 = os.path.join(DATASET_DIR, "map_full.json")
@@ -890,16 +890,6 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     minc0 = 9.9
     rd = RunRecorder("ours", label, (wx, wy)); rd.rec["governance"] = GOV   # default
     refmap = load_ref_map(); health_t = 0; hh = {}; cloud_ok = False; cloud_warned = False
-    # SEGURIDAD del mapa autoritario: si la pose de INICIO cae sobre una pared del mapa de referencia,
-    # el mapa esta DESALINEADO con la relocalizacion -> NO lo uses como verdad (meteria paredes fantasma).
-    use_map = MAP_TRUST
-    if MAP_TRUST and refmap:
-        d0 = min((abs(c[0] * g.OCELL - p[0]) + abs(c[1] * g.OCELL - p[1]) for c in refmap), default=9)
-        if d0 < 0.30:
-            use_map = False
-            print(f"\n  [AVISO] el mapa de referencia esta DESALINEADO (la pose de inicio cae sobre una pared, "
-                  f"{d0:.2f}m). NO lo uso como autoritario. Reconstruyelo en ESTA sesion: python g1_goto.py buildmap 150")
-            lg.write(f"MAP-MISALIGNED d0={d0:.2f} -> map_trust OFF\n")
     gplan = []; gplan_t = 0; cam_t = 0; cam_jpg = None
     aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
     best_d = 1e9; best_d_t = t0; ROBOT_R0 = g.ROBOT_R        # progreso hacia B + holgura normal (para restaurar)
@@ -1031,7 +1021,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             omap = {c: t for c, t in omap.items() if now - t < NAV_OMAP_TTL}
             # MAPA AUTORITARIO: el mapa estatico cargado es la VERDAD para paredes (no cambia, no tiene ruido).
             # El laser ruidoso solo AÑADE encima (ya filtrado por persistencia + localizacion) -> obstaculos dinamicos.
-            oset = set(omap.keys()) | colmap | ((refmap or set()) if use_map else set())
+            oset = set(omap.keys()) | colmap | ((refmap or set()) if MAP_TRUST else set())
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
