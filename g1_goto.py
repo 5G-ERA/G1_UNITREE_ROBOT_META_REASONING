@@ -32,6 +32,7 @@ GOTO_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goto.log")
 HBAND_LO, HBAND_HI = -0.9, 0.6   # banda de altura (m) para OBSTACULOS: excluye suelo (~-1.3/-1.0) y techo (~+1.3)
 NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
+LOC_TRUST = 0.55                # loc_match minimo para FIARSE del laser vivo y dejarlo tocar el mapa (si no, el mapa bueno manda)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
 AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
@@ -975,13 +976,17 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
 
             # --- OBSTACULOS de la nube 'location' (frame mapa) -> mapa persistente con TTL ---
             live = reloc_cells(cdp)                   # celdas del barrido ACTUAL (laser en vivo)
+            loc = match_score(live, refmap)           # confianza de localizacion (laser vivo vs mapa conocido)
+            # SOLO confiamos en el laser vivo para tocar el mapa si la localizacion es BUENA y no hay salto.
+            # Si la localizacion falla, el mapa (paredes/mesas) es bueno -> NO lo corrompemos con laser loco.
+            loc_ok = (not reloc_flag) and (loc is None or loc >= LOC_TRUST)
             if live:
                 cloud_ok = True
             elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
                 print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
                 print("          ¿se ven los PUNTITOS del laser en la app?")
                 lg.write("NO-CLOUD warning\n"); cloud_warned = True
-            for c in (live if not reloc_flag else []):    # en un SALTO de reloc la pose es mala -> NO estampes el laser (crearia fantasmas)
+            for c in (live if loc_ok else []):        # localizacion mala -> NO estampes el laser (crearia fantasmas)
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
