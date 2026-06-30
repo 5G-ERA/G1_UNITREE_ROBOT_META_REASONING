@@ -23,6 +23,10 @@ try:
 except Exception:
     g1_perception = None
 import g1_metrics                            # metricas SEI: clearance (percepcion) + progression (rendimiento)
+try:
+    import g1_fsm                             # baseline FSM/BT reactivo del paper (opt-in G1_FSM=1); mismos streams que el DCE
+except Exception:
+    g1_fsm = None
 
 WP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "waypoints.json")
 MAP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nav_map.json")
@@ -898,6 +902,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
     # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
     nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
+    # --- BASELINE FSM/BT del paper (opt-in G1_FSM=1): mismos streams, umbrales fijos, sin meta-razonamiento ---
+    fsm = g1_fsm.FSMBaseline() if (g1_fsm and os.environ.get("G1_FSM") == "1") else None
+    fsm_t = 0.0; fsm_state = ""; fsm_stop = False; FWD0 = g.FWD_SPEED; last_spill_t = -99.0
+    if fsm:
+        print("  >>> BASELINE FSM/BT ON: gobernanza por UMBRALES fijos (comparador del DCE).")
 
     def _spill_listener():
         while not (stop_event is not None and stop_event.is_set()):
@@ -924,7 +933,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             annot["t"] = now - t0; annot["x"] = x; annot["y"] = y    # estado para la anotacion humana de spill
             spill_now = False
             while spill_q:                            # vuelca los ENTER del revisor -> eventos de spill
-                st, sx, sy = spill_q.pop(0); nspill += 1; spill_now = True
+                st, sx, sy = spill_q.pop(0); nspill += 1; spill_now = True; last_spill_t = now
                 rd.event("spill", st, sx, sy, {"by": "human", "n": nspill})
                 lg.write(f"SPILL #{nspill} (humano) t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})\n"); lg.flush()
                 print(f"\n  >>> SPILL #{nspill} marcado por el revisor en t={st:.1f}s pos=({sx:+.2f},{sy:+.2f})")
@@ -996,6 +1005,17 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             m_clear, m_prog = mm["clearance"], mm["progression"]
             cl_left = clear_dir(x, y, yaw, +60, op); cl_right = clear_dir(x, y, yaw, -60, op)   # clearance IZQ/DCHA (Renxi: balancear)
             m_cl = min(1.0, cl_left / 1.5); m_cr = min(1.0, cl_right / 1.5)
+            # --- BASELINE FSM/BT: umbrales fijos sobre los MISMOS streams (clearance/payload/humano/bateria) ---
+            if fsm and now - fsm_t > 1.0:
+                human_near = any((dd.get("label") == "person") and ((dd.get("range_m") or 9) < 1.2) for dd in perc_dets)
+                bat_now = (hh.get("h") or {}).get("bat")
+                payload_sig = 0.08 if (now - last_spill_t < 8.0) else 0.9
+                fd = fsm.step(m_clear, m_prog, payload_sig, human_near=human_near, battery=bat_now)
+                fsm_state = fd["state"]; fsm_stop = fd["stop"]; g.FWD_SPEED = fd["fwd"]
+                if fd["intervention"]:
+                    rd.event("fsm_intervention", now - t0, x, y, {"state": fsm_state})
+                    lg.write(f"FSM -> {fsm_state} t={now-t0:.0f}s\n"); lg.flush()
+                fsm_t = now
             # VISION en zona estrecha (puerta/mesa): el laser ahi es ruidoso -> mira si la camara ve suelo despejado.
             # Si hay servidor de percepcion GPU, ya rellena vis_* arriba; esto es el FALLBACK heuristico (sin GPU).
             if perc is None and c0 < 1.1 and now - vis_t > 0.5:
@@ -1246,6 +1266,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "balance": round(m_cl - m_cr, 3),                # +izq libre / -dcha libre (0 = centrado)
                              "aggressive": bool(aggressive),                  # modo: False=precavido, True=agresivo (switch de capacidad)
                              "spill": True if spill_now else None,            # el revisor marco un derrame en este tick (ground-truth)
+                             "fsm_state": fsm_state or None,                  # estado del baseline FSM/BT (si G1_FSM=1)
                              "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
                                         d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)
@@ -1273,6 +1294,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     vshare["mhist"] = sei.history()                                          # historia (t,clearance,progression)
                     vshare["shist"] = sens.history()                                         # historia (t,reliability,noise,loc_conf)
 
+            if fsm and fsm_stop:                  # el FSM ordena PARAR (humano cerca / clearance critico)
+                cmd = (0, 0, 0, 0); ph = "FSM-STOP"
             prev_fwd = (cmd[1] > 0.1)
             cdp.eval(g.set_cmd_js(*cmd))
             time.sleep(0.1)
@@ -1287,6 +1310,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
         g.ROBOT_R = locals().get("ROBOT_R0", g.ROBOT_R)    # restaura la holgura normal del DWA
+        g.FWD_SPEED = locals().get("FWD0", g.FWD_SPEED)     # restaura la velocidad normal (si la cambio el FSM baseline)
         # resumen de la calibracion de giro: ¿el robot gira en el sentido que el modelo cree?
         tc = locals().get("turncal", [])
         if tc:
