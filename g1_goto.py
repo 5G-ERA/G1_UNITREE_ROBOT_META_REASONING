@@ -897,6 +897,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
+    reloc_bad = 0                                            # saltos de relocalizacion seguidos (divergencia de la SLAM)
     # --- ANOTACION HUMANA DE SPILL: el revisor pulsa ENTER cada vez que ve caer agua del vaso ---
     nspill = 0; spill_q = []; annot = {"t": 0.0, "x": 0.0, "y": 0.0}
 
@@ -932,10 +933,20 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             reloc_flag = False
             if last_pose is not None and math.hypot(x - last_pose[0], y - last_pose[1]) > 0.5:
                 jd = math.hypot(x - last_pose[0], y - last_pose[1])     # >0.5m en un ciclo (~0.1s) = salto reloc
-                reloc_flag = True
+                reloc_flag = True; reloc_bad += 1
                 rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
                                                         "from": [round(last_pose[0], 2), round(last_pose[1], 2)]})
                 lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
+                if reloc_bad >= 5:                # divergencia persistente: la pose se escapa -> el laser crearia fantasmas
+                    cdp.eval(g.STOP_JS)
+                    print("\n  >>> RELOCALIZACION DIVERGIENDO (saltos grandes seguidos). STOP. Re-relocaliza en la app y reintenta.")
+                    lg.write("RELOC-DIVERGE abort\n"); lg.flush()
+                    rd.event("reloc_diverge", now - t0, x, y, {"jumps": reloc_bad})
+                    rd.finish("aborted", {"time_s": round(now - t0, 2), "reason": "reloc_diverge",
+                                          "collisions": ncol, "spills_human": nspill})
+                    return False
+            else:
+                reloc_bad = 0                    # tick limpio -> resetea el contador
             if last_pose is None or abs(x - last_pose[0]) > 1e-4 or abs(y - last_pose[1]) > 1e-4:
                 pose_t = now; last_pose = (x, y)
             if not trail:
@@ -970,7 +981,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
                 print("          ¿se ven los PUNTITOS del laser en la app?")
                 lg.write("NO-CLOUD warning\n"); cloud_warned = True
-            for c in live:
+            for c in (live if not reloc_flag else []):    # en un SALTO de reloc la pose es mala -> NO estampes el laser (crearia fantasmas)
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
