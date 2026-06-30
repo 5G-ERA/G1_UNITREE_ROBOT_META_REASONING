@@ -105,13 +105,21 @@ def main():
     band(a_p, t, progS, "#e67e22", "PROGRESSION", "getting to the goal — high = moving to B, 0 = stopped")
     band(a_r, t, relS, "#2ca02c", "SENSING\nRELIABILITY", "trust in its own sensors — low = noisy/unsure")
 
+    # cautious -> aggressive switch (capability switch)
+    agg_t = next((r["t"] for r in s if r.get("aggressive")), None)
+    if agg_t is None:
+        agg_t = next((e["t"] for e in d.get("events", []) if e.get("kind") == "mode_switch"), None)
     for ax in (a_c, a_p, a_r):
         for (t0, t1) in spans:
             ax.axvspan(t0, t1, color="#888888", alpha=0.16, lw=0)
         for (ct, _, _) in cols:
             ax.axvline(ct, color="#c0392b", lw=1.2)
+        if agg_t is not None:
+            ax.axvline(agg_t, color="#6a0dad", lw=1.6, ls="--")
     if spans:
         a_c.text(spans[0][0], 1.06, "grey = robot paused", fontsize=8, color="#555")
+    if agg_t is not None:
+        a_c.text(agg_t, 1.06, "→ aggressive mode", fontsize=8, color="#6a0dad")
     a_r.set_xlabel("time (s)")
 
     # ---- path coloured by clearance, thicker line + points ----

@@ -1074,6 +1074,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 print(f"\n  >>> MODO AGRESIVO ON ({AGGR_AFTER:.0f}s sin acercarse a B): reduzco inflado y holgura "
                       f"(min seguridad {AGGR_ROBOT_R}m) para cruzar la puerta.")
                 lg.write(f"AGGRESSIVE-ON t={now-t0:.0f}s d={d_goal:.2f}\n")
+                rd.event("mode_switch", now - t0, x, y, {"from": "cautious", "to": "aggressive",
+                                                          "d": round(d_goal, 2)})   # switch de capacidad (keep/switch del paper)
             g.ROBOT_R = AGGR_ROBOT_R if aggressive else ROBOT_R0   # holgura del DWA (min seguridad en agresivo)
 
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
@@ -1221,6 +1223,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
                              "balance": round(m_cl - m_cr, 3),                # +izq libre / -dcha libre (0 = centrado)
+                             "aggressive": bool(aggressive),                  # modo: False=precavido, True=agresivo (switch de capacidad)
                              "dets": ([[d.get("label"), round(d.get("conf", 0), 2),
                                         d.get("bearing_deg"), d.get("range_m")] for d in perc_dets] or None)})
             rd.maybe_laser(now - t0, op)
