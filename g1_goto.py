@@ -60,6 +60,10 @@ SC_MISS  = float(os.environ.get("G1_SC_MISS",  "1.0"))    # -score si esta EN RA
 SC_CAP   = float(os.environ.get("G1_SC_CAP",   "6.0"))    # tope de score (da inercia a paredes reales ante oclusiones breves)
 SC_OBST  = float(os.environ.get("G1_SC_OBST",  "2.0"))    # umbral de score para contar como obstaculo
 SC_RANGE = float(os.environ.get("G1_SC_RANGE", "2.6"))    # m: solo se penaliza (decay) dentro de este radio (ventana de plan); fuera se conserva por TTL
+# GATE DE ROTACION: al girar rapido la nube 'location' se proyecta con la pose RETRASADA -> los barridos se
+# ensucian (laser_noise +65% girando, observado). No es fiable meterlos en el mapa. Si |yaw_rate|>YAW_GATE
+# CONGELAMOS el mapa (ni inserta ni decae): usamos lo capturado yendo recto/lento. 0 = desactiva. (G1_YAWGATE)
+YAW_GATE = float(os.environ.get("G1_YAWGATE", "30.0"))    # deg/s (la maniobra de puerta gira ~36 deg/s -> se congela)
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -892,6 +896,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     omap = {}                                     # celda OCELL -> ultimo instante visto (mapa ACTIVO de obstaculos; lo lee el resto del codigo)
     oscore = {}                                   # celda OCELL -> score de confianza (anti-ruido: sube al verse, baja al no verse)
     oseen  = {}                                   # celda OCELL -> ultimo instante visto (para el TTL de respaldo del score)
+    yaw_prev = None; yaw_prev_t = None            # para estimar yaw_rate (gate de rotacion)
+    yaw_rate = 0.0                                # deg/s (se recalcula cada tick)
     livehist = deque(maxlen=PERSIST_N)            # ultimos N barridos del laser (filtro de ruido por persistencia)
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
     plan_pts = []; plan_t = 0; carrot = None
@@ -998,6 +1004,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             vis_conf = {c for c in perc_cells         # obstaculos de vision (mesa) -> tambien pasan por el score
                         if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND}
             seen_now = confirmed | vis_conf           # candidatos vistos AHORA (laser confirmado + vision)
+            # --- GATE DE ROTACION: estima yaw_rate; si el giro es rapido, la nube va poco fiable ---
+            if yaw_prev is not None and yaw_prev_t is not None and now > yaw_prev_t:
+                yaw_rate = abs((yaw - yaw_prev + 180.0) % 360.0 - 180.0) / (now - yaw_prev_t)
+            yaw_prev, yaw_prev_t = yaw, now
+            turning_fast = (YAW_GATE > 0) and (yaw_rate > YAW_GATE)
 
             if OLDMAP:
                 # --- MODO ANTIGUO (G1_OLDMAP=1): entra al instante y dura NAV_OMAP_TTL -> UNION de 60s (acumula ruido) ---
@@ -1009,7 +1020,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 # Solo se actualiza con barrido fresco (si cae la nube, no penalizamos -> no se borra el mapa).
                 # El decay solo actua dentro de SC_RANGE (ventana de plan); fuera de rango se conserva por TTL
                 # de respaldo (memoria de paredes ya pasadas, no se borran por dejar de verse al girar).
-                if live or seen_now:
+                if (live or seen_now) and not turning_fast:   # GATE: no actualizar el mapa mientras se gira rapido
                     for c in confirmed:               # laser confirmado: sube score; mapa estatico -> tope (instantaneo)
                         oscore[c] = SC_CAP if (refmap and c in refmap) else min(SC_CAP, oscore.get(c, 0.0) + SC_HIT)
                         oseen[c] = now
@@ -1262,7 +1273,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
                     f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} bal={m_cl-m_cr:+.2f} "
-                    f"obs={len(oset)} obsc={len(oscore)} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+                    f"obs={len(oset)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'*' if (YAW_GATE>0 and yaw_rate>YAW_GATE) else ' '} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now
