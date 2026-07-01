@@ -17,6 +17,7 @@ import time
 import json
 import math
 import threading
+from collections import deque
 import g1_nav_v2 as g                      # reusa conexion + A* + DWA + costmap + camara + helpers
 try:
     import g1_perception                    # cliente del servidor GPU offboard (opcional; via G1_PERC=host:port)
@@ -42,6 +43,8 @@ DOOR_STRAFE = 0.34               # magnitud del strafe lateral (> deadzone ~0.3,
 DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "1"))  # +1/-1: si centra al lado EQUIVOCADO, lanza con G1_STRAFE_SIGN=-1
 DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay puerta (es el goal con un mueble):
                                  # desactiva la maniobra de puerta y deja que el DWA rodee el obstaculo (si no, empujaba recto)
+PERSIST_N = 3                    # filtro de ruido del laser: ventana de barridos recientes
+PERSIST_K = 2                    # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N barridos
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -872,6 +875,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
         return False
 
     omap = {}                                     # celda OCELL -> ultimo instante visto (mapa persistente con TTL)
+    livehist = deque(maxlen=PERSIST_N)            # ultimos N barridos del laser (filtro de ruido por persistencia)
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
     plan_pts = []; plan_t = 0; carrot = None
     fhist = []; prev_fwd = False; recov = None; ncol = 0; last_col_t = -99; rside = 1
@@ -950,7 +954,21 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
                 print("          ¿se ven los PUNTITOS del laser en la app?")
                 lg.write("NO-CLOUD warning\n"); cloud_warned = True
+            # --- FILTRO DE RUIDO DEL LASER (confiar mas en el mapa) ---
+            # El LiDAR de cabeza vibra con la marcha y, si la reloc salta, proyecta la nube en celdas
+            # equivocadas -> obstaculos fantasma que duran 60s (TTL). Antes cada celda entraba al instante.
+            # Ahora: una celda del MAPA estatico (pared conocida) entra YA; una celda que SOLO ve el laser
+            # necesita verse en >=PERSIST_K de los ultimos PERSIST_N barridos. El ruido parpadea (1 barrido)
+            # -> se descarta; la mesa/paredes reales son estables -> entran. La nube desplazada por un salto
+            # de reloc tambien aparece 1 barrido -> se filtra.
+            livehist.append(live)
+            confirmed = set()
             for c in live:
+                if refmap and c in refmap:            # confirmado por el MAPA -> instantaneo (confiamos en el mapa)
+                    confirmed.add(c)
+                elif sum(1 for h in livehist if c in h) >= PERSIST_K:   # confirmado por PERSISTENCIA del laser
+                    confirmed.add(c)
+            for c in confirmed:
                 if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
                     continue                          # ignora campo cercano (anillo fantasma del cabeceo)
                 omap[c] = now
