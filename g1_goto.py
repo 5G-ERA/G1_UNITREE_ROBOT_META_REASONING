@@ -40,6 +40,8 @@ DOOR_CENTER = (os.environ.get("G1_DOOR_CENTER", "1") == "1")   # centrar izq/dch
 DOOR_BAL_TH = 0.22               # |clear_left - clear_right| (normalizado) para considerar el robot DESCENTRADO
 DOOR_STRAFE = 0.34               # magnitud del strafe lateral (> deadzone ~0.3, si no el robot no se mueve)
 DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "1"))  # +1/-1: si centra al lado EQUIVOCADO, lanza con G1_STRAFE_SIGN=-1
+DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay puerta (es el goal con un mueble):
+                                 # desactiva la maniobra de puerta y deja que el DWA rodee el obstaculo (si no, empujaba recto)
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -1103,7 +1105,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     # --- MANIOBRA DE PUERTA: SOLO cuando el robot YA esta en zona estrecha (c0 bajo) y hay un
                     #     cuello MUY cerca por delante. Asi NO se activa al inicio (en abierto va con DWA rapido). ---
                     door = None
-                    if op and c0 < 0.9:                     # solo si el robot ya esta apretado (no en abierto)
+                    if op and c0 < 0.9 and d_goal > DOOR_MIN_GOAL:   # cerca de B NO hay puerta: deja el DWA rodear
                         bc = 9.9; bi = -1
                         for i, p in enumerate(plan_pts):
                             dd = math.hypot(p[0] - x, p[1] - y)
