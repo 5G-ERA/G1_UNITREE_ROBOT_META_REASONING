@@ -30,7 +30,10 @@ MAP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nav_map.jso
 GOTO_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goto.log")
 
 # --- nube 'location' (frame del MAPA, Z-up): idx0=x, idx1=y, idx2=altura. CONFIRMADO con reloc_cloud.json ---
-HBAND_LO, HBAND_HI = -0.9, 0.6   # banda de altura (m) para OBSTACULOS: excluye suelo (~-1.3/-1.0) y techo (~+1.3)
+HBAND_LO = float(os.environ.get("G1_HBAND_LO", "-0.5"))   # borde INFERIOR banda de altura (m) para OBSTACULOS.
+                                 # SUBIDO de -0.9 a -0.5: a -0.9 el suelo (~-1.0) entraba como obstaculo al cabecear
+                                 # la marcha -> cientos de celdas falsas. -0.5 lo evita. (override: G1_HBAND_LO)
+HBAND_HI = float(os.environ.get("G1_HBAND_HI", "0.6"))    # borde SUPERIOR (excluye techo ~+1.3)
 NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
@@ -45,6 +48,18 @@ DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay pu
                                  # desactiva la maniobra de puerta y deja que el DWA rodee el obstaculo (si no, empujaba recto)
 PERSIST_N = 3                    # filtro de ruido del laser: ventana de barridos recientes
 PERSIST_K = 2                    # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N barridos
+# --- Mapa de obstaculos con SCORE/DECAY (anti acumulacion de ruido) ---
+# Antes: celda confirmada -> entra al instante y dura 60s (TTL). Con el robot parado en la puerta y el LiDAR
+# de cabeza vibrando, el mapa = UNION de todo lo visto en 60s -> cientos de celdas falsas (obs 142->521 en 18s).
+# Ahora: cada celda tiene un SCORE que sube al verse y baja si esta EN RANGO y no se ve. Con SC_MISS>=SC_HIT una
+# celda solo se mantiene si se ve en la MAYORIA de barridos recientes: el ruido intermitente decae y desaparece;
+# las paredes/mesa reales (vistas casi siempre) saturan al tope y se quedan. NO añade paredes fantasma.
+OLDMAP   = (os.environ.get("G1_OLDMAP") == "1")            # =1 vuelve al mapa TTL antiguo (para A/B en el robot)
+SC_HIT   = float(os.environ.get("G1_SC_HIT",   "1.0"))    # +score al ver la celda
+SC_MISS  = float(os.environ.get("G1_SC_MISS",  "1.0"))    # -score si esta EN RANGO y no se ve (>=HIT => exige mayoria de barridos)
+SC_CAP   = float(os.environ.get("G1_SC_CAP",   "6.0"))    # tope de score (da inercia a paredes reales ante oclusiones breves)
+SC_OBST  = float(os.environ.get("G1_SC_OBST",  "2.0"))    # umbral de score para contar como obstaculo
+SC_RANGE = float(os.environ.get("G1_SC_RANGE", "2.6"))    # m: solo se penaliza (decay) dentro de este radio (ventana de plan); fuera se conserva por TTL
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -874,7 +889,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
         lg.write("GATE-BLOCKED reloc dudosa\n")
         return False
 
-    omap = {}                                     # celda OCELL -> ultimo instante visto (mapa persistente con TTL)
+    omap = {}                                     # celda OCELL -> ultimo instante visto (mapa ACTIVO de obstaculos; lo lee el resto del codigo)
+    oscore = {}                                   # celda OCELL -> score de confianza (anti-ruido: sube al verse, baja al no verse)
+    oseen  = {}                                   # celda OCELL -> ultimo instante visto (para el TTL de respaldo del score)
     livehist = deque(maxlen=PERSIST_N)            # ultimos N barridos del laser (filtro de ruido por persistencia)
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
     plan_pts = []; plan_t = 0; carrot = None
@@ -946,7 +963,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         vshare["ph"] = "LLEGADO"; vshare["x"] = x; vshare["y"] = y
                 return True
 
-            # --- OBSTACULOS de la nube 'location' (frame mapa) -> mapa persistente con TTL ---
+            # --- OBSTACULOS de la nube 'location' (frame mapa) -> mapa con SCORE/DECAY (anti-ruido) ---
             live = reloc_cells(cdp)                   # celdas del barrido ACTUAL (laser en vivo)
             if live:
                 cloud_ok = True
@@ -954,13 +971,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 print("\n  [AVISO] no llega la nube 'location' -> NO puedo planificar (sin obstaculos).")
                 print("          ¿se ven los PUNTITOS del laser en la app?")
                 lg.write("NO-CLOUD warning\n"); cloud_warned = True
-            # --- FILTRO DE RUIDO DEL LASER (confiar mas en el mapa) ---
-            # El LiDAR de cabeza vibra con la marcha y, si la reloc salta, proyecta la nube en celdas
-            # equivocadas -> obstaculos fantasma que duran 60s (TTL). Antes cada celda entraba al instante.
-            # Ahora: una celda del MAPA estatico (pared conocida) entra YA; una celda que SOLO ve el laser
-            # necesita verse en >=PERSIST_K de los ultimos PERSIST_N barridos. El ruido parpadea (1 barrido)
-            # -> se descarta; la mesa/paredes reales son estables -> entran. La nube desplazada por un salto
-            # de reloc tambien aparece 1 barrido -> se filtra.
+            # --- CONFIRMACION de ENTRADA (confiar mas en el mapa) ---
+            # Una celda del MAPA estatico (pared conocida) se confirma YA; una celda que SOLO ve el laser
+            # necesita verse en >=PERSIST_K de los ultimos PERSIST_N barridos (filtra el parpadeo de 1 barrido:
+            # ruido del cabeceo o nube desplazada por un salto de reloc).
             livehist.append(live)
             confirmed = set()
             for c in live:
@@ -968,10 +982,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     confirmed.add(c)
                 elif sum(1 for h in livehist if c in h) >= PERSIST_K:   # confirmado por PERSISTENCIA del laser
                     confirmed.add(c)
-            for c in confirmed:
-                if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < g.NEAR_BLIND:
-                    continue                          # ignora campo cercano (anillo fantasma del cabeceo)
-                omap[c] = now
+            confirmed = {c for c in confirmed         # descarta campo cercano (anillo fantasma del cabeceo)
+                         if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND}
             # --- PERCEPCION GPU (HILO APARTE): depth -> scan virtual (la MESA que el LiDAR no ve) + suelo despejado ---
             if perc_worker is not None and now - perc_t > PERC_PERIOD:
                 perc_worker.submit(grab_cam(cdp), x, y, yaw)   # no bloquea: el hilo hace la consulta GPU
@@ -983,10 +995,37 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 perc_dets = res.detections or []
                 if res.free_center is not None:                # VISION basada en depth/seg (mejor que la heuristica)
                     vis_center, vis_nearrun = res.free_center, (res.near_run or 0); vis_t = now
-            for c in perc_cells:                      # inyecta obstaculos de vision con TTL (como el laser)
-                if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND:
+            vis_conf = {c for c in perc_cells         # obstaculos de vision (mesa) -> tambien pasan por el score
+                        if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND}
+            seen_now = confirmed | vis_conf           # candidatos vistos AHORA (laser confirmado + vision)
+
+            if OLDMAP:
+                # --- MODO ANTIGUO (G1_OLDMAP=1): entra al instante y dura NAV_OMAP_TTL -> UNION de 60s (acumula ruido) ---
+                for c in seen_now:
                     omap[c] = now
-            omap = {c: t for c, t in omap.items() if now - t < NAV_OMAP_TTL}
+                omap = {c: t for c, t in omap.items() if now - t < NAV_OMAP_TTL}
+            else:
+                # --- SCORE/DECAY: obstaculo solo si se ve en la MAYORIA de barridos recientes ---
+                # Solo se actualiza con barrido fresco (si cae la nube, no penalizamos -> no se borra el mapa).
+                # El decay solo actua dentro de SC_RANGE (ventana de plan); fuera de rango se conserva por TTL
+                # de respaldo (memoria de paredes ya pasadas, no se borran por dejar de verse al girar).
+                if live or seen_now:
+                    for c in confirmed:               # laser confirmado: sube score; mapa estatico -> tope (instantaneo)
+                        oscore[c] = SC_CAP if (refmap and c in refmap) else min(SC_CAP, oscore.get(c, 0.0) + SC_HIT)
+                        oseen[c] = now
+                    for c in vis_conf:                # vision: sube score (necesita ~2 frames -> filtra depth ruidoso)
+                        if c not in confirmed:
+                            oscore[c] = min(SC_CAP, oscore.get(c, 0.0) + SC_HIT)
+                            oseen[c] = now
+                    for c in list(oscore.keys()):     # decay + purga
+                        if c in seen_now:
+                            continue
+                        if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < SC_RANGE:
+                            oscore[c] -= SC_MISS      # en rango y no visto -> ruido intermitente: penaliza
+                        if oscore[c] <= 0.0 or now - oseen.get(c, now) >= NAV_OMAP_TTL:
+                            oscore.pop(c, None); oseen.pop(c, None)
+                # mapa ACTIVO = celdas con score suficiente (omap sigue siendo celda->instante para el resto del codigo)
+                omap = {c: oseen[c] for c, s in oscore.items() if s >= SC_OBST}
             oset = set(omap.keys()) | colmap
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
@@ -1223,7 +1262,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
                     f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} bal={m_cl-m_cr:+.2f} "
-                    f"obs={len(oset)} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+                    f"obs={len(oset)} obsc={len(oscore)} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now
