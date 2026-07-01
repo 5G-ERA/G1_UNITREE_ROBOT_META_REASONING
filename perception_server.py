@@ -257,8 +257,28 @@ def _annotate(rgb, scan, dets, free_center):
     return img
 
 
+_WARNED_INTR = False
+
+
+def _check_intrinsics(W, H):
+    """Aviso (1 vez) si cx/cy no estan cerca del centro del frame ENTRANTE: sintoma de intrinsics
+    calibradas a OTRA resolucion (p.ej. 640px sobre un frame de 320px) -> el depth->suelo sale mal
+    y salen POCAS/NINGUNA celda-obstaculo. Es el fallo #1 documentado (SETUP_UBUNTU §3-4)."""
+    global _WARNED_INTR
+    if _WARNED_INTR or ARGS is None or ARGS.stub:
+        return
+    if abs(ARGS.cx - W / 2.0) > W * 0.25 or abs(ARGS.cy - H / 2.0) > H * 0.25:
+        sc = W / (2.0 * ARGS.cx) if ARGS.cx else 1.0
+        print(f"[perception][AVISO] frame {W}x{H} pero cx={ARGS.cx} cy={ARGS.cy} (centro ~{W//2},{H//2}). "
+              f"Las intrinsics parecen de OTRA resolucion -> depth->suelo mal, pocas celdas. "
+              f"Recalibra al ancho real: --fx {ARGS.fx*sc:.0f} --fy {ARGS.fy*sc:.0f} --cx {W//2} --cy {H//2}",
+              flush=True)
+        _WARNED_INTR = True
+
+
 def perceive(payload):
     rgb = decode_image(payload["image"])
+    _check_intrinsics(rgb.shape[1], rgb.shape[0])
     hband = payload.get("hband", [0.10, 1.30])
     max_range = float(payload.get("max_range", ARGS.max_range))
     if ARGS.stub:

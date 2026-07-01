@@ -63,7 +63,14 @@ SC_RANGE = float(os.environ.get("G1_SC_RANGE", "2.6"))    # m: solo se penaliza 
 # GATE DE ROTACION: al girar rapido la nube 'location' se proyecta con la pose RETRASADA -> los barridos se
 # ensucian (laser_noise +65% girando, observado). No es fiable meterlos en el mapa. Si |yaw_rate|>YAW_GATE
 # CONGELAMOS el mapa (ni inserta ni decae): usamos lo capturado yendo recto/lento. 0 = desactiva. (G1_YAWGATE)
-YAW_GATE = float(os.environ.get("G1_YAWGATE", "30.0"))    # deg/s (la maniobra de puerta gira ~36 deg/s -> se congela)
+YAW_GATE = float(os.environ.get("G1_YAWGATE", "30.0"))    # >0 = gate ACTIVO (G1_YAWGATE=0 lo desactiva). yaw_rate solo se loguea (yr=)
+# El gate mira el giro COMANDADO (|rx|), NO el yaw medido: el bamboleo de la marcha mete 30-66 deg/s de yaw
+# yendo RECTO (medido, rx=0) -> con umbral por yaw medido el gate congelaba caminando de frente (run 164456).
+RX_GATE  = float(os.environ.get("G1_RXGATE",  "0.20"))    # |rx| comandado que cuenta como GIRO real (giro de puerta ~0.45)
+# SEGURIDAD > anti-ruido: obstaculo de laser CONFIRMADO a < SAFE_R de frente entra YA al mapa (salta gate y umbral).
+SAFE_R   = float(os.environ.get("G1_SAFE_R",  "1.20"))    # m: radio de override de seguridad de campo cercano
+VIS_OBST_LABELS = {"table", "diningtable", "dining table", "desk", "chair", "couch", "sofa",
+                   "bench", "refrigerator", "person"}     # clases YOLO que son obstaculo (para el log [VIS])
 DATASET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset")
 
 
@@ -916,6 +923,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     aggressive = (os.environ.get("G1_AGGRESSIVE") == "1")    # modo agresivo (forzable; si no, se activa al atascarse)
     best_d = 1e9; best_d_t = t0; ROBOT_R0 = g.ROBOT_R        # progreso hacia B + holgura normal (para restaurar)
     vis_center = None; vis_nearrun = None; vis_t = 0         # VISION (suelo despejado) para la puerta (laser ruidoso ahi)
+    vis_log_t = 0                                            # throttle del log [VIS] (que ve YOLO y si la nav lo usa)
     # --- PERCEPCION GPU offboard (opcional): depth -> scan virtual que VE la mesa invisible al LiDAR ---
     perc = g1_perception.make_client_from_env(g.OCELL) if g1_perception else None
     perc_worker = g1_perception.PerceptionWorker(perc) if perc else None       # consulta GPU en HILO APARTE (no congela el control)
@@ -1008,7 +1016,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             if yaw_prev is not None and yaw_prev_t is not None and now > yaw_prev_t:
                 yaw_rate = abs((yaw - yaw_prev + 180.0) % 360.0 - 180.0) / (now - yaw_prev_t)
             yaw_prev, yaw_prev_t = yaw, now
-            turning_fast = (YAW_GATE > 0) and (yaw_rate > YAW_GATE)
+            turning_fast = (YAW_GATE > 0) and (abs(prev_cmd[2]) > RX_GATE)   # GATE por giro COMANDADO (no por bamboleo)
 
             if OLDMAP:
                 # --- MODO ANTIGUO (G1_OLDMAP=1): entra al instante y dura NAV_OMAP_TTL -> UNION de 60s (acumula ruido) ---
@@ -1016,10 +1024,16 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     omap[c] = now
                 omap = {c: t for c, t in omap.items() if now - t < NAV_OMAP_TTL}
             else:
+                # SEGURIDAD (prioridad sobre el anti-ruido): un obstaculo de laser CONFIRMADO y CERCA entra YA
+                # al mapa a score maximo, aunque el gate este congelando por giro y sin esperar al umbral. Esto
+                # habria metido la mesa a tiempo (choque run 164456: c0=2.50 hasta el impacto, perc_n=0).
+                near_now = {c for c in (confirmed | vis_conf)   # laser O vision: lo que este CERCA entra ya
+                            if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < SAFE_R}
+                for c in near_now:
+                    oscore[c] = SC_CAP; oseen[c] = now
                 # --- SCORE/DECAY: obstaculo solo si se ve en la MAYORIA de barridos recientes ---
                 # Solo se actualiza con barrido fresco (si cae la nube, no penalizamos -> no se borra el mapa).
-                # El decay solo actua dentro de SC_RANGE (ventana de plan); fuera de rango se conserva por TTL
-                # de respaldo (memoria de paredes ya pasadas, no se borran por dejar de verse al girar).
+                # El decay solo actua dentro de SC_RANGE (ventana de plan); fuera de rango se conserva por TTL.
                 if (live or seen_now) and not turning_fast:   # GATE: no actualizar el mapa mientras se gira rapido
                     for c in confirmed:               # laser confirmado: sube score; mapa estatico -> tope (instantaneo)
                         oscore[c] = SC_CAP if (refmap and c in refmap) else min(SC_CAP, oscore.get(c, 0.0) + SC_HIT)
@@ -1038,6 +1052,25 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 # mapa ACTIVO = celdas con score suficiente (omap sigue siendo celda->instante para el resto del codigo)
                 omap = {c: oseen[c] for c, s in oscore.items() if s >= SC_OBST}
             oset = set(omap.keys()) | colmap
+            # --- LOG [VIS]: que ve YOLO/depth y si la navegacion lo USA (entra al mapa) o lo IGNORA ---
+            if perc_dets or now - vis_log_t > 1.0:
+                vis_log_t = now
+                obst_dets = [d for d in perc_dets if str(d.get("label", "")).lower() in VIS_OBST_LABELS]
+                for d in obst_dets:
+                    lab = d.get("label"); rng = d.get("range_m"); bd = d.get("bearing_deg") or 0.0
+                    if rng is None:
+                        lg.write(f"[VIS] YOLO ve {lab}@{bd:+.0f} SIN RANGO (depth no dio dist) -> IGNORADA\n"); continue
+                    aa = math.radians(yaw + bd)
+                    dc = (round((x + rng * math.cos(aa)) / g.OCELL), round((y + rng * math.sin(aa)) / g.OCELL))
+                    inmap = any((dc[0] + i, dc[1] + j) in omap for i in (-2, -1, 0, 1, 2) for j in (-2, -1, 0, 1, 2))
+                    tag = "USADA (en mapa)" if inmap else f"IGNORADA (gate={'G' if turning_fast else '-'} perc_n={len(perc_cells)})"
+                    lg.write(f"[VIS] YOLO ve {lab} conf={(d.get('conf') or 0):.2f} @{bd:+.0f}/{rng}m -> {tag}\n")
+                if obst_dets or now - vis_log_t <= 0.01:   # resumen periodico aunque no haya detecciones
+                    nvis_map = sum(1 for c in vis_conf if c in omap)
+                    dstr = ",".join(f"{d.get('label')}@{(d.get('bearing_deg') or 0):+.0f}/{d.get('range_m')}m" for d in obst_dets) or "-"
+                    lg.write(f"[VIS] perc_n={len(perc_cells)} free_c={vis_center if vis_center is not None else '-'} "
+                             f"vismap={nvis_map}/{len(vis_conf)} dets=[{dstr}]\n")
+                lg.flush()
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
@@ -1086,7 +1119,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 rside = 1 if cl >= cr else -1
                 recov = {"ph": "BACK", "t0": now}; fhist = []; plan_pts = []
                 print(f"\n  COLISION #{ncol} [{ctype}] en ({x:+.2f},{y:+.2f}) -> marco y recupero.")
-                lg.write(f"COLISION #{ncol} [{ctype}] pos=({x:+.2f},{y:+.2f}) yaw={yaw:+.0f}\n")
+                _cd = ",".join(f"{d.get('label')}@{(d.get('bearing_deg') or 0):+.0f}/{d.get('range_m')}m"
+                               for d in perc_dets if str(d.get('label', '')).lower() in VIS_OBST_LABELS) or "-"
+                lg.write(f"COLISION #{ncol} [{ctype}] pos=({x:+.2f},{y:+.2f}) yaw={yaw:+.0f} c0={c0:.2f} obs={len(oset)} "
+                         f"perc_n={len(perc_cells)} free_c={vis_center if vis_center is not None else '-'} dets=[{_cd}] "
+                         f"-> {'VISION CIEGA (perc_n=0): mesa LiDAR-ciega no vista' if len(perc_cells) == 0 else 'vision aportaba celdas'}\n")
                 rd.event("collision", now - t0, x, y, {"src": ctype})
                 rd.save_cloud(f"col{ncol}", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
                 rd.save_cam(f"col{ncol}", grab_cam(cdp))
@@ -1273,7 +1310,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
                     f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} bal={m_cl-m_cr:+.2f} "
-                    f"obs={len(oset)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'*' if (YAW_GATE>0 and yaw_rate>YAW_GATE) else ' '} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+                    f"obs={len(oset)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'G' if turning_fast else ' '} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now

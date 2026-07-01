@@ -76,9 +76,11 @@ class PerceptionClient:
             self.ok = False; self.last_err = str(e); self.n_fail += 1
             return None
         lat = (time.time() - t0) * 1000.0
+        dets = j.get("detections", [])
         cells = self._scan_to_cells(j.get("scan", []), x, y, yaw_deg)
+        cells |= self._dets_to_cells(dets, x, y, yaw_deg)   # YOLO -> celdas de obstaculo (antes se IGNORABAN)
         return PerceptionResult(cells, j.get("free_center"), j.get("near_run"),
-                                j.get("detections", []), lat, j)
+                                dets, lat, j)
 
     def _scan_to_cells(self, scan, x, y, yaw_deg):
         """Virtual scan [(bearing_deg, range_m), ...] (robot frame) -> set of MAP cells."""
@@ -95,6 +97,34 @@ class PerceptionClient:
             mx = x + rng * math.cos(a)
             my = y + rng * math.sin(a)
             out.add((round(mx / self.ocell), round(my / self.ocell)))
+        return out
+
+    # Clases de deteccion que son OBSTACULOS solidos. 'door' NO (es el hueco por el que hay que pasar).
+    DET_OBST = {"table", "diningtable", "dining table", "desk", "chair", "couch", "sofa",
+                "bench", "refrigerator", "person"}
+
+    def _dets_to_cells(self, dets, x, y, yaw_deg):
+        """Detecciones YOLO (label, bearing_deg, range_m) -> celdas MAPA, con una pequena HUELLA lateral
+        para que A* rodee el objeto. Esto mete la MESA en el mapa aunque el depth-scan no la proyecte
+        (la mesa es LiDAR-ciega; YOLO+depth es su unica via). range_m lo pone el servidor desde el depth."""
+        out = set()
+        yr = math.radians(yaw_deg)
+        for d in dets or []:
+            lab = str(d.get("label", "")).lower()
+            if lab not in self.DET_OBST:
+                continue
+            rng = d.get("range_m")
+            if rng is None or rng <= 0.05 or rng > self.max_range:
+                continue
+            a = yr + math.radians(d.get("bearing_deg", 0.0))
+            mx = x + rng * math.cos(a); my = y + rng * math.sin(a)
+            px, py = -math.sin(a), math.cos(a)     # perpendicular al rumbo (ancho del objeto)
+            dx, dy = math.cos(a), math.sin(a)      # a lo largo del rumbo (fondo)
+            for s in (-2, -1, 0, 1, 2):            # ancho ~ +-0.4 m (mesa/silla)
+                for t in (-1, 0, 1):               # fondo ~ +-0.2 m
+                    cxm = mx + s * self.ocell * px + t * self.ocell * dx
+                    cym = my + s * self.ocell * py + t * self.ocell * dy
+                    out.add((round(cxm / self.ocell), round(cym / self.ocell)))
         return out
 
     def nearest_person(self):
