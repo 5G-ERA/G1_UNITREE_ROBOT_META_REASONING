@@ -41,38 +41,79 @@ MAD_MIN = (2.0, 4.0, 8.0)
 
 
 class FloorColor:
-    def __init__(self, med, mad):
-        self.med = np.asarray(med, dtype=np.float32)
-        self.mad = np.maximum(np.asarray(mad, dtype=np.float32), MAD_MIN)
+    """Modelo MULTI-MODO: la misma moqueta cambia por completo con la exposicion de la camara
+    (oficina iluminada: gris lavado S~11; pasillo oscuro: azul saturado S~91-101, medido 2026-07-02
+    en crash_03_162351). Un pixel es moqueta si encaja con CUALQUIER modo."""
+
+    def __init__(self, modes):
+        # modes: lista de (med, mad) para modos estadisticos, o dicts {"h","dh","s":[lo,hi],"v":[lo,hi]}
+        # para modos con LIMITES EXPLICITOS (data-driven, ej. moqueta oscura del pasillo).
+        self.modes = []
+        for m in modes:
+            if isinstance(m, dict):
+                self.modes.append(m)
+            else:
+                med, mad = m
+                self.modes.append((np.asarray(med, dtype=np.float32),
+                                   np.maximum(np.asarray(mad, dtype=np.float32), MAD_MIN)))
+
+    @property
+    def med(self):
+        return self.modes[0][0] if not isinstance(self.modes[0], dict) else None
+
+    @property
+    def mad(self):
+        return self.modes[0][1] if not isinstance(self.modes[0], dict) else None
 
     # ---------- calibracion ----------
     @classmethod
     def calibrate(cls, images):
-        """images: lista de BGR (np.ndarray) de MOQUETA PURA. Mediana+MAD sobre todos los pixeles."""
-        px = np.vstack([cv2.cvtColor(im, cv2.COLOR_BGR2HSV).reshape(-1, 3) for im in images]).astype(np.float32)
-        med = np.median(px, axis=0)
-        mad = np.median(np.abs(px - med), axis=0)
-        return cls(med, mad)
+        """images: lista de BGR (np.ndarray) de MOQUETA PURA. Cada imagen -> UN modo (mediana+MAD).
+        Pasa una imagen por condicion de luz (oficina, pasillo oscuro, ...)."""
+        modes = []
+        for im in images:
+            px = cv2.cvtColor(im, cv2.COLOR_BGR2HSV).reshape(-1, 3).astype(np.float32)
+            med = np.median(px, axis=0)
+            mad = np.median(np.abs(px - med), axis=0)
+            modes.append((med, mad))
+        return cls(modes)
 
     def save(self, path=CALIB_FILE):
-        json.dump({"med": self.med.tolist(), "mad": self.mad.tolist(),
-                   "k": list(K_HSV), "note": "HSV cv2 (H 0-180); moqueta lab"}, open(path, "w"), indent=1)
+        out = []
+        for m in self.modes:
+            if isinstance(m, dict):
+                out.append(m)
+            else:
+                out.append({"med": m[0].tolist(), "mad": m[1].tolist()})
+        json.dump({"modes": out, "k": list(K_HSV),
+                   "note": "HSV cv2 (H 0-180); un modo por condicion de luz (med/mad o limites explicitos)"},
+                  open(path, "w"), indent=1)
 
     @classmethod
     def load(cls, path=CALIB_FILE):
         j = json.load(open(path))
-        return cls(j["med"], j["mad"])
+        if "modes" in j:
+            return cls([m if "h" in m else (m["med"], m["mad"]) for m in j["modes"]])
+        return cls([(j["med"], j["mad"])])          # calibracion antigua de un solo modo
 
     # ---------- inferencia ----------
     def mask(self, img_bgr):
-        """255 = moqueta (suelo libre), 0 = NO moqueta (potencial obstaculo). Morfologia anti-ruido."""
+        """255 = moqueta (suelo libre), 0 = NO moqueta (potencial obstaculo). OR de todos los modos."""
         hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV).astype(np.float32)
-        dh = np.abs(hsv[..., 0] - self.med[0]); dh = np.minimum(dh, 180.0 - dh)   # hue circular
-        ds = np.abs(hsv[..., 1] - self.med[1])
-        dv = np.abs(hsv[..., 2] - self.med[2])
-        m = ((dh <= K_HSV[0] * self.mad[0]) &
-             (ds <= K_HSV[1] * self.mad[1]) &
-             (dv <= K_HSV[2] * self.mad[2])).astype(np.uint8) * 255
+        acc = np.zeros(hsv.shape[:2], dtype=bool)
+        for m in self.modes:
+            if isinstance(m, dict):                 # modo con limites explicitos
+                dh = np.abs(hsv[..., 0] - m["h"]); dh = np.minimum(dh, 180.0 - dh)
+                acc |= ((dh <= m["dh"]) &
+                        (hsv[..., 1] >= m["s"][0]) & (hsv[..., 1] <= m["s"][1]) &
+                        (hsv[..., 2] >= m["v"][0]) & (hsv[..., 2] <= m["v"][1]))
+                continue
+            med, mad = m
+            dh = np.abs(hsv[..., 0] - med[0]); dh = np.minimum(dh, 180.0 - dh)   # hue circular
+            ds = np.abs(hsv[..., 1] - med[1])
+            dv = np.abs(hsv[..., 2] - med[2])
+            acc |= ((dh <= K_HSV[0] * mad[0]) & (ds <= K_HSV[1] * mad[1]) & (dv <= K_HSV[2] * mad[2]))
+        m = acc.astype(np.uint8) * 255
         m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))    # quita sal-pimienta
         m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))   # cierra poros de la moqueta
         return m
@@ -110,6 +151,48 @@ class FloorColor:
             if (mask[y0:, x0:x1] > 128).mean() < 0.5:
                 n += 1
         return n
+
+    # ---------- DETECTOR DE PUERTA (sin entrenamiento) ----------
+    # Puerta del lab = corredor de MOQUETA que se adentra en la imagen, flanqueado por
+    # VERTICALES BLANCAS (marco/hoja: S baja, V alta). Devuelve el rumbo del centro del vano,
+    # estable frente al 'ddir' del A* (que tiembla con el laser ruidoso y hacia oscilar DOOR-AL).
+    def find_door(self, img_bgr, hfov_deg=56.0, ncols=32, depth_th=0.45, white_v=150, white_s=60):
+        """Devuelve dict {bearing_deg, width_frac, depth, left_white, right_white, score} o None.
+        bearing_deg: + = puerta a la IZQUIERDA del eje optico (convencion bearing estandar)."""
+        mask = self.mask(img_bgr)
+        h, w = mask.shape
+        prof = self.free_profile(mask, ncols)                      # profundidad de moqueta por columna
+        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+        whitec = []
+        for c in range(ncols):                                     # columna "blanca": marco/pared/hoja
+            x0, x1 = int(c * w / ncols), int((c + 1) * w / ncols)
+            col = hsv[:, x0:x1]
+            whitec.append(((col[..., 1] < white_s) & (col[..., 2] > white_v)).mean() > 0.35)
+        # banda contigua de columnas con moqueta PROFUNDA (el corredor que cruza el vano)
+        best = None
+        c = 0
+        while c < ncols:
+            if prof[c] >= depth_th:
+                c0 = c
+                while c < ncols and prof[c] >= depth_th:
+                    c += 1
+                band = (c0, c - 1)
+                depth = float(np.mean(prof[c0:c]))
+                lw = bool(c0 > 0 and whitec[c0 - 1]) or bool(c0 > 1 and whitec[c0 - 2])
+                rw = bool(c - 1 < ncols - 1 and whitec[c]) or bool(c - 1 < ncols - 2 and whitec[c + 1])
+                score = depth + 0.25 * (lw + rw)
+                if best is None or score > best["score"]:
+                    center = (band[0] + band[1] + 1) / 2.0 / ncols          # 0..1
+                    best = {"bearing_deg": round((0.5 - center) * hfov_deg, 1),
+                            "width_frac": round((band[1] - band[0] + 1) / ncols, 2),
+                            "depth": round(depth, 2), "left_white": lw, "right_white": rw,
+                            "score": round(score, 2)}
+            else:
+                c += 1
+        # una "puerta" sin al menos un flanco blanco y profundidad alta es solo suelo abierto
+        if best and (best["depth"] >= depth_th) and (best["left_white"] or best["right_white"]):
+            return best
+        return None
 
 
 # ---------------- CLI ----------------
