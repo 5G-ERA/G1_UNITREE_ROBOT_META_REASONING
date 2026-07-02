@@ -330,8 +330,10 @@ def _annotate(rgb, scan, dets, free_center, cmask=None, door=None):
     H, W = img.shape[:2]
     if cmask is not None and cmask.shape == (H, W):
         m = cmask > 128
-        ov = img.copy(); ov[~m] = (0, 0, 200); ov[m] = (0, 150, 0)
-        img = cv2.addWeighted(img, 0.72, ov, 0.28, 0)
+        # ROJO FUERTE en obstaculo (Adrian: al 28% el rojo desaparecia sobre muebles oscuros),
+        # verde suave en moqueta (que se siga viendo la escena por donde SI se puede pisar).
+        img[~m] = (img[~m].astype(np.float32) * 0.40 + np.array([0, 0, 215], np.float32) * 0.60).astype(np.uint8)
+        img[m] = (img[m].astype(np.float32) * 0.78 + np.array([0, 150, 0], np.float32) * 0.22).astype(np.uint8)
         cv2.putText(img, "FLOORCOLOR", (W - 118, 16), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1, cv2.LINE_AA)
     if door:
         def _bx(b):
