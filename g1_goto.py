@@ -49,6 +49,13 @@ DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay pu
 PERSIST_N = 3                    # filtro de ruido del laser: ventana de barridos recientes
 PERSIST_K = 2                    # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N barridos
 STALE_WARN_TICKS = 10            # ticks seguidos con la nube SIN refrescar antes de avisar en el log (~3s a 0.3s/tick)
+# --- GUARDIA ANTI-DIVERGENCIA de relocalizacion (fix 2 del handoff; se perdio en el rollback) ---
+# Run 134458: 78 reloc_jumps encadenados, path_m=582, pose final a 538m -> el robot CAMINABA en coordenadas
+# de fantasia. Una correccion legitima de reloc es UN salto y luego estable; divergencia = saltos repetidos.
+# El guardia SOLO PARA (STOP + aborta la run): nunca dirige. Falso positivo = run abortada, robot quieto = seguro.
+RELOC_GUARD = (os.environ.get("G1_RELOCGUARD", "1") == "1")   # G1_RELOCGUARD=0 lo desactiva (A/B estricto)
+RELOC_STOP_N = int(os.environ.get("G1_RELOC_N", "4"))         # nº de saltos >0.5m...
+RELOC_STOP_WIN = float(os.environ.get("G1_RELOC_WIN", "10.0"))  # ...dentro de esta ventana (s) = divergencia
 # --- Mapa de obstaculos con SCORE/DECAY (anti acumulacion de ruido) ---
 # Antes: celda confirmada -> entra al instante y dura 60s (TTL). Con el robot parado en la puerta y el LiDAR
 # de cabeza vibrando, el mapa = UNION de todo lo visto en 60s -> cientos de celdas falsas (obs 142->521 en 18s).
@@ -929,6 +936,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     tick_add = 0; tick_del = 0; prev_oset_diag = set()
     safer_ins = 0                                 # celdas forzadas por el override de seguridad SAFE_R
     njumps = 0; pend_jump = False                 # saltos de reloc (contador + pendiente para el proximo update fresco)
+    jump_times = deque(maxlen=32)                 # instantes de reloc_jump (guardia anti-divergencia, cuenta TODOS)
     tick_dts = deque(maxlen=3000); last_tick_t = None   # duracion del ciclo de control (WebView lento = ticks largos)
     ss2 = {"reliability": 1.0, "laser_noise": 0.0, "loc_conf": 1.0, "c0_std": 0.0,
            "scan_churn": 0.0, "reloc_rate10s": 0}      # ultimo update FRESCO del SensingMonitor (se reusa en ticks stale)
@@ -970,6 +978,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     perc_worker = g1_perception.PerceptionWorker(perc) if perc else None       # consulta GPU en HILO APARTE (no congela el control)
     if perc_worker:
         perc_worker.start()
+    else:
+        # Ayer (runs 164306/164456): 2 colisiones con c0=2.50 y perc_n=0 -> la mesa LiDAR-ciega NO se ve sin vision.
+        print("\n  " + "!" * 74)
+        print("  !!  VISION OFF (G1_PERC sin definir): la MESA invisible al LiDAR no se vera.")
+        print("  !!  Recomendado: G1_PERC=127.0.0.1:8008 (con perception_server.py corriendo).")
+        print("  " + "!" * 74 + "\n")
+        lg.write("NO-VISION warning: G1_PERC sin definir (mesa LiDAR-ciega invisible)\n"); lg.flush()
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
@@ -997,6 +1012,22 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
                                                         "from": [round(last_pose[0], 2), round(last_pose[1], 2)]})
                 lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
+                jump_times.append(now)
+                # --- GUARDIA: saltos repetidos = la reloc esta DIVERGIENDO -> STOP ya (no caminar en fantasia) ---
+                if RELOC_GUARD:
+                    recent_j = sum(1 for tj in jump_times if now - tj <= RELOC_STOP_WIN)
+                    if recent_j >= RELOC_STOP_N:
+                        cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
+                        print(f"\n  >>> RELOC DIVERGE: {recent_j} saltos en {RELOC_STOP_WIN:.0f}s. STOP y ABORTO. "
+                              f"Re-localiza en la app antes de reintentar (G1_RELOCGUARD=0 desactiva el guardia).")
+                        lg.write(f"RELOC-DIVERGE STOP {recent_j} saltos/{RELOC_STOP_WIN:.0f}s "
+                                 f"pos=({x:+.2f},{y:+.2f}) {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
+                        rd.event("reloc_diverge_stop", now - t0, x, y, {"jumps_in_win": recent_j})
+                        rd.save_cloud("relocdiv", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
+                        rd.finish("aborted_reloc_diverge",
+                                  {"time_s": round(now - t0, 2), "path_m": round(_path_len(trail), 2),
+                                   "collisions": ncol, "c0min": round(minc0, 2), **diag_summary()})
+                        return False
             if last_pose is None or abs(x - last_pose[0]) > 1e-4 or abs(y - last_pose[1]) > 1e-4:
                 pose_t = now; last_pose = (x, y)
             if not trail:
