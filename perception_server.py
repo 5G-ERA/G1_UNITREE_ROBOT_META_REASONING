@@ -30,7 +30,7 @@ Camera calibration: --fx/--fy/--cx/--cy (pixels), --cam-h (camera height, m),
 --cam-pitch (deg, negative=looking down). These default to rough G1 values and
 MUST be calibrated for accurate depth->ground projection (see CALIBRATION note).
 """
-import argparse, base64, io, json, math, time
+import argparse, base64, io, json, math, os, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import numpy as np
@@ -38,6 +38,7 @@ import numpy as np
 ARGS = None
 _MODELS = {}          # lazy cache
 _LAST_VIZ = None      # latest annotated frame for the --debug window
+_FLOORCOLOR = {"model": None, "warned": False}   # canal de COLOR DE MOQUETA (g1_floorcolor), lazy
 
 
 # ----------------------------------------------------------------------------- image
@@ -202,6 +203,86 @@ def depth_to_scan(depth, floor_mask, hband, max_range):
     return scan, bmin, bmax
 
 
+# ----------------------------------------------------------------------------- color de moqueta
+def get_floorcolor():
+    """Modelo de color de moqueta (g1_floorcolor.py + floorcolor_calib.json, mismo repo). Lazy."""
+    if _FLOORCOLOR["model"] is not None or _FLOORCOLOR["warned"]:
+        return _FLOORCOLOR["model"]
+    try:
+        import g1_floorcolor
+        _FLOORCOLOR["model"] = g1_floorcolor.FloorColor.load()
+        print(f"[perception] FLOORCOLOR ON ({len(_FLOORCOLOR['model'].modes)} modos de moqueta)", flush=True)
+    except Exception as e:
+        print(f"[perception][AVISO] floorcolor desactivado (no cargo modelo/calib): {e}", flush=True)
+        _FLOORCOLOR["warned"] = True
+    return _FLOORCOLOR["model"]
+
+
+def color_to_scan(rgb, max_range, ncols=48):
+    """Canal de COLOR (validado offline 2026-07-02: la cajonera del choque 114603 la veia SOLO el color;
+    la mesa LiDAR-ciega free=0.00; YOLO no tiene clase para cajoneras/puertas y el depth fallo con
+    perc_n=0 en el impacto). Por columna: la fila donde ACABA la moqueta continua desde abajo = base
+    del primer obstaculo -> proyeccion al suelo -> [bearing, range]. REGLA DE FUSION: el color solo
+    ANADE obstaculos (union con el scan de depth); nunca resta (los voladizos tipo mesa tienen moqueta
+    debajo y son trabajo del depth). Devuelve (scan, door) -- door = find_door() para DOOR-AL futuro.
+    NOTA geometria: usa las mismas intrinsics/extrinsics que depth_to_scan; la proyeccion asume la base
+    del obstaculo VISIBLE y sobre el plano del suelo. Si el obstaculo toca el borde inferior de la
+    imagen (sin moqueta debajo, p.ej. la cajonera encima), el rango se CLAMPA a NEAR_CLAMP: esta
+    practicamente encima y la proyeccion ya no es fiable."""
+    fc = get_floorcolor()
+    if fc is None:
+        return [], None
+    import cv2
+    bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+    mask = fc.mask(bgr)
+    H, W = mask.shape
+    fx, fy, cx, cy = ARGS.fx, ARGS.fy, ARGS.cx, ARGS.cy
+    th = math.radians(abs(ARGS.cam_pitch))          # angulo de picado (mirando abajo)
+    cth, sth = math.cos(th), math.sin(th)
+    ch = ARGS.cam_h
+    NEAR_CLAMP = 0.40
+    scan = []
+    GAP_ROWS = max(4, int(H * 0.12))                # banda no-moqueta mas FINA que esto, con moqueta
+    for c in range(ncols):                          # reanudandose encima = marca PLANA del suelo
+        x0, x1 = int(c * W / ncols), int((c + 1) * W / ncols)   # (umbral de madera de la puerta,
+        col = (mask[:, x0:x1] > 128).mean(axis=1) > 0.5          # cinta amarilla): NO es obstaculo.
+        v = H - 1
+        skips = 0
+        while True:
+            while v >= 0 and col[v]:                # sube por la moqueta continua
+                v -= 1
+            if v < 0:
+                break                               # moqueta hasta arriba: sin obstaculo por color
+            g = 0                                   # mide el grosor de la banda no-moqueta
+            vv = v
+            while vv >= 0 and not col[vv]:
+                vv -= 1; g += 1
+            if vv >= 0 and g <= GAP_ROWS and skips < 2:
+                v = vv; skips += 1                  # banda fina con moqueta encima: marca plana -> saltala
+                continue
+            break                                   # banda gruesa (o hasta arriba): base de OBSTACULO real
+        if v < 0:
+            continue
+        u = 0.5 * (x0 + x1)
+        bearing = -math.degrees(math.atan2(u - cx, fx))
+        if v >= H - 3:                              # obstaculo tocando el borde inferior: encima del robot
+            scan.append([round(bearing, 1), NEAR_CLAMP])
+            continue
+        denom = ((v - cy) / fy) * cth + sth         # rayo del pixel v contra el plano del suelo
+        if denom <= 1e-3:
+            continue                                # por encima del horizonte: no proyectable
+        Z = ch / denom
+        if Z < 0.15 or Z > max_range:
+            continue
+        scan.append([round(bearing, 1), round(float(Z), 2)])
+    door = None
+    try:
+        door = fc.find_door(bgr)
+    except Exception:
+        pass
+    return scan, door
+
+
 def free_center_from_scan(scan, near_m=1.2, center_deg=18.0):
     """Fraction of central bearings that are clear (range > near_m), and a near_run count."""
     if not scan:
@@ -290,6 +371,11 @@ def perceive(payload):
         else:
             floor = run_seg_floor_mask(rgb) if ARGS.seg != "off" else None
             scan, _, _ = depth_to_scan(depth, floor, hband, max_range)
+            door = None; ncolor = 0
+            if ARGS.floorcolor:                     # CANAL DE COLOR: union (solo anade), + puerta
+                cscan, door = color_to_scan(rgb, max_range)
+                ncolor = len(cscan)
+                scan = scan + cscan
             free_center, near_run = free_center_from_scan(scan)
             dets = run_det(rgb, ARGS.fx, ARGS.cx) if ARGS.det != "off" else []
             for dct in dets:                      # range each detection from the DEPTH at its box (robust),
@@ -304,6 +390,10 @@ def perceive(payload):
                     dct["range_m"] = min(scan, key=lambda s: abs(s[0] - dct["bearing_deg"]))[1]
             out = {"scan": scan, "free_center": free_center, "near_run": near_run,
                    "detections": dets, "mode": "gpu"}
+            if ARGS.floorcolor:
+                out["color_pts"] = ncolor           # diagnostico: cuantos puntos aporto el color
+                if door:
+                    out["door"] = door              # {bearing_deg, left/right_edge_deg, ...} para DOOR-AL futuro
     if ARGS.debug:
         try:
             global _LAST_VIZ
@@ -451,11 +541,15 @@ def main():
     ap.add_argument("--cam-pitch", type=float, default=-10.0, help="camera pitch deg (neg=down)")
     ap.add_argument("--scan-bins", type=int, default=72)
     ap.add_argument("--max-range", type=float, default=3.0)
+    ap.add_argument("--floorcolor", type=int, default=int(os.environ.get("G1_FLOORCOLOR", "0")),
+                    help="1 = canal de color de moqueta (obstaculos por no-moqueta + detector de puerta). "
+                         "Default OFF para A/B limpio; tambien via env G1_FLOORCOLOR=1")
     ap.add_argument("--debug", action="store_true",
                     help="open a live window: detection boxes + distance, free_center, and a scan radar")
     ARGS = ap.parse_args()
     print(f"[perception] {'STUB' if ARGS.stub else 'GPU'} on {ARGS.host}:{ARGS.port} "
-          f"depth={ARGS.depth} seg={ARGS.seg} det={ARGS.det} gpus={_gpu_info()}"
+          f"depth={ARGS.depth} seg={ARGS.seg} det={ARGS.det} floorcolor={'ON' if ARGS.floorcolor else 'off'} "
+          f"gpus={_gpu_info()}"
           f"{' [DEBUG WINDOW]' if ARGS.debug else ''}")
     if not ARGS.stub:                              # warm up the models so the FIRST real request is fast
         try:

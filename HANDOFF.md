@@ -147,6 +147,40 @@ Paper del tutor sobre **DCA/DCE** (Decentralised Capability Abstraction/Ecosyste
   iPhone (images_iphone/door): NO merece la pena (dataset mínimo + salto de dominio); si se quiere
   aprendizaje, etiquetar frames de la cámara del robot y fine-tune yolov8n en el Ubuntu.
 
+### 8.4-bis VALIDADO EN ROBOT (run 20260702_113327, 11:33)
+
+**PRIMERA LLEGADA LIMPIA A B**: reached en 71.8 s, 13.2 m (eficiencia 0.48), **0 colisiones,
+0 saltos de reloc**, c0min=0.33. Ayer el mejor intento no llegó (0.84 m a falta, 300 s, 30.6 m, 1 col).
+Diagnósticos clave: **scan_hz=2.17 / stale_pct=30.5%** → la nube refresca MÁS LENTO que el tick:
+el dedup era CRÍTICO (cada barrido votaba ~1.4x sin él). filt_rej=8% (filtro suave con votación
+honesta), obs_max=421 (vs 788 ayer), dmap quieto +6.5/-1.9 (residual, aceptable), gated_pct=27%
+(vigilar: umbral de alarma 30%), tick_ms_p95=347. Visión activa (179 queries; la mesa entró por
+depth+SAFE_R=234 inserciones, YOLO nunca dijo "table" → otro argumento pro-floorcolor).
+Combo dedup+score/decay+gate-rx+SAFE_R+gate de visión: **VALIDADO**.
+
+### 8.4-ter Run 114603 (11:46) + INTEGRACIÓN FLOORCOLOR
+
+Run 2: reached en 142 s / 20.5 m / **1 colisión** (t=9.1 s, cajonera de madera, roce lateral derecho):
+c0=0.7 (mapa decía hueco), **perc_n=0 y dets=None** — ni depth ni YOLO la vieron (sin clase para
+cajoneras). El canal de COLOR la veía entera (6/16 columnas derechas a 0.0). gated_pct subió a 35.7%
+(>30%: vigilar RX_GATE). scan_hz≈2.2 confirmado otra vez.
+
+**INTEGRADO el canal de color en `perception_server.py`** tras `G1_FLOORCOLOR=1` (default OFF, A/B):
+- `color_to_scan()`: por columna, fila donde acaba la moqueta continua = base del obstáculo →
+  proyección al suelo → [bearing, range]; obstáculo tocando el borde inferior → clamp 0.4 m.
+- Bandas no-moqueta FINAS con moqueta encima (umbral de madera de la puerta, cinta amarilla) se
+  SALTAN: son marcas planas, no obstáculos (sin esto el umbral tapaba el vano con fantasmas a 0.4 m).
+- FUSIÓN POR UNIÓN: el color solo añade puntos al scan; nunca resta. `door` (find_door) y `color_pts`
+  van en la respuesta (el cliente actual los ignora; DOOR-AL por visión = mejora futura).
+- Validado offline: cajonera 11 pts ✓ (habría evitado el choque), puerta limpia (solo base de la
+  hoja) ✓, mesa 48 pts ✓, moqueta pura 0 falsos ✓.
+- OJO para revisar algún día: en `depth_to_scan` la fórmula de altura con cam_pitch=-10 parece
+  inflar la altura con la distancia (¿convención de signo invertida?). El canal de color usa
+  abs(pitch) y es inmune. Puede explicar el perc_n bajo a 1-2 m.
+
+**A/B**: misma run B, servidor con y sin `G1_FLOORCOLOR=1` → comparar collisions, path_m, time_s,
+perc_n medio y comportamiento en puerta (runs_summary.csv). Es la ablación extra del paper.
+
 ### 8.4 Próximos pasos (en orden)
 
 1. **Prueba goto B** en el Ubuntu (percepción ON; el gate ya lo exige). Mirar en el log, en este orden:
