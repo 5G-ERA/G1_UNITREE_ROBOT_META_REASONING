@@ -72,6 +72,10 @@ FILM_PERIOD = float(os.environ.get("G1_FILM", "3.0"))   # s entre frames de la P
 RELOC_GUARD = (os.environ.get("G1_RELOCGUARD", "1") == "1")   # G1_RELOCGUARD=0 lo desactiva (A/B estricto)
 RELOC_STOP_N = int(os.environ.get("G1_RELOC_N", "4"))         # nº de saltos >0.5m...
 RELOC_STOP_WIN = float(os.environ.get("G1_RELOC_WIN", "10.0"))  # ...dentro de esta ventana (s) = divergencia
+# --- OBSTACULOS DE ALTA CONFIANZA (Renxi): pared del mapa / score saturado / colision. ---
+HARD_GUARD = (os.environ.get("G1_HARDGUARD", "0") == "1")   # guardia de control (OFF: primero A/B)
+HARD_STOP = float(os.environ.get("G1_HARD_STOP", "0.22"))    # m: no avanzar con pared a menos de esto
+HARD_SLOW = float(os.environ.get("G1_HARD_SLOW", "0.45"))    # m: acercarse a pared -> velocidad reducida
 # --- Mapa de obstaculos con SCORE/DECAY (anti acumulacion de ruido) ---
 # Antes: celda confirmada -> entra al instante y dura 60s (TTL). Con el robot parado en la puerta y el LiDAR
 # de cabeza vibrando, el mapa = UNION de todo lo visto en 60s -> cientos de celdas falsas (obs 142->521 en 18s).
@@ -1037,6 +1041,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0; perc_raw = {}
     cambuf = deque(maxlen=20)                     # (t, jpg) ultimos ~6s de camara (autopsia pre-colision)
     film_t = 0.0                                  # ultimo frame de la pelicula guardado
+    hg_log_t = 0.0; c0_hard = 9.9; hard_set = set()   # guardia de alta confianza
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
@@ -1208,6 +1213,14 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                             oscore.pop(c, None); oseen.pop(c, None)
                 # mapa ACTIVO = celdas con score suficiente (omap sigue siendo celda->instante para el resto del codigo)
                 omap = {c: oseen[c] for c, s in oscore.items() if s >= SC_OBST}
+            # --- OBSTACULOS de ALTA CONFIANZA (idea de Renxi 2026-07-02): pared/mueble PERSISTENTE.
+            # El robot los trataba igual que el ruido (mismo margen agresivo de 0.13) y los "ignoraba".
+            # DURO = celda del mapa estatico confirmada, o score SATURADO (visto casi siempre), o colision.
+            if OLDMAP:
+                hard_set = set(colmap)
+            else:
+                hard_set = {c for c, sc in oscore.items()
+                            if sc >= SC_CAP or (refmap and c in refmap)} | colmap
             # (diag) churn del mapa ACTIVO: cuantas celdas entran/salen (ruido entrando = adds altos sin moverse)
             cur_oset_diag = set(omap.keys())
             tick_add = len(cur_oset_diag - prev_oset_diag); tick_del = len(prev_oset_diag - cur_oset_diag)
@@ -1239,7 +1252,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 lg.flush()
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
+            op_hard = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in hard_set
+                       if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
             c0 = clear_dir(x, y, yaw, 0, op); minc0 = min(minc0, c0)
+            c0_hard = clear_dir(x, y, yaw, 0, op_hard)         # holgura frontal contra PAREDES/persistentes
             mm = sei.update(now - t0, d_goal, c0)            # 2 metricas SEI: clearance (espacio libre) + progression (avance a B)
             m_clear, m_prog = mm["clearance"], mm["progression"]
             cl_left = clear_dir(x, y, yaw, +60, op); cl_right = clear_dir(x, y, yaw, -60, op)   # clearance IZQ/DCHA (Renxi: balancear)
@@ -1504,7 +1520,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
                     f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} bal={m_cl-m_cr:+.2f} "
-                    f"obs={len(oset)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'G' if turning_fast else ' '} "
+                    f"obs={len(oset)} hard={len(hard_set)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'G' if turning_fast else ' '} "
                     f"nz={ss2['laser_noise']:.2f} flt={filt_rej:.2f} dmap=+{tick_add}/-{tick_del} "
                     f"shz={((len(fresh_times)-1)/max(1e-6, fresh_times[-1]-fresh_times[0])) if len(fresh_times) >= 2 else 0.0:.1f} "
                     f"plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
@@ -1542,6 +1558,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "goal_err": round(beg, 1),                       # error de rumbo al objetivo
                              "carrot_err": (round(bce, 1) if bce is not None else None),   # y al carrot del plan
                              "plan_n": len(plan_pts),                         # 0 = A* sin ruta ese tick
+                             "c0_hard": round(c0_hard, 2),                    # holgura frontal contra PAREDES/persistentes
+                             "n_hard": len(hard_set),                         # celdas de alta confianza en el mapa
                              "perc_n": len(perc_cells),                       # nº de celdas-obstaculo que aporto la VISION este tick
                              "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
@@ -1573,6 +1591,16 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     vshare["mhist"] = sei.history()                                          # historia (t,clearance,progression)
                     vshare["shist"] = sens.history()                                         # historia (t,reliability,noise,loc_conf)
 
+            # --- HARD-GUARD (G1_HARDGUARD=1): las paredes/persistentes NO se rozan ni en agresivo.
+            # Frena el avance segun la holgura contra lo DURO; lo blando/ruidoso sigue negociable.
+            if HARD_GUARD and cmd[1] > 0.05:
+                if c0_hard < HARD_STOP:
+                    cmd = (cmd[0], 0.0, cmd[2], 0); ph = ph.strip() + "!H"
+                    if now - hg_log_t > 2.0:
+                        lg.write(f"HARD-GUARD STOP c0_hard={c0_hard:.2f} (<{HARD_STOP}) pos=({x:+.2f},{y:+.2f})\n")
+                        hg_log_t = now
+                elif c0_hard < HARD_SLOW and cmd[1] > 0.22:
+                    cmd = (cmd[0], 0.22, cmd[2], 0)            # acercarse a una pared: despacio
             prev_fwd = (cmd[1] > 0.1)
             cdp.eval(g.set_cmd_js(*cmd))
             time.sleep(0.1)
