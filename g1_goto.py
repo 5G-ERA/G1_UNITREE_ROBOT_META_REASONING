@@ -985,15 +985,43 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     # --- PERCEPCION GPU offboard (opcional): depth -> scan virtual que VE la mesa invisible al LiDAR ---
     perc = g1_perception.make_client_from_env(g.OCELL) if g1_perception else None
     perc_worker = g1_perception.PerceptionWorker(perc) if perc else None       # consulta GPU en HILO APARTE (no congela el control)
+    # --- GATE DE VISION (duro): sin percepcion VERIFICADA no se navega. ---
+    # Runs 164306/164456: 2 colisiones con c0=2.50 y perc_n=0 -> la mesa LiDAR-ciega NO se ve sin vision.
+    # No basta con que G1_PERC este definido: se hace un TEST REAL (frame de la camara -> /perceive) para
+    # comprobar que YOLO+depth procesan de verdad. Override explicito: G1_NOVIS=1 (corre sin vision, avisa).
+    vis_ready = False
     if perc_worker:
         perc_worker.start()
-    else:
-        # Ayer (runs 164306/164456): 2 colisiones con c0=2.50 y perc_n=0 -> la mesa LiDAR-ciega NO se ve sin vision.
-        print("\n  " + "!" * 74)
-        print("  !!  VISION OFF (G1_PERC sin definir): la MESA invisible al LiDAR no se vera.")
-        print("  !!  Recomendado: G1_PERC=127.0.0.1:8008 (con perception_server.py corriendo).")
-        print("  " + "!" * 74 + "\n")
-        lg.write("NO-VISION warning: G1_PERC sin definir (mesa LiDAR-ciega invisible)\n"); lg.flush()
+        print("  [perc] test real (frame de camara -> /perceive)...", end="", flush=True)
+        for _ in range(10):                           # hasta ~25s (warmup del modelo / primer frame)
+            fr = grab_cam(cdp)
+            if fr:
+                rtest = perc.query(fr, 0.0, 0.0, 0.0)   # pose dummy: solo validamos que el pipeline responde
+                if rtest is not None:
+                    vis_ready = True
+                    print(f" OK ({len(rtest.detections or [])} dets, {len(rtest.cells)} celdas, {rtest.latency_ms:.0f}ms)")
+                    lg.write(f"PERC-TEST OK dets={len(rtest.detections or [])} cells={len(rtest.cells)} "
+                             f"lat={rtest.latency_ms:.0f}ms\n"); lg.flush()
+                    break
+            time.sleep(0.5)
+        if not vis_ready:
+            print(" FALLO")
+    if not vis_ready:
+        why = ("G1_PERC sin definir" if perc is None else
+               f"el servidor no proceso el frame de test ({getattr(perc, 'last_err', None)})")
+        if os.environ.get("G1_NOVIS") == "1":
+            print("\n  " + "!" * 74)
+            print(f"  !!  VISION OFF ({why}) pero G1_NOVIS=1: navego SIN vision bajo tu responsabilidad.")
+            print("  !!  La MESA invisible al LiDAR no se vera.")
+            print("  " + "!" * 74 + "\n")
+            lg.write(f"NO-VISION override G1_NOVIS=1 ({why})\n"); lg.flush()
+        else:
+            print("\n  >>> VISION NO VERIFICADA: NO navego. " + why + ".")
+            print("      1) Arranca perception_server.py en el Ubuntu (terminal aparte).")
+            print("      2) Lanza con G1_PERC=127.0.0.1:8008 y comprueba '[perc] ... OK'.")
+            print("      (override consciente: G1_NOVIS=1 navega sin vision; la mesa sera invisible)")
+            lg.write(f"PERC-GATE BLOCKED: {why} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
+            return False
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
