@@ -1032,6 +1032,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             lg.write(f"PERC-GATE BLOCKED: {why} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
             return False
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0; perc_raw = {}
+    cambuf = deque(maxlen=20)                     # (t, jpg) ultimos ~6s de camara (autopsia pre-colision)
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
@@ -1137,7 +1138,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 rej_sum += filt_rej; rej_n += 1
             # --- PERCEPCION GPU (HILO APARTE): depth -> scan virtual (la MESA que el LiDAR no ve) + suelo despejado ---
             if perc_worker is not None and now - perc_t > PERC_PERIOD:
-                perc_worker.submit(grab_cam(cdp), x, y, yaw)   # no bloquea: el hilo hace la consulta GPU
+                _fr = grab_cam(cdp)
+                cambuf.append((now, _fr))                      # buffer para la autopsia pre-colision
+                perc_worker.submit(_fr, x, y, yaw)             # no bloquea: el hilo hace la consulta GPU
                 perc_t = now
             if perc_worker is not None and perc_worker.latest is not None:
                 res = perc_worker.latest                       # ultimo resultado disponible (puede ir 1-2 ticks por detras)
@@ -1280,9 +1283,25 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 lg.write(f"COLISION #{ncol} [{ctype}] pos=({x:+.2f},{y:+.2f}) yaw={yaw:+.0f} c0={c0:.2f} obs={len(oset)} "
                          f"perc_n={len(perc_cells)} free_c={vis_center if vis_center is not None else '-'} dets=[{_cd}] "
                          f"-> {'VISION CIEGA (perc_n=0): mesa LiDAR-ciega no vista' if len(perc_cells) == 0 else 'vision aportaba celdas'}\n")
-                rd.event("collision", now - t0, x, y, {"src": ctype})
+                rd.event("collision", now - t0, x, y,
+                         {"src": ctype,
+                          "color_pts": perc_raw.get("color_pts"), "carpet_pct": perc_raw.get("carpet_pct"),
+                          "color_near": perc_raw.get("color_near"),
+                          # mapa ACTIVO alrededor en el instante del golpe: ¿el mapa LO SABIA y el DWA fallo,
+                          # o el obstaculo nunca llego al mapa? (la pregunta clave de cada autopsia)
+                          "omap_near": [[c[0], c[1]] for c in oset
+                                        if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < 2.5][:400]})
                 rd.save_cloud(f"col{ncol}", [round(x, 3), round(y, 3), round(yaw, 1)], grab_full_cloud(cdp))
                 rd.save_cam(f"col{ncol}", grab_cam(cdp))
+                # AUTOPSIA: frames de la APROXIMACION (t-1s/-2s/-3s) — la foto del impacto suele ser
+                # una pared borrosa a 0 cm; lo diagnostico esta en lo que se veia ANTES.
+                for _ago in (1.0, 2.0, 3.0):
+                    _best = None
+                    for _tf, _fj in cambuf:
+                        if _fj and (_best is None or abs((now - _tf) - _ago) < abs((now - _best[0]) - _ago)):
+                            _best = (_tf, _fj)
+                    if _best and abs((now - _best[0]) - _ago) < 0.7:
+                        rd.save_cam(f"col{ncol}_pre{int(_ago)}s", _best[1])
 
             # --- RECUPERACION: mini paso atras (si hay hueco detras) + pivota ---
             if recov is not None:
