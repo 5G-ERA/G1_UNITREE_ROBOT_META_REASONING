@@ -181,6 +181,31 @@ cajoneras). El canal de COLOR la veía entera (6/16 columnas derechas a 0.0). ga
 **A/B**: misma run B, servidor con y sin `G1_FLOORCOLOR=1` → comparar collisions, path_m, time_s,
 perc_n medio y comportamiento en puerta (runs_summary.csv). Es la ablación extra del paper.
 
+### 8.5 CIERRE DEL DÍA 2026-07-02 (8 runs) — estado FINAL VALIDADO
+
+Run final **130231**: reached 84 s / 13.0 m / eficiencia 0.49 / **0 colisiones / SIN modo agresivo**
+(primera vez que cruza la puerta con holgura normal) / gated 43%→21%. Tres bugs de campo cerrados
+HOY con mediciones:
+1. **Dedup de barrido** (la nube location refresca a ~2.2 Hz < tick; sin dedup cada barrido votaba ~1.4x).
+2. **NEAR_CLAMP 0.4→0.7** (los avisos cercanos del canal de color morían en el anillo NEAR_BLIND=0.6).
+3. **DOOR_STRAFE_SIGN default -1**: el mapeo físico de lx es tipo gamepad (lx>0 = DERECHA), medido en
+   3 runs con ambos signos (123933: 46 órdenes izq → 38 cm dcha; 125209: ambos signos consistentes;
+   130231 con fix: 37/48 strafes hacia el lado libre). DOOR-CTR llevaba centrando HACIA el obstáculo.
+   Verificable en vivo con STRAFE-CAL / STRAFE-CAL-RESUMEN en goto.log.
+OJO al orden operativo que costó una run: en el Ubuntu **git pull ANTES de lanzar** (la 125209 corrió
+con código viejo y pareció refutar el fix del strafe).
+
+### 8.6 Bug de la JAULA (run 130524, B→A atascada) — arreglado
+
+Con el canal de color VIVO, en la sala abarrotada de B el robot se ENJAULO solo: clamp de 0.7 m en
+todo el FOV + pivotar buscando ruta = anillo de celdas sinteticas alrededor (holgura ~0.6-0.7 m EN
+TODAS las direcciones, medido) → A* sellado → SEEK → mas pivoteo. Fix doble: (1) el clamp del server
+solo en columnas CENTRALES (±30°) y con obstruccion ALTA (≥35% de la columna) — es para "me lo como
+andando", no para clutter lateral que el laser ya ve; (2) la VISION ya no salta el gate por SAFE_R:
+pasa por el score normal (+1/frame, ~1 s para entrar; mientras PIVOTA no inserta nada → jaula
+imposible). Solo el laser confirmado mantiene el bypass de seguridad. Regresion offline OK
+(escritorio/pared frontales siguen detectandose; vano y moqueta pura sin fantasmas).
+
 ### 8.4 Próximos pasos (en orden)
 
 1. **Prueba goto B** en el Ubuntu (percepción ON; el gate ya lo exige). Mirar en el log, en este orden:

@@ -270,6 +270,17 @@ def color_to_scan(rgb, max_range, ncols=48):
         u = 0.5 * (x0 + x1)
         bearing = -math.degrees(math.atan2(u - cx, fx))
         if v >= H - 3:                              # obstaculo tocando el borde inferior: encima del robot
+            # JAULA (run 130524): en salas abarrotadas, clampear TODO el FOV a 0.7m mientras el robot
+            # pivota pinta un anillo de celdas alrededor -> A* sellado -> SEEK. El clamp es para "me lo
+            # voy a comer ANDANDO": solo columnas CENTRALES y con obstruccion ALTA (cara frontal, no
+            # clutter bajo lateral, que el laser ya ve).
+            if abs(bearing) > 30.0:
+                continue
+            g = 0; vv = H - 1
+            while vv >= 0 and not col[vv]:
+                vv -= 1; g += 1
+            if g < 0.35 * H:
+                continue
             scan.append([round(bearing, 1), NEAR_CLAMP])
             continue
         denom = ((v - cy) / fy) * cth + sth         # rayo del pixel v contra el plano del suelo

@@ -1166,7 +1166,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 # SEGURIDAD (prioridad sobre el anti-ruido): un obstaculo de laser CONFIRMADO y CERCA entra YA
                 # al mapa a score maximo, aunque el gate este congelando por giro y sin esperar al umbral. Esto
                 # habria metido la mesa a tiempo (choque run 164456: c0=2.50 hasta el impacto, perc_n=0).
-                near_now = {c for c in (confirmed | vis_conf)   # laser O vision: lo que este CERCA entra ya
+                # SOLO el laser CONFIRMADO salta el gate y el umbral (seguridad de campo cercano).
+                # La VISION pasa por el score normal (+1/frame, obstaculo en ~2 frames = ~1s): sigue
+                # siendo rapida para la mesa/escritorio, pero mientras el robot PIVOTA (turning_fast)
+                # no inserta nada -> imposible pintarse la jaula de clamps de la run 130524.
+                near_now = {c for c in confirmed
                             if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < SAFE_R}
                 safer_ins += sum(1 for c in near_now if oscore.get(c, 0.0) < SC_OBST)   # (diag) forzadas por SAFE_R
                 for c in near_now:
