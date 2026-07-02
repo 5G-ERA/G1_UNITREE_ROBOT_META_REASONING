@@ -46,8 +46,17 @@ DOOR_STRAFE = 0.34               # magnitud del strafe lateral (> deadzone ~0.3,
 DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "1"))  # +1/-1: si centra al lado EQUIVOCADO, lanza con G1_STRAFE_SIGN=-1
 DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay puerta (es el goal con un mueble):
                                  # desactiva la maniobra de puerta y deja que el DWA rodee el obstaculo (si no, empujaba recto)
-PERSIST_N = 3                    # filtro de ruido del laser: ventana de barridos recientes
-PERSIST_K = 2                    # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N barridos
+# --- Filtro de PERSISTENCIA (K-de-N barridos frescos) ---
+# OJO (investigado 2026-07-02): el Mid-360 usa escaneo NO REPETITIVO (Livox) -> dos barridos consecutivos
+# muestrean DIRECCIONES DISTINTAS del FOV. El parpadeo celda-a-celda entre barridos es INHERENTE al sensor,
+# no solo ruido de la marcha; integrar barridos antes de creer una celda es la forma correcta de consumir
+# un Livox. Contrapartida: un obstaculo REAL fino (pata de mesa/silla) tambien parpadea legitimamente.
+# => NO subir K para "filtrar mas" (retrasa la entrada de obstaculos finos reales); si el ruido gana,
+#    subir N manteniendo K=2 (ventana mas larga, mismo nº de votos). SAFE_R + vision son la red para
+#    lo que el laser muestrea mal de cerca (Livox: deteccion NO garantizada a 0.1-1m en superficies
+#    oscuras/pulidas/finas -> la mesa). Ajustables por entorno para A/B en el robot sin tocar codigo.
+PERSIST_N = int(os.environ.get("G1_PERSIST_N", "3"))   # ventana de barridos FRESCOS recientes
+PERSIST_K = int(os.environ.get("G1_PERSIST_K", "2"))   # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N
 STALE_WARN_TICKS = 10            # ticks seguidos con la nube SIN refrescar antes de avisar en el log (~3s a 0.3s/tick)
 # --- GUARDIA ANTI-DIVERGENCIA de relocalizacion (fix 2 del handoff; se perdio en el rollback) ---
 # Run 134458: 78 reloc_jumps encadenados, path_m=582, pose final a 538m -> el robot CAMINABA en coordenadas
