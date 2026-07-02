@@ -920,6 +920,33 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     yaw_rate = 0.0                                # deg/s (se recalcula cada tick)
     livehist = deque(maxlen=PERSIST_N)            # ultimos N barridos del laser (filtro de ruido por persistencia)
     stale_streak = 0                              # ticks seguidos con la nube 'location' sin refrescar (dedup)
+    # --- DIAGNOSTICO de sensado/filtro (solo observacion, no toca el control) ---
+    n_ticks = 0; stale_ticks = 0; gated_ticks = 0    # contadores de ticks (total / nube repetida / gate de giro)
+    fresh_times = deque(maxlen=64)                # instantes de barridos FRESCOS -> Hz efectivo del topic 'location'
+    filt_rej = 0.0; rej_sum = 0.0; rej_n = 0      # fraccion del barrido RECHAZADA por el filtro de persistencia
+    nz_sum = 0.0; nz_max = 0.0; nz_n = 0          # laser_noise (SensingMonitor) acumulado por barrido fresco
+    map_add = 0; map_del = 0; obs_max = 0         # churn del mapa activo (celdas que entran/salen) + pico
+    tick_add = 0; tick_del = 0; prev_oset_diag = set()
+    safer_ins = 0                                 # celdas forzadas por el override de seguridad SAFE_R
+    njumps = 0; pend_jump = False                 # saltos de reloc (contador + pendiente para el proximo update fresco)
+    tick_dts = deque(maxlen=3000); last_tick_t = None   # duracion del ciclo de control (WebView lento = ticks largos)
+    ss2 = {"reliability": 1.0, "laser_noise": 0.0, "loc_conf": 1.0, "c0_std": 0.0,
+           "scan_churn": 0.0, "reloc_rate10s": 0}      # ultimo update FRESCO del SensingMonitor (se reusa en ticks stale)
+    loc = None
+
+    def diag_summary():
+        """Resumen de diagnostico de sensado para summary del run (todo medido, nada estimado)."""
+        shz = (len(fresh_times) - 1) / max(1e-6, fresh_times[-1] - fresh_times[0]) if len(fresh_times) >= 2 else 0.0
+        p95 = sorted(tick_dts)[int(0.95 * (len(tick_dts) - 1))] if tick_dts else 0.0
+        return {"laser_noise_mean": round(nz_sum / nz_n, 3) if nz_n else None,
+                "laser_noise_max": round(nz_max, 3) if nz_n else None,
+                "filt_rej_mean": round(rej_sum / rej_n, 3) if rej_n else None,
+                "scan_hz": round(shz, 2),
+                "stale_pct": round(100.0 * stale_ticks / n_ticks, 1) if n_ticks else None,
+                "gated_pct": round(100.0 * gated_ticks / n_ticks, 1) if n_ticks else None,
+                "safer_inserts": safer_ins, "map_adds": map_add, "map_dels": map_del,
+                "obs_max": obs_max, "reloc_jumps": njumps,
+                "tick_ms_p95": round(1000.0 * p95, 1) if tick_dts else None}
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
     plan_pts = []; plan_t = 0; carrot = None
     fhist = []; prev_fwd = False; recov = None; ncol = 0; last_col_t = -99; rside = 1
@@ -951,6 +978,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     try:
         while not (stop_event is not None and stop_event.is_set()):
             now = time.time()
+            n_ticks += 1
+            if last_tick_t is not None:
+                tick_dts.append(now - last_tick_t)    # duracion real del ciclo (diagnostico WebView/CDP lento)
+            last_tick_t = now
             src, p, pcd = read_pose(cdp)
             if not p:
                 cdp.eval(g.STOP_JS)
@@ -962,6 +993,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             if last_pose is not None and math.hypot(x - last_pose[0], y - last_pose[1]) > 0.5:
                 jd = math.hypot(x - last_pose[0], y - last_pose[1])     # >0.5m en un ciclo (~0.1s) = salto reloc
                 reloc_flag = True
+                njumps += 1; pend_jump = True         # (diag) contado en summary + entregado al proximo update fresco
                 rd.event("reloc_jump", now - t0, x, y, {"dist": round(jd, 2),
                                                         "from": [round(last_pose[0], 2), round(last_pose[1], 2)]})
                 lg.write(f"RELOC-JUMP {jd:.2f}m de ({last_pose[0]:+.2f},{last_pose[1]:+.2f}) a ({x:+.2f},{y:+.2f})\n")
@@ -985,7 +1017,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                                       "efficiency": round(straight / plen, 2) if plen > 0 else 0.0,
                                       "collisions": ncol, "c0min": round(minc0, 2),
                                       "perc_queries": nperc,
-                                      "start": {"x": round(trail[0][0], 3), "y": round(trail[0][1], 3)} if trail else None})
+                                      "start": {"x": round(trail[0][0], 3), "y": round(trail[0][1], 3)} if trail else None,
+                                      **diag_summary()})
                 if vshare is not None:                # marca llegada en la ventana antes de salir
                     with lock:
                         vshare["ph"] = "LLEGADO"; vshare["x"] = x; vshare["y"] = y
@@ -995,11 +1028,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             live = reloc_cells(cdp)                   # celdas del barrido ACTUAL (laser en vivo)
             scan_fresh = reloc_cells.fresh            # True = buffer NUEVO (dedup: no re-contar el mismo barrido)
             if not scan_fresh:
-                stale_streak += 1
+                stale_streak += 1; stale_ticks += 1
                 if stale_streak == STALE_WARN_TICKS:  # aviso UNA vez por racha (nube congelada, WebRTC caido?)
                     lg.write(f"SCAN-STALE nube 'location' sin refrescar {stale_streak} ticks (mapa congelado)\n")
             else:
-                stale_streak = 0
+                stale_streak = 0; fresh_times.append(now)
             if live:
                 cloud_ok = True
             elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
@@ -1020,6 +1053,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     confirmed.add(c)
             confirmed = {c for c in confirmed         # descarta campo cercano (anillo fantasma del cabeceo)
                          if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND}
+            if scan_fresh:                            # (diag) fraccion del barrido RECHAZADA por el filtro:
+                lf = sum(1 for c in live              #  celdas del barrido (fuera de NEAR_BLIND) que NO quedaron
+                         if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) >= g.NEAR_BLIND)
+                filt_rej = (1.0 - len(confirmed) / lf) if lf else 0.0
+                rej_sum += filt_rej; rej_n += 1
             # --- PERCEPCION GPU (HILO APARTE): depth -> scan virtual (la MESA que el LiDAR no ve) + suelo despejado ---
             if perc_worker is not None and now - perc_t > PERC_PERIOD:
                 perc_worker.submit(grab_cam(cdp), x, y, yaw)   # no bloquea: el hilo hace la consulta GPU
@@ -1039,6 +1077,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 yaw_rate = abs((yaw - yaw_prev + 180.0) % 360.0 - 180.0) / (now - yaw_prev_t)
             yaw_prev, yaw_prev_t = yaw, now
             turning_fast = (YAW_GATE > 0) and (abs(prev_cmd[2]) > RX_GATE)   # GATE por giro COMANDADO (no por bamboleo)
+            if turning_fast:
+                gated_ticks += 1                      # (diag) % del run con el mapa congelado por giro
 
             if OLDMAP:
                 # --- MODO ANTIGUO (G1_OLDMAP=1): entra al instante y dura NAV_OMAP_TTL -> UNION de 60s (acumula ruido) ---
@@ -1051,6 +1091,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 # habria metido la mesa a tiempo (choque run 164456: c0=2.50 hasta el impacto, perc_n=0).
                 near_now = {c for c in (confirmed | vis_conf)   # laser O vision: lo que este CERCA entra ya
                             if math.hypot(c[0] * g.OCELL - x, c[1] * g.OCELL - y) < SAFE_R}
+                safer_ins += sum(1 for c in near_now if oscore.get(c, 0.0) < SC_OBST)   # (diag) forzadas por SAFE_R
                 for c in near_now:
                     oscore[c] = SC_CAP; oseen[c] = now
                 # --- SCORE/DECAY: obstaculo solo si se ve en la MAYORIA de barridos recientes ---
@@ -1075,6 +1116,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                             oscore.pop(c, None); oseen.pop(c, None)
                 # mapa ACTIVO = celdas con score suficiente (omap sigue siendo celda->instante para el resto del codigo)
                 omap = {c: oseen[c] for c, s in oscore.items() if s >= SC_OBST}
+            # (diag) churn del mapa ACTIVO: cuantas celdas entran/salen (ruido entrando = adds altos sin moverse)
+            cur_oset_diag = set(omap.keys())
+            tick_add = len(cur_oset_diag - prev_oset_diag); tick_del = len(prev_oset_diag - cur_oset_diag)
+            map_add += tick_add; map_del += tick_del; prev_oset_diag = cur_oset_diag
+            obs_max = max(obs_max, len(cur_oset_diag))
             oset = set(omap.keys()) | colmap
             # --- LOG [VIS]: que ve YOLO/depth y si la navegacion lo USA (entra al mapa) o lo IGNORA ---
             if perc_dets or now - vis_log_t > 1.0:
@@ -1334,13 +1380,21 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             line = (f"t={now-t0:5.1f} {ph} pos=({x:+.2f},{y:+.2f}) yaw={yaw:+6.1f} d={d_goal:.2f} "
                     f"goal_err={beg:+.0f} carrot_err={(bce if bce is not None else 0):+4.0f} "
                     f"c0={c0:.2f} clear={m_clear:.2f} prog={m_prog:.2f} rel={m_rel:.2f} bal={m_cl-m_cr:+.2f} "
-                    f"obs={len(oset)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'G' if turning_fast else ' '} plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
+                    f"obs={len(oset)} obsc={len(oscore)} yr={yaw_rate:3.0f}{'G' if turning_fast else ' '} "
+                    f"nz={ss2['laser_noise']:.2f} flt={filt_rej:.2f} dmap=+{tick_add}/-{tick_del} "
+                    f"shz={((len(fresh_times)-1)/max(1e-6, fresh_times[-1]-fresh_times[0])) if len(fresh_times) >= 2 else 0.0:.1f} "
+                    f"plan={len(plan_pts)} cmd=(lx={cmd[0]:+.2f},ly={cmd[1]:+.2f},rx={cmd[2]:+.2f})")
             lg.write(line + "\n"); lg.flush()
             if now - health_t > 1.0:
                 hh = read_telemetry(cdp); health_t = now
                 rd.telem(now - t0, _telem_row(hh))
-            loc = match_score(live, refmap)
-            ss2 = sens.update(now - t0, live, c0, loc, reloc_flag)   # auto-evaluacion: ruido/fiabilidad de sensado
+            # auto-evaluacion de sensado SOLO con barrido FRESCO: un buffer repetido tiene churn=0 y conteo
+            # estable -> el laser_noise saldria artificialmente BAJO justo cuando los datos son peores
+            # (nube congelada). En ticks stale se reusa el ultimo valor. reloc_jump no se pierde (pend_jump).
+            if scan_fresh:
+                loc = match_score(live, refmap)
+                ss2 = sens.update(now - t0, live, c0, loc, pend_jump); pend_jump = False
+                nz = ss2["laser_noise"]; nz_sum += nz; nz_max = max(nz_max, nz); nz_n += 1
             m_rel = ss2["reliability"]
             h = hh.get("h") or {}
             rd.sample(now - t0, x, y, yaw, d_goal, math.hypot(x - prog_pos[0], y - prog_pos[1]) if prog_pos else 0.0,
@@ -1352,6 +1406,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "reliability": ss2["reliability"], "laser_noise": ss2["laser_noise"],
                              "loc_conf": ss2["loc_conf"], "c0_std": ss2["c0_std"],
                              "scan_churn": ss2["scan_churn"], "reloc_rate10s": ss2["reloc_rate10s"],
+                             "filt_rej": round(filt_rej, 3),                  # fraccion del barrido rechazada por persistencia
+                             "scan_fresh": bool(scan_fresh),                  # este tick trajo nube nueva?
+                             "map_add": tick_add, "map_del": tick_del,        # churn del mapa activo este tick
                              "perc_n": len(perc_cells),                       # nº de celdas-obstaculo que aporto la VISION este tick
                              "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
@@ -1387,12 +1444,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             cdp.eval(g.set_cmd_js(*cmd))
             time.sleep(0.1)
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2)})
+                              "collisions": ncol, "c0min": round(minc0, 2), **diag_summary()})
         return False                                  # salida por cierre de ventana (stop_event)
     except KeyboardInterrupt:
         print(f"\n  [ABORTADO '{label}']"); lg.write(f"ABORT {label} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
         rd.finish("aborted", {"time_s": round(time.time() - t0, 2), "path_m": round(_path_len(trail), 2),
-                              "collisions": ncol, "c0min": round(minc0, 2)})
+                              "collisions": ncol, "c0min": round(minc0, 2), **diag_summary()})
         return False
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)

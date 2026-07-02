@@ -47,11 +47,26 @@ def main():
             "mean_clearance": mean(s, "clearance"),
             "mean_progression": mean(s, "progression"),
             "mean_reliability": mean(s, "reliability"),
+            # --- diagnostico de sensado/filtro (summary de g1_goto; runs viejas quedan en blanco) ---
+            "laser_noise_mean": sm.get("laser_noise_mean", mean(s, "laser_noise")),
+            "laser_noise_max": sm.get("laser_noise_max", ""),
+            "filt_rej_mean": sm.get("filt_rej_mean", mean(s, "filt_rej")),
+            "scan_hz": sm.get("scan_hz", ""),
+            "stale_pct": sm.get("stale_pct", ""),
+            "gated_pct": sm.get("gated_pct", ""),
+            "safer_inserts": sm.get("safer_inserts", ""),
+            "map_adds": sm.get("map_adds", ""),
+            "map_dels": sm.get("map_dels", ""),
+            "obs_max": sm.get("obs_max", ""),
+            "reloc_jumps": sm.get("reloc_jumps", sum(1 for e in ev if e.get("kind") == "reloc_jump")),
+            "tick_ms_p95": sm.get("tick_ms_p95", ""),
             "notes": "",                                   # <-- FILL: appropriate switch? anything odd?
         })
     cols = ["file", "governance", "mode", "condition", "result", "time_s", "path_m", "efficiency",
             "collisions", "c0min", "spills_human", "perc_queries", "meta_switches", "fsm_interventions",
-            "mean_clearance", "mean_progression", "mean_reliability", "notes"]
+            "mean_clearance", "mean_progression", "mean_reliability",
+            "laser_noise_mean", "laser_noise_max", "filt_rej_mean", "scan_hz", "stale_pct", "gated_pct",
+            "safer_inserts", "map_adds", "map_dels", "obs_max", "reloc_jumps", "tick_ms_p95", "notes"]
     with open("runs_summary.csv", "w", newline="") as fo:
         w = csv.DictWriter(fo, fieldnames=cols); w.writeheader()
         for r in rows:
