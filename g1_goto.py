@@ -63,6 +63,8 @@ DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay pu
 PERSIST_N = int(os.environ.get("G1_PERSIST_N", "3"))   # ventana de barridos FRESCOS recientes
 PERSIST_K = int(os.environ.get("G1_PERSIST_K", "2"))   # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N
 STALE_WARN_TICKS = 10            # ticks seguidos con la nube SIN refrescar antes de avisar en el log (~3s a 0.3s/tick)
+FILM_PERIOD = float(os.environ.get("G1_FILM", "3.0"))   # s entre frames de la PELICULA de la run (0 = off).
+                                 # ~30 jpgs de 5KB por run: la aproximacion a CUALQUIER incidente queda grabada.
 # --- GUARDIA ANTI-DIVERGENCIA de relocalizacion (fix 2 del handoff; se perdio en el rollback) ---
 # Run 134458: 78 reloc_jumps encadenados, path_m=582, pose final a 538m -> el robot CAMINABA en coordenadas
 # de fantasia. Una correccion legitima de reloc es UN salto y luego estable; divergencia = saltos repetidos.
@@ -968,6 +970,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 "gated_pct": round(100.0 * gated_ticks / n_ticks, 1) if n_ticks else None,
                 "safer_inserts": safer_ins, "map_adds": map_add, "map_dels": map_del,
                 "obs_max": obs_max, "reloc_jumps": njumps,
+                "colmap_cells": len(colmap),
                 "tick_ms_p95": round(1000.0 * p95, 1) if tick_dts else None}
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
     plan_pts = []; plan_t = 0; carrot = None
@@ -1033,6 +1036,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             return False
     perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0; perc_raw = {}
     cambuf = deque(maxlen=20)                     # (t, jpg) ultimos ~6s de camara (autopsia pre-colision)
+    film_t = 0.0                                  # ultimo frame de la pelicula guardado
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
@@ -1142,6 +1146,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 cambuf.append((now, _fr))                      # buffer para la autopsia pre-colision
                 perc_worker.submit(_fr, x, y, yaw)             # no bloquea: el hilo hace la consulta GPU
                 perc_t = now
+                if FILM_PERIOD > 0 and _fr and now - film_t > FILM_PERIOD:   # PELICULA de la run
+                    rd.save_cam(f"t{int(now - t0):03d}s", _fr)
+                    film_t = now
             if perc_worker is not None and perc_worker.latest is not None:
                 res = perc_worker.latest                       # ultimo resultado disponible (puede ir 1-2 ticks por detras)
                 nperc = perc_worker.n_ok
@@ -1356,6 +1363,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 print(f"\n  >>> MODO AGRESIVO ON ({AGGR_AFTER:.0f}s sin acercarse a B): reduzco inflado y holgura "
                       f"(min seguridad {AGGR_ROBOT_R}m) para cruzar la puerta.")
                 lg.write(f"AGGRESSIVE-ON t={now-t0:.0f}s d={d_goal:.2f}\n")
+                rd.event("aggressive_on", now - t0, x, y, {"d": round(d_goal, 2)})
             g.ROBOT_R = AGGR_ROBOT_R if aggressive else ROBOT_R0   # holgura del DWA (min seguridad en agresivo)
 
             # --- PLAN A* + CONTROL LOCAL DWA (hacia el WAYPOINT, no una frontera) ---
@@ -1380,6 +1388,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                     plan_t = now
                     if not plan_pts:
                         lg.write(f"A*-FAIL goal=({wx:+.1f},{wy:+.1f}) d={d_goal:.1f} obs={len(oset)}\n")
+                        rd.event("astar_fail", now - t0, x, y, {"obs": len(oset)})   # jaulas/sellados: visibles en el dataset
                 if plan_pts:
                     carrot = g.path_carrot(plan_pts, x, y)
                     # --- MANIOBRA DE PUERTA: SOLO cuando el robot YA esta en zona estrecha (c0 bajo) y hay un
@@ -1529,6 +1538,10 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "color_near": perc_raw.get("color_near"),        # puntos clampeados (obstaculo encima)
                              "color_rmin": perc_raw.get("color_rmin"),        # obstaculo de color mas cercano (m)
                              "door_b": (perc_raw.get("door") or {}).get("bearing_deg"),   # rumbo de puerta por vision
+                             "carrot": ([round(carrot[0], 2), round(carrot[1], 2)] if carrot else None),
+                             "goal_err": round(beg, 1),                       # error de rumbo al objetivo
+                             "carrot_err": (round(bce, 1) if bce is not None else None),   # y al carrot del plan
+                             "plan_n": len(plan_pts),                         # 0 = A* sin ruta ese tick
                              "perc_n": len(perc_cells),                       # nº de celdas-obstaculo que aporto la VISION este tick
                              "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),
