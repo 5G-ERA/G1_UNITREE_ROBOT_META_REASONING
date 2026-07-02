@@ -999,9 +999,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 rtest = perc.query(fr, 0.0, 0.0, 0.0)   # pose dummy: solo validamos que el pipeline responde
                 if rtest is not None:
                     vis_ready = True
-                    print(f" OK ({len(rtest.detections or [])} dets, {len(rtest.cells)} celdas, {rtest.latency_ms:.0f}ms)")
+                    # 'color_pts' solo existe si el servidor corre con G1_FLOORCOLOR=1 -> estado visible
+                    # desde el robot (run 120438: creiamos que el color estaba ON y perc_n=0 lo desmintio).
+                    fcs = "ON" if isinstance(getattr(rtest, "raw", None), dict) and "color_pts" in rtest.raw else "off"
+                    print(f" OK ({len(rtest.detections or [])} dets, {len(rtest.cells)} celdas, "
+                          f"{rtest.latency_ms:.0f}ms, floorcolor={fcs})")
                     lg.write(f"PERC-TEST OK dets={len(rtest.detections or [])} cells={len(rtest.cells)} "
-                             f"lat={rtest.latency_ms:.0f}ms\n"); lg.flush()
+                             f"lat={rtest.latency_ms:.0f}ms floorcolor={fcs}\n"); lg.flush()
                     break
             time.sleep(0.5)
         if not vis_ready:
@@ -1206,8 +1210,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 if obst_dets or now - vis_log_t <= 0.01:   # resumen periodico aunque no haya detecciones
                     nvis_map = sum(1 for c in vis_conf if c in omap)
                     dstr = ",".join(f"{d.get('label')}@{(d.get('bearing_deg') or 0):+.0f}/{d.get('range_m')}m" for d in obst_dets) or "-"
+                    craw = perc_worker.latest.raw if (perc_worker is not None and perc_worker.latest is not None
+                                                      and isinstance(perc_worker.latest.raw, dict)) else {}
+                    cdoor = craw.get("door") or {}
                     lg.write(f"[VIS] perc_n={len(perc_cells)} free_c={vis_center if vis_center is not None else '-'} "
-                             f"vismap={nvis_map}/{len(vis_conf)} dets=[{dstr}]\n")
+                             f"vismap={nvis_map}/{len(vis_conf)} color={craw.get('color_pts', '-')} "
+                             f"door={cdoor.get('bearing_deg', '-')} dets=[{dstr}]\n")
                 lg.flush()
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]

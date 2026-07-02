@@ -231,7 +231,7 @@ def color_to_scan(rgb, max_range, ncols=48):
     practicamente encima y la proyeccion ya no es fiable."""
     fc = get_floorcolor()
     if fc is None:
-        return [], None
+        return [], None, None
     import cv2
     bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
     mask = fc.mask(bgr)
@@ -280,7 +280,7 @@ def color_to_scan(rgb, max_range, ncols=48):
         door = fc.find_door(bgr)
     except Exception:
         pass
-    return scan, door
+    return scan, door, mask
 
 
 def free_center_from_scan(scan, near_m=1.2, center_deg=18.0):
@@ -306,11 +306,27 @@ def stub_perceive(rgb):
 
 
 # ----------------------------------------------------------------------------- pipeline
-def _annotate(rgb, scan, dets, free_center):
-    """Debug overlay: detection boxes + label/distance, free_center, and a mini-radar of the virtual scan."""
+def _annotate(rgb, scan, dets, free_center, cmask=None, door=None):
+    """Debug overlay: detection boxes + label/distance, free_center, and a mini-radar of the virtual scan.
+    Con FLOORCOLOR: tinte verde=moqueta / rojo=no-moqueta + flechas de puerta (amarillas=bordes,
+    magenta=centro por donde pasar)."""
     import cv2
     img = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR).copy()
     H, W = img.shape[:2]
+    if cmask is not None and cmask.shape == (H, W):
+        m = cmask > 128
+        ov = img.copy(); ov[~m] = (0, 0, 200); ov[m] = (0, 150, 0)
+        img = cv2.addWeighted(img, 0.72, ov, 0.28, 0)
+        cv2.putText(img, "FLOORCOLOR", (W - 118, 16), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1, cv2.LINE_AA)
+    if door:
+        def _bx(b):
+            return max(0, min(W - 1, int(ARGS.cx - ARGS.fx * math.tan(math.radians(b)))))
+        base = (W // 2, H - 5)
+        cv2.arrowedLine(img, base, (_bx(door["left_edge_deg"]), int(H * 0.22)), (0, 255, 255), 2, tipLength=0.08)
+        cv2.arrowedLine(img, base, (_bx(door["right_edge_deg"]), int(H * 0.22)), (0, 255, 255), 2, tipLength=0.08)
+        cv2.arrowedLine(img, base, (_bx(door["bearing_deg"]), int(H * 0.16)), (255, 80, 255), 3, tipLength=0.09)
+        cv2.putText(img, f"DOOR {door['bearing_deg']:+.0f}deg", (_bx(door["bearing_deg"]) - 40, int(H * 0.13)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 80, 255), 2, cv2.LINE_AA)
     for d in dets:
         b = d.get("box")
         if not b:
@@ -371,9 +387,9 @@ def perceive(payload):
         else:
             floor = run_seg_floor_mask(rgb) if ARGS.seg != "off" else None
             scan, _, _ = depth_to_scan(depth, floor, hband, max_range)
-            door = None; ncolor = 0
+            door = None; ncolor = 0; cmask = None
             if ARGS.floorcolor:                     # CANAL DE COLOR: union (solo anade), + puerta
-                cscan, door = color_to_scan(rgb, max_range)
+                cscan, door, cmask = color_to_scan(rgb, max_range)
                 ncolor = len(cscan)
                 scan = scan + cscan
             free_center, near_run = free_center_from_scan(scan)
@@ -397,7 +413,8 @@ def perceive(payload):
     if ARGS.debug:
         try:
             global _LAST_VIZ
-            _LAST_VIZ = _annotate(rgb, out.get("scan", []), out.get("detections", []), out.get("free_center"))
+            _LAST_VIZ = _annotate(rgb, out.get("scan", []), out.get("detections", []), out.get("free_center"),
+                                  cmask=locals().get("cmask"), door=out.get("door"))
         except Exception:
             pass
     return out
@@ -424,6 +441,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/health":
             self._send(200, {"ok": True, "mode": "stub" if ARGS.stub else "gpu",
                              "models": {"depth": ARGS.depth, "seg": ARGS.seg, "det": ARGS.det},
+                             "floorcolor": bool(ARGS.floorcolor),
+                             "floorcolor_loaded": _FLOORCOLOR["model"] is not None,
                              "gpus": _gpu_info()})
         elif self.path.startswith("/debug.mjpg"):   # live MJPEG stream (no refresh needed)
             self._stream_mjpg()
