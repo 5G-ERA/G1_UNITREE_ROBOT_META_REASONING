@@ -45,7 +45,10 @@ PERC_PERIOD = 0.3                # s entre consultas al servidor de percepcion G
 DOOR_CENTER = (os.environ.get("G1_DOOR_CENTER", "1") == "1")   # centrar izq/dcha en la puerta (idea de Renxi): strafe al lado mas libre
 DOOR_BAL_TH = 0.22               # |clear_left - clear_right| (normalizado) para considerar el robot DESCENTRADO
 DOOR_STRAFE = 0.34               # magnitud del strafe lateral (> deadzone ~0.3, si no el robot no se mueve)
-DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "1"))  # +1/-1: si centra al lado EQUIVOCADO, lanza con G1_STRAFE_SIGN=-1
+DOOR_STRAFE_SIGN = int(os.environ.get("G1_STRAFE_SIGN", "-1"))  # DEFAULT -1 (2026-07-02): MEDIDO en runs
+                                 # 123933 (46 ticks orden izq -> 38cm a la DERECHA) y 122857 (51 ticks, 98cm
+                                 # contra lo ordenado): el mapeo fisico de lx esta INVERTIDO. DOOR-CTR centraba
+                                 # HACIA el obstaculo. Verificar con STRAFE-CAL en el log; G1_STRAFE_SIGN=1 lo revierte.
 DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay puerta (es el goal con un mueble):
                                  # desactiva la maniobra de puerta y deja que el DWA rodee el obstaculo (si no, empujaba recto)
 # --- Filtro de PERSISTENCIA (K-de-N barridos frescos) ---
@@ -974,7 +977,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     pose_t = time.time(); last_pose = None; t0 = time.time(); tprint = 0
     trail = []
     # --- diagnostico: calibracion de giro (signo real vs comandado) + spin ---
-    prev_yaw = None; prev_cmd = (0, 0, 0, 0); prev_lt = None
+    prev_yaw = None; prev_cmd = (0, 0, 0, 0); prev_lt = None; prev_xy = None; strafecal = []
     spin_acc = 0.0; prog_pos = None; prog_t = t0; turncal = []; phcount = {}
     minc0 = 9.9
     rd = RunRecorder("ours", label, (wx, wy))
@@ -1441,8 +1444,18 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                         turncal.append((rxp, yawrate))
                         lg.write(f"  TURN-CAL rx={rxp:+.2f} esperado={exp:+.0f}deg/s medido={yawrate:+.0f}deg/s "
                                  f"{'OK' if ok else '>>> SIGNO INVERTIDO <<<'}\n")
+                    # STRAFE-CAL: paso lateral puro previo -> desplazamiento REAL sobre el eje izquierdo.
+                    # (asi cazamos el signo invertido del strafe EN VIVO, como TURN-CAL con el giro)
+                    lxp = prev_cmd[0]
+                    if abs(lxp) > 0.2 and abs(prev_cmd[1]) < 0.05 and abs(rxp) < 0.05 and prev_xy is not None:
+                        yr0 = math.radians(prev_yaw)
+                        dl = (x - prev_xy[0]) * (-math.sin(yr0)) + (y - prev_xy[1]) * math.cos(yr0)
+                        strafecal.append((lxp, dl))
+                        if abs(dl) > 0.008:
+                            lg.write(f"  STRAFE-CAL lx={lxp:+.2f} medido={dl*100:+.1f}cm/tick "
+                                     f"{'IZQ' if dl > 0 else 'DCHA'}\n")
                     spin_acc += abs(dyaw)
-            prev_yaw = yaw; prev_lt = now; prev_cmd = cmd
+            prev_yaw = yaw; prev_lt = now; prev_cmd = cmd; prev_xy = (x, y)
             # progreso real (desplazamiento): si avanza, resetea el acumulador de giro
             if prog_pos is None or math.hypot(x - prog_pos[0], y - prog_pos[1]) > 0.15:
                 prog_pos = (x, y); prog_t = now; spin_acc = 0.0
@@ -1532,6 +1545,17 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     finally:
         cdp.eval(g.STOP_JS); time.sleep(0.2); cdp.eval(g.STOP_JS)
         g.ROBOT_R = locals().get("ROBOT_R0", g.ROBOT_R)    # restaura la holgura normal del DWA
+        try:
+            sc = locals().get("strafecal") or []
+            if sc:
+                izq = [d for l, d in sc if l > 0]; dch = [d for l, d in sc if l < 0]
+                mi = (sum(izq) / len(izq) * 100) if izq else None
+                md = (sum(dch) / len(dch) * 100) if dch else None
+                lg.write(f"STRAFE-CAL-RESUMEN lx>0 -> {mi if mi is not None else '-'}cm/tick ; "
+                         f"lx<0 -> {md if md is not None else '-'}cm/tick "
+                         f"(con el mapeo BIEN, lx>0 debe dar cm POSITIVOS=IZQ)\n"); lg.flush()
+        except Exception:
+            pass
         # resumen de la calibracion de giro: ¿el robot gira en el sentido que el modelo cree?
         tc = locals().get("turncal", [])
         if tc:

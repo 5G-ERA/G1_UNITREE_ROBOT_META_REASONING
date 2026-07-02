@@ -378,6 +378,7 @@ def _check_intrinsics(W, H):
 
 
 def perceive(payload):
+    cmask = None                                    # mascara del canal de color (para el overlay --debug)
     rgb = decode_image(payload["image"])
     _check_intrinsics(rgb.shape[1], rgb.shape[0])
     hband = payload.get("hband", [0.10, 1.30])
@@ -391,7 +392,7 @@ def perceive(payload):
         else:
             floor = run_seg_floor_mask(rgb) if ARGS.seg != "off" else None
             scan, _, _ = depth_to_scan(depth, floor, hband, max_range)
-            door = None; ncolor = 0; cmask = None
+            door = None; ncolor = 0
             if ARGS.floorcolor:                     # CANAL DE COLOR: union (solo anade), + puerta
                 cscan, door, cmask = color_to_scan(rgb, max_range)
                 ncolor = len(cscan)
@@ -418,7 +419,7 @@ def perceive(payload):
         try:
             global _LAST_VIZ
             _LAST_VIZ = _annotate(rgb, out.get("scan", []), out.get("detections", []), out.get("free_center"),
-                                  cmask=locals().get("cmask"), door=out.get("door"))
+                                  cmask=cmask, door=out.get("door"))
         except Exception:
             pass
     return out
