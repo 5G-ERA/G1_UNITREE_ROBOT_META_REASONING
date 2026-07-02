@@ -1031,7 +1031,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             print("      (override consciente: G1_NOVIS=1 navega sin vision; la mesa sera invisible)")
             lg.write(f"PERC-GATE BLOCKED: {why} {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); lg.flush()
             return False
-    perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0
+    perc_t = 0; perc_cells = set(); perc_dets = []; nperc = 0; perc_raw = {}
     sei = g1_metrics.SEIMetrics()                            # clearance + progression por tick (las 2 metricas del tutor)
     sens = g1_metrics.SensingMonitor()                       # auto-evaluacion de sensado (ruido/fiabilidad) = feedback de capacidad
     m_clear = 0.0; m_prog = 0.0; m_rel = 1.0; m_cl = 0.0; m_cr = 0.0
@@ -1144,6 +1144,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 nperc = perc_worker.n_ok
                 perc_cells = res.cells
                 perc_dets = res.detections or []
+                perc_raw = res.raw if isinstance(res.raw, dict) else {}   # telemetria del canal de color/puerta
                 if res.free_center is not None:                # VISION basada en depth/seg (mejor que la heuristica)
                     vis_center, vis_nearrun = res.free_center, (res.near_run or 0); vis_t = now
             vis_conf = {c for c in perc_cells         # obstaculos de vision (mesa) -> tambien pasan por el score
@@ -1219,12 +1220,12 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 if obst_dets or now - vis_log_t <= 0.01:   # resumen periodico aunque no haya detecciones
                     nvis_map = sum(1 for c in vis_conf if c in omap)
                     dstr = ",".join(f"{d.get('label')}@{(d.get('bearing_deg') or 0):+.0f}/{d.get('range_m')}m" for d in obst_dets) or "-"
-                    craw = perc_worker.latest.raw if (perc_worker is not None and perc_worker.latest is not None
-                                                      and isinstance(perc_worker.latest.raw, dict)) else {}
-                    cdoor = craw.get("door") or {}
+                    cdoor = perc_raw.get("door") or {}
                     lg.write(f"[VIS] perc_n={len(perc_cells)} free_c={vis_center if vis_center is not None else '-'} "
-                             f"vismap={nvis_map}/{len(vis_conf)} color={craw.get('color_pts', '-')} "
-                             f"door={cdoor.get('bearing_deg', '-')} dets=[{dstr}]\n")
+                             f"vismap={nvis_map}/{len(vis_conf)} color={perc_raw.get('color_pts', '-')} "
+                             f"carpet={perc_raw.get('carpet_pct', '-')} cnear={perc_raw.get('color_near', '-')} "
+                             f"crmin={perc_raw.get('color_rmin', '-')} door={cdoor.get('bearing_deg', '-')} "
+                             f"dets=[{dstr}]\n")
                 lg.flush()
             op = [(cx * g.OCELL, cy * g.OCELL) for (cx, cy) in oset
                   if abs(cx * g.OCELL - x) < 2.6 and abs(cy * g.OCELL - y) < 2.6]
@@ -1504,6 +1505,11 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                              "filt_rej": round(filt_rej, 3),                  # fraccion del barrido rechazada por persistencia
                              "scan_fresh": bool(scan_fresh),                  # este tick trajo nube nueva?
                              "map_add": tick_add, "map_del": tick_del,        # churn del mapa activo este tick
+                             "color_pts": perc_raw.get("color_pts"),          # puntos que aporto el canal de MOQUETA
+                             "carpet_pct": perc_raw.get("carpet_pct"),        # fraccion del frame clasificada moqueta
+                             "color_near": perc_raw.get("color_near"),        # puntos clampeados (obstaculo encima)
+                             "color_rmin": perc_raw.get("color_rmin"),        # obstaculo de color mas cercano (m)
+                             "door_b": (perc_raw.get("door") or {}).get("bearing_deg"),   # rumbo de puerta por vision
                              "perc_n": len(perc_cells),                       # nº de celdas-obstaculo que aporto la VISION este tick
                              "clear_left": round(m_cl, 3), "clear_right": round(m_cr, 3),   # clearance lateral (Renxi: balance)
                              "clearL_m": round(cl_left, 2), "clearR_m": round(cl_right, 2),

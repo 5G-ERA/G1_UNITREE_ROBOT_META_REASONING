@@ -426,6 +426,11 @@ def perceive(payload):
                    "detections": dets, "mode": "gpu"}
             if ARGS.floorcolor:
                 out["color_pts"] = ncolor           # diagnostico: cuantos puntos aporto el color
+                if cmask is not None:
+                    out["carpet_pct"] = round(float((cmask > 128).mean()), 3)   # fraccion del frame = moqueta
+                if ncolor:
+                    out["color_near"] = sum(1 for _, r in cscan if r <= 0.75)   # puntos clampeados (encima)
+                    out["color_rmin"] = min(r for _, r in cscan)                # obstaculo de color mas cercano
                 if door:
                     out["door"] = door              # {bearing_deg, left/right_edge_deg, ...} para DOOR-AL futuro
     if ARGS.debug:

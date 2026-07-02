@@ -48,6 +48,8 @@ def main():
             "mean_progression": mean(s, "progression"),
             "mean_reliability": mean(s, "reliability"),
             # --- diagnostico de sensado/filtro (summary de g1_goto; runs viejas quedan en blanco) ---
+            "mean_color_pts": mean(s, "color_pts"),
+            "mean_carpet_pct": mean(s, "carpet_pct"),
             "laser_noise_mean": sm.get("laser_noise_mean", mean(s, "laser_noise")),
             "laser_noise_max": sm.get("laser_noise_max", ""),
             "filt_rej_mean": sm.get("filt_rej_mean", mean(s, "filt_rej")),
@@ -65,6 +67,7 @@ def main():
     cols = ["file", "governance", "mode", "condition", "result", "time_s", "path_m", "efficiency",
             "collisions", "c0min", "spills_human", "perc_queries", "meta_switches", "fsm_interventions",
             "mean_clearance", "mean_progression", "mean_reliability",
+            "mean_color_pts", "mean_carpet_pct",
             "laser_noise_mean", "laser_noise_max", "filt_rej_mean", "scan_hz", "stale_pct", "gated_pct",
             "safer_inserts", "map_adds", "map_dels", "obs_max", "reloc_jumps", "tick_ms_p95", "notes"]
     with open("runs_summary.csv", "w", newline="") as fo:
