@@ -86,6 +86,21 @@ Paper del tutor sobre **DCA/DCE** (Decentralised Capability Abstraction/Ecosyste
 
 ## 8. Sesión 2026-07-02 — hallazgos y estado (MEMORIA: leer antes de tocar nada)
 
+### ⚡ TL;DR — ESTADO ACTUAL (si solo lees una cosa, lee esto)
+
+- **Funciona**: A→B llega en 72–84 s, 0 colisiones, sin modo agresivo (run 130231). Nube láser a
+  ~2.2 Hz. Canal de moqueta VIVO en el server (`G1_FLOORCOLOR=1`, verificar `floorcolor=ON` en el
+  PERC-TEST del arranque). Strafe con signo corregido (mapeo gamepad: lx>0=DERECHA; default -1).
+- **Bugs cerrados hoy (con mediciones)**: dedup de barrido · clamp 0.4→0.7 (NEAR_BLIND se comía los
+  avisos) · signo del strafe · anti-jaula (clamp solo central+alto; visión por score, sin bypass).
+- **PENDIENTE de validar en robot (en orden, UNA por run)**: ① B→A con fix anti-jaula
+  ② `G1_HARDGUARD=1` (paredes no negociables — idea de Renxi) ③ `G1_HBAND_LO=-0.7` (objetos bajos).
+- **Herramientas**: `python autopsy.py dataset/<run>.json` → informe HTML completo (trayectoria,
+  timelines, eventos, fotos). `summarize_runs.py` → CSV comparativo. Ventana live: server `--debug`
+  + navegador en `http://IP:8008/`.
+- **Reglas operativas**: git pull en el Ubuntu ANTES de lanzar · push siempre `origin HEAD:main` ·
+  un cambio por run · nunca subir PERSIST_K · el color nunca resta obstáculos (fusión por unión).
+
 ### 8.1 Cambios aplicados a `g1_goto.py` (compilan; PENDIENTES de validar en robot)
 
 1. **Dedup de barrido fresco**: `reloc_cells.fresh` (hash del buffer `__relocbuf`). La persistencia y el
@@ -205,6 +220,20 @@ andando", no para clutter lateral que el laser ya ve; (2) la VISION ya no salta 
 pasa por el score normal (+1/frame, ~1 s para entrar; mientras PIVOTA no inserta nada → jaula
 imposible). Solo el laser confirmado mantiene el bypass de seguridad. Regresion offline OK
 (escritorio/pared frontales siguen detectandose; vano y moqueta pura sin fantasmas).
+
+### 8.7 Instrumentación total + capa de confianza (tarde 2026-07-02)
+
+- **Telemetría completa** por tick en samples: canal de color (color_pts/carpet_pct/color_near/
+  color_rmin/door_b), plan (carrot/goal_err/carrot_err/plan_n=0 si A* sin ruta), confianza
+  (c0_hard/n_hard). Eventos al dataset: astar_fail, aggressive_on. PELÍCULA: frame cada 3 s
+  (G1_FILM, tNNNs.jpg). Colisiones: pre-frames t−1/−2/−3 s + omap_near en el evento.
+- **Capa de ALTA CONFIANZA (Renxi)**: hard_set = refmap confirmado | score saturado | colmap.
+  HARD-GUARD tras `G1_HARDGUARD=1` (default OFF): <0.45 m de pared → lento; <0.22 m → corta avance,
+  incluso en agresivo. Lo blando sigue negociable (la puerta necesita 0.13).
+- **Objetos BAJOS**: ciegos para el láser por HBAND_LO=-0.5 (anti-suelo). Los cubren depth (0.10 m+)
+  y el canal de moqueta (a ras de suelo). A/B pendiente: `G1_HBAND_LO=-0.7` con el stack anti-ruido.
+- Overlay live: rojo 60 % (sobre muebles oscuros el 28 % desaparecía), verde 22 %.
+- ORDEN DE VALIDACIÓN: ① B→A anti-jaula ② G1_HARDGUARD=1 ③ G1_HBAND_LO=-0.7. Una cosa por run.
 
 ### 8.4 Próximos pasos (en orden)
 
