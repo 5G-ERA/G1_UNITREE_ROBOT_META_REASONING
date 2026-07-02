@@ -156,9 +156,16 @@ class FloorColor:
     # Puerta del lab = corredor de MOQUETA que se adentra en la imagen, flanqueado por
     # VERTICALES BLANCAS (marco/hoja: S baja, V alta). Devuelve el rumbo del centro del vano,
     # estable frente al 'ddir' del A* (que tiembla con el laser ruidoso y hacia oscilar DOOR-AL).
-    def find_door(self, img_bgr, hfov_deg=56.0, ncols=32, depth_th=0.45, white_v=150, white_s=60):
+    def find_door(self, img_bgr, hfov_deg=56.0, ncols=32, depth_th=0.45, white_v=150, white_s=60,
+                  min_width_frac=0.12):
         """Devuelve dict {bearing_deg, width_frac, depth, left_white, right_white, score} o None.
-        bearing_deg: + = puerta a la IZQUIERDA del eje optico (convencion bearing estandar)."""
+        bearing_deg: + = puerta a la IZQUIERDA del eje optico (convencion bearing estandar).
+        LECCION (crash_03_162351): la RENDIJA entre la hoja abierta y el marco esta flanqueada de
+        blanco por ambos lados y ganaba al vano real -> se exige ANCHO MINIMO PASABLE
+        (min_width_frac ~0.12 = ~4/32 cols) y el score pondera depth*sqrt(width). Los flancos
+        blancos son bonus/etiqueta, no requisito de la banda (el pasillo oscuro puede no tenerlos
+        pegados); el requisito de contexto es que HAYA columnas blancas en la imagen (estamos
+        ante marco/hoja) o un flanco blanco directo."""
         mask = self.mask(img_bgr)
         h, w = mask.shape
         prof = self.free_profile(mask, ncols)                      # profundidad de moqueta por columna
@@ -168,7 +175,8 @@ class FloorColor:
             x0, x1 = int(c * w / ncols), int((c + 1) * w / ncols)
             col = hsv[:, x0:x1]
             whitec.append(((col[..., 1] < white_s) & (col[..., 2] > white_v)).mean() > 0.35)
-        # banda contigua de columnas con moqueta PROFUNDA (el corredor que cruza el vano)
+        min_cols = max(2, int(round(min_width_frac * ncols)))
+        WIN = 4                                                    # ventana de busqueda de flanco blanco
         best = None
         c = 0
         while c < ncols:
@@ -177,20 +185,74 @@ class FloorColor:
                 while c < ncols and prof[c] >= depth_th:
                     c += 1
                 band = (c0, c - 1)
+                nb = band[1] - band[0] + 1
+                if nb < min_cols:                                  # rendija impasable: descartar
+                    continue
                 depth = float(np.mean(prof[c0:c]))
-                lw = bool(c0 > 0 and whitec[c0 - 1]) or bool(c0 > 1 and whitec[c0 - 2])
-                rw = bool(c - 1 < ncols - 1 and whitec[c]) or bool(c - 1 < ncols - 2 and whitec[c + 1])
-                score = depth + 0.25 * (lw + rw)
+                lw = any(whitec[max(0, c0 - WIN):c0])
+                rw = any(whitec[c:min(ncols, c + WIN)])
+                wf = nb / ncols
+                score = depth * (wf ** 0.5) + 0.15 * (lw + rw)     # ANCHO manda; blanco es bonus
                 if best is None or score > best["score"]:
-                    center = (band[0] + band[1] + 1) / 2.0 / ncols          # 0..1
-                    best = {"bearing_deg": round((0.5 - center) * hfov_deg, 1),
-                            "width_frac": round((band[1] - band[0] + 1) / ncols, 2),
-                            "depth": round(depth, 2), "left_white": lw, "right_white": rw,
-                            "score": round(score, 2)}
+                    best = {"_band": band, "depth": round(depth, 2),
+                            "left_white": lw, "right_white": rw, "score": round(score, 2)}
             else:
                 c += 1
-        # una "puerta" sin al menos un flanco blanco y profundidad alta es solo suelo abierto
-        if best and (best["depth"] >= depth_th) and (best["left_white"] or best["right_white"]):
+        if best is None:
+            return None
+        band = best.pop("_band")
+        # --- REFINADO de bordes (feedback Adrian 2026-07-02: las flechas caian en los marcos) ---
+        # topext[c] = hasta donde SUBE la moqueta en la columna (1 = borde superior). Por el VANO el
+        # pasillo continua y la moqueta llega alta; delante de un MARCO/pared se corta en su base.
+        topext = []
+        for cc in range(ncols):
+            x0, x1 = int(cc * w / ncols), int((cc + 1) * w / ncols)
+            colm = (mask[:, x0:x1] > 128).mean(axis=1) > 0.5
+            rows = np.where(colm)[0]
+            topext.append(1.0 - rows.min() / h if len(rows) else 0.0)
+        core = [cc for cc in range(band[0], band[1] + 1) if topext[cc] >= 0.75]
+        if not core:
+            core = list(range(band[0], band[1] + 1))
+        b0, b1 = min(core), max(core)
+        # recorte de bordes: fuera columnas cuyo topext queda claramente bajo el p90 del nucleo
+        # (moqueta que muere en la base del marco). p90 y no max: un pico aislado no debe mandar.
+        ref = float(np.percentile([topext[cc] for cc in range(b0, b1 + 1)], 90)) - 0.04
+        while b1 > b0 and topext[b1] < ref:
+            b1 -= 1
+        while b0 < b1 and topext[b0] < ref:
+            b0 += 1
+        # extension SOLO sobre columnas con suelo TAPADO abajo (prof<th) pero pasillo visible arriba
+        # (la hoja de la puerta oculta la base; la moqueta del otro lado asoma por encima).
+        while b0 - 1 >= 0 and prof[b0 - 1] < depth_th and topext[b0 - 1] >= 0.62:
+            b0 -= 1
+        while b1 + 1 < ncols and prof[b1 + 1] < depth_th and topext[b1 + 1] >= 0.62:
+            b1 += 1
+        # SNAP a cantos VERTICALES (Sobel, mitad superior): el canto de la hoja/marco marca el borde
+        # fisico del vano con precision de pixel; topext solo con precision de ~1 columna.
+        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+        gx = np.abs(cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3))
+        estr = []
+        for cc in range(ncols):
+            x0, x1 = int(cc * w / ncols), int((cc + 1) * w / ncols)
+            estr.append(float(gx[:int(h * 0.65), x0:x1].mean()))
+        emax = max(estr) or 1.0
+        estr = [v / emax for v in estr]
+        SNAP = 3
+        for cc in range(max(0, b0 - SNAP), min(ncols, b0 + SNAP + 1)):     # borde IZQ -> canto mas fuerte cercano
+            if estr[cc] > 0.5 and (estr[b0] <= 0.5 or estr[cc] > estr[b0]):
+                b0 = cc
+        for cc in range(max(0, b1 - SNAP), min(ncols, b1 + SNAP + 1)):     # borde DCH
+            if estr[cc] > 0.5 and (estr[b1] <= 0.5 or estr[cc] > estr[b1]):
+                b1 = cc
+        if b1 <= b0:                                                       # seguridad: nunca invertir el vano
+            b0, b1 = min(b0, b1), max(b0, b1) if b1 > b0 else (b0, b0 + 1)
+        center = (b0 + b1 + 1) / 2.0 / ncols                    # 0..1
+        best.update({"bearing_deg": round((0.5 - center) * hfov_deg, 1),
+                     "left_edge_deg": round((0.5 - b0 / ncols) * hfov_deg, 1),
+                     "right_edge_deg": round((0.5 - (b1 + 1) / ncols) * hfov_deg, 1),
+                     "width_frac": round((b1 - b0 + 1) / ncols, 2)})
+        # contexto de puerta: flanco blanco directo O suficientes columnas blancas en la imagen
+        if best["left_white"] or best["right_white"] or sum(whitec) >= 3:
             return best
         return None
 
