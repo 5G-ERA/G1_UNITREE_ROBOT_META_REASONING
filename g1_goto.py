@@ -48,6 +48,7 @@ DOOR_MIN_GOAL = 1.3              # m: por debajo de esta distancia a B NO hay pu
                                  # desactiva la maniobra de puerta y deja que el DWA rodee el obstaculo (si no, empujaba recto)
 PERSIST_N = 3                    # filtro de ruido del laser: ventana de barridos recientes
 PERSIST_K = 2                    # una celda que SOLO ve el laser (no esta en el mapa) cuenta si aparece en >=K de los ultimos N barridos
+STALE_WARN_TICKS = 10            # ticks seguidos con la nube SIN refrescar antes de avisar en el log (~3s a 0.3s/tick)
 # --- Mapa de obstaculos con SCORE/DECAY (anti acumulacion de ruido) ---
 # Antes: celda confirmada -> entra al instante y dura 60s (TTL). Con el robot parado en la puerta y el LiDAR
 # de cabeza vibrando, el mapa = UNION de todo lo visto en 60s -> cientos de celdas falsas (obs 142->521 en 18s).
@@ -637,7 +638,15 @@ def reloc_cells(cdp, pose=None):
         s = cdp.eval("JSON.stringify(window.__relocbuf||[])")
         buf = json.loads(s) if s else []
     except Exception:
+        reloc_cells.fresh = False
         return set()
+    # --- FRESCURA del barrido: si el buffer no cambio desde la ultima llamada, es el MISMO barrido ---
+    # (el topic 'location' puede refrescar mas lento que el tick de control ~0.3s -> sin esto, un unico
+    # barrido ruidoso se cuenta 2-3 veces y pasa EL SOLO el filtro de persistencia 2-de-3). hash(str)=O(us).
+    # Nube vacia ("[]") repetida tambien cuenta como NO fresca (= sin datos nuevos).
+    sig = hash(s)
+    reloc_cells.fresh = (sig != reloc_cells.last_sig)
+    reloc_cells.last_sig = sig
     px = py = None
     if pose is not None:
         px, py = pose[0], pose[1]
@@ -651,6 +660,10 @@ def reloc_cells(cdp, pose=None):
             continue
         cells.add((round(cx / g.OCELL), round(cy / g.OCELL)))
     return cells
+
+
+reloc_cells.last_sig = None                  # firma del ultimo buffer visto (dedup de barrido)
+reloc_cells.fresh = False                    # True si la ULTIMA llamada trajo un barrido NUEVO
 
 
 # Salud/telemetria del robot (robot_data) + estado de relocalizacion (errorCode). El firmware NO da
@@ -906,6 +919,7 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
     yaw_prev = None; yaw_prev_t = None            # para estimar yaw_rate (gate de rotacion)
     yaw_rate = 0.0                                # deg/s (se recalcula cada tick)
     livehist = deque(maxlen=PERSIST_N)            # ultimos N barridos del laser (filtro de ruido por persistencia)
+    stale_streak = 0                              # ticks seguidos con la nube 'location' sin refrescar (dedup)
     colmap = set()                                # colisiones PERMANENTES (no re-chocar en el mismo sitio)
     plan_pts = []; plan_t = 0; carrot = None
     fhist = []; prev_fwd = False; recov = None; ncol = 0; last_col_t = -99; rside = 1
@@ -979,6 +993,13 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
 
             # --- OBSTACULOS de la nube 'location' (frame mapa) -> mapa con SCORE/DECAY (anti-ruido) ---
             live = reloc_cells(cdp)                   # celdas del barrido ACTUAL (laser en vivo)
+            scan_fresh = reloc_cells.fresh            # True = buffer NUEVO (dedup: no re-contar el mismo barrido)
+            if not scan_fresh:
+                stale_streak += 1
+                if stale_streak == STALE_WARN_TICKS:  # aviso UNA vez por racha (nube congelada, WebRTC caido?)
+                    lg.write(f"SCAN-STALE nube 'location' sin refrescar {stale_streak} ticks (mapa congelado)\n")
+            else:
+                stale_streak = 0
             if live:
                 cloud_ok = True
             elif not cloud_ok and not cloud_warned and now - t0 > 4.0:
@@ -989,7 +1010,8 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
             # Una celda del MAPA estatico (pared conocida) se confirma YA; una celda que SOLO ve el laser
             # necesita verse en >=PERSIST_K de los ultimos PERSIST_N barridos (filtra el parpadeo de 1 barrido:
             # ruido del cabeceo o nube desplazada por un salto de reloc).
-            livehist.append(live)
+            if scan_fresh:                            # solo VOTA un barrido NUEVO (dedup: el mismo buffer
+                livehist.append(live)                 # repetido 2-3 ticks ya no se auto-confirma)
             confirmed = set()
             for c in live:
                 if refmap and c in refmap:            # confirmado por el MAPA -> instantaneo (confiamos en el mapa)
@@ -1034,7 +1056,9 @@ def navigate_to(cdp, lg, wx, wy, label, vshare=None, lock=None, stop_event=None)
                 # --- SCORE/DECAY: obstaculo solo si se ve en la MAYORIA de barridos recientes ---
                 # Solo se actualiza con barrido fresco (si cae la nube, no penalizamos -> no se borra el mapa).
                 # El decay solo actua dentro de SC_RANGE (ventana de plan); fuera de rango se conserva por TTL.
-                if (live or seen_now) and not turning_fast:   # GATE: no actualizar el mapa mientras se gira rapido
+                # GATE: no actualizar mientras se gira rapido NI con barrido repetido (scan_fresh: el mismo
+                # buffer no puede subir el score dos veces ni penalizar dos veces -> nube congelada = sin datos).
+                if scan_fresh and (live or seen_now) and not turning_fast:
                     for c in confirmed:               # laser confirmado: sube score; mapa estatico -> tope (instantaneo)
                         oscore[c] = SC_CAP if (refmap and c in refmap) else min(SC_CAP, oscore.get(c, 0.0) + SC_HIT)
                         oseen[c] = now
