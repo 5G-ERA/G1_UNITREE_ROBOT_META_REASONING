@@ -240,7 +240,11 @@ def color_to_scan(rgb, max_range, ncols=48):
     th = math.radians(abs(ARGS.cam_pitch))          # angulo de picado (mirando abajo)
     cth, sth = math.cos(th), math.sin(th)
     ch = ARGS.cam_h
-    NEAR_CLAMP = 0.40
+    # OJO: el cliente (g1_goto) DESCARTA celdas de vision a < NEAR_BLIND=0.60m (anillo anti-fantasma
+    # del cabeceo). Con el clamp a 0.40 los avisos mas criticos del canal se tiraban (bug run 122857:
+    # perc_n=4-5 rozando el escritorio; los 40 pts del choque caian dentro del anillo). 0.70 > 0.60:
+    # el obstaculo "encima" entra al mapa un poco mas lejos de lo real = frena ANTES (conservador).
+    NEAR_CLAMP = 0.70
     scan = []
     GAP_ROWS = max(4, int(H * 0.12))                # banda no-moqueta mas FINA que esto, con moqueta
     for c in range(ncols):                          # reanudandose encima = marca PLANA del suelo

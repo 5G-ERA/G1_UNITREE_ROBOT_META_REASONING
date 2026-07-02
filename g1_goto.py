@@ -38,7 +38,9 @@ NAV_REACH = 0.35                 # m: se considera ALCANZADO el waypoint
 NAV_OMAP_TTL = 60.0              # s: la nube es estatica; TTL medio purga obstaculos dinamicos (persona que pasa)
 GATE_M = 0.6                     # m: si arrancas a > esto del waypoint mas cercano = relocalizacion dudosa (como la app)
 AGGR_AFTER = 12.0                # s atascado sin ACERCARSE al destino -> activa modo AGRESIVO (cruza la puerta)
-AGGR_ROBOT_R = 0.13              # m: holgura reducida en modo agresivo. Es el MINIMO de seguridad (no baja de aqui)
+AGGR_ROBOT_R = float(os.environ.get("G1_AGGR_R", "0.13"))   # m: holgura en modo agresivo (MINIMO de seguridad).
+                                 # Run 122857: c0min=0.16 y roces laterales en pared/marco -> con el bamboleo
+                                 # del bipedo, 0.13 es rozar por diseno. Probar G1_AGGR_R=0.16 si repite (A/B).
 PERC_PERIOD = 0.3                # s entre consultas al servidor de percepcion GPU (depth->scan virtual de la mesa)
 DOOR_CENTER = (os.environ.get("G1_DOOR_CENTER", "1") == "1")   # centrar izq/dcha en la puerta (idea de Renxi): strafe al lado mas libre
 DOOR_BAL_TH = 0.22               # |clear_left - clear_right| (normalizado) para considerar el robot DESCENTRADO
